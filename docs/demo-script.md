@@ -1,0 +1,40 @@
+# Waypoint Pulse — six-minute Hackathon demo script
+
+Target 6:00; allowed recording length 5–8 minutes. This document prepares the team recording and does not create or edit a video. Demonstrate the implemented product and show the exact current release evidence from [final Hackathon verification](final-hackathon-verification.md).
+
+## Prepare before recording
+
+Use the built PWA judge preview or an actually verified public deployment. The local setup is in [README's final judge walkthrough](../README.md#final-judge-walkthrough): `npm run demo:driver-judge`, `npm run build`, then `npm run preview:driver-judge`, with local PostgreSQL running. The local origin is http://localhost:5178 and the SYNTHETIC operational day is **2040-03-05**. Preparation creates demand/references, not a precomputed plan or delivery. A public standalone demo uses the explicit, default-off PUBLIC_JUDGE_DEMO path on an OFFICIAL-free database, documented in [Railway deployment](deployment-railway.md). Repeat setup/startup preserves history; use an untouched judge scenario for a fresh recording or clearly describe retained completed history.
+
+| Judge role | Account |
+| --- | --- |
+| Dispatcher | dispatcher@waypoint.local |
+| Loader | loader@waypoint.local |
+| Driver | driver@waypoint.local |
+| Store Manager | store@waypoint.local |
+
+The intentionally public **local** judge password is `WaypointDemo!2026` when initialized with the example configuration. Public-host judging credentials must match the actual deployed seed and be verified before recording; deployment/session/database secrets never appear on screen. Use one application origin and explicit sign-out/sign-in at each role handoff. Rehearse the handoffs and remaining-stop form inputs. Allow up to eight minutes if the actual actions need more time.
+
+Follow the real generated trip containing **SYN-LOADER-DRIVER-ORDER-192**, normally **SYN-PLAN-DRIVER-AMBIENT · Trip 1** on a fresh local scenario. Keep its actual selected IDs through every role. Browser DevTools must interrupt real network requests for the offline segment. Restore network before leaving Driver; pending/failed/conflicted work blocks logout. Keep configuration, private CSVs, browser cookies and infrastructure dashboards out of the recording.
+
+## Recording sequence
+
+1. **0:00–0:30 — Problem and Waypoint Pulse.** Show the role-aware application and explain: “Waypoint Pulse keeps planning, loading, delivery and Store receipt on one audited record. Original quantities survive shortages and offline delivery.” State that this repeatable scenario is independently authored SYNTHETIC data. The supplied future official competition calendar is unavailable, so this day does not represent current official operation.
+
+2. **0:30–1:35 — Dispatcher planning.** Sign in as Dispatcher, open Planning Studio and select 2040-03-05 plus the assigned synthetic depot. Generate the actual plan. Show served and deferred decisions, then Explain My Plan for one decision. Run the independent Validate action, then Release and confirm. Say: “The deterministic engine uses stored constraints; a separate validator rechecks the complete plan before release. Neither calls an AI service.” Select the trip containing the 192-unit order and retain it for the handoffs.
+
+3. **1:35–2:30 — Loader and real shortage.** Sign out and sign in as Loader. Open the released trip in Today's Loads. Mark the normal stops loaded. Report Shortfall for the 192-unit order: **188** actual loaded, **Stock unavailable**, and a useful synthetic shortage note. Show Awaiting Dispatcher approval and the retained original 192. Say: “Loading records the actual amount. This trip stays blocked until Dispatcher reviews the revised manifest.”
+
+4. **2:30–2:55 — Approval, readiness and assignment.** Return as Dispatcher, open the same loading exception, inspect 192/188 and approve. Return as Loader, confirm approval and Mark Ready for Dispatch. Return as Dispatcher, choose `driver@waypoint.local` in Routes / Trips and Assign Driver before departure. Say: “Approval, readiness and Driver assignment are persisted server decisions.”
+
+5. **2:55–4:15 — Driver offline delivery and recovery.** Sign in as Driver. Show the assigned route's actual 188-unit load, Route cached on this device and Offline reload ready. Start Trip online. Switch the browser network to Offline, record the current stop's arrival, then save Delivered **188** with **SYNTHETIC Receiver**, **Receiving staff** and a useful note. Show Saved locally / Pending sync and the two arrival/completion operations. Reload while still offline and show retained route/proof. Reconnect and wait for ordered SYNCED acknowledgement; reload online to show server proof. Complete remaining stops in sequence with actual quantities and valid outcomes, then Finish Trip when every stop is terminal. Say: “UUID operations survive reload; replay cannot duplicate delivery. A stale version is retained as a visible conflict for review. Completion does not invent a depot-return time.” The separate recorded conflict evidence can be shown from the milestone report if time permits; do not create a blocking conflict in the main demonstration trip.
+
+6. **4:15–4:50 — Store receipt and final Dispatcher state.** With Driver pending count zero and network restored, sign out and sign in as Store Manager. Open the same order and show **192 ordered / 188 loaded / 188 delivered / received not recorded**, with the synced recipient/note. Open Confirm Receipt, enter **188**, choose **Received in good condition**, add an optional receiving note and confirm. Show Receipt confirmed and RECEIPT_CONFIRMED after reload. Return as Dispatcher and show the same **192 / 188 / 188 / 188** quantities and actual trip progress. Other partial/failed stop exceptions remain actionable. Say: “Delivery and receipt are separate transactions. The Store confirms what it actually received.”
+
+7. **4:50–5:30 — Architecture and evidence.** Show [architecture](architecture.md) and [data model](data-model.md): React/Vite role UI → same-origin API → PostgreSQL/Prisma; deterministic planning plus independent validator; Loader/Driver/Store transactions and audit; static-shell service worker plus per-user IndexedDB UUID queue; versioned idempotent server sync. Cite the accepted **299-test baseline, nine migrations and 27 models**, then show the final report's actual current quality-gate result. Explain that passwords/tokens and authenticated API responses are not service-worker cached, and that local pending proof is visibly different from acknowledged server proof.
+
+8. **5:30–6:00 — Current Docker verification and close.** Show the exact final commit and its current-source Docker workflow result from the final report. Claim Docker acceptance only when that commit's run succeeded for Web/API/PostgreSQL, all nine migrations, health, seeded login and cleanup. Show the verified live/video submission links only when available; if public deployment or current CI is unverified, say so clearly. Close: “The supplied design remains recognizable, with real role ownership and honest operational evidence. Live GPS, turn-by-turn navigation, scanner hardware, reefer telemetry, binary photo/signature storage and Datathon predictions are unavailable. A physical mobile onscreen keyboard has not been tested.”
+
+## Before submitting the recording
+
+Check that the visible origin is the intended installation, each handoff uses the correct account, offline is a real network interruption, pending operations survive reload, reconnect acknowledges server proof, the Store receipt is explicit and the final Dispatcher shows the same IDs/quantities. The recording must not substitute local offline evidence for a deployed PWA/offline smoke test. The final report owns the exact commit, quality-gate counts, Docker run, public-host results and submission readiness.

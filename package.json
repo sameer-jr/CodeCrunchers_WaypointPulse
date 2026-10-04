@@ -15,6 +15,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
+    "seed:public-judge": "tsx scripts/seed-public-judge.ts",
     "import:reference": "tsx scripts/import-reference-data.ts",
     "demo:assign-store": "tsx scripts/assign-store.ts",
     "demo:store-judge": "node scripts/setup-store-judge.mjs",

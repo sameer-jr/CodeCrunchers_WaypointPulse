@@ -4,11 +4,12 @@ import { dateOnly } from '../../domain/dates.js';
 import { transitionOrderInTransaction } from '../../domain/lifecycle.js';
 import { installPlanningFixture, PLANNING_SYNTHETIC_DATE } from '../../planning/testing/synthetic.js';
 import { addBusinessDays } from '../../store/testing/synthetic.js';
+import { syntheticReferencesPermitted } from '../../domain/synthetic-mode.js';
 
 export const LOADER_SYNTHETIC_DATE = PLANNING_SYNTHETIC_DATE;
 
 export async function installLoaderFixture(db: PrismaClient, options: { key?: string; serviceDate?: string; assignStore?: boolean } = {}) {
-  if (process.env.NODE_ENV === 'production') throw new Error('Synthetic Loader fixtures are forbidden in production.');
+  if (!syntheticReferencesPermitted()) throw new Error('Synthetic Loader fixtures require an explicitly enabled public judge demo in production.');
   const key = options.key ?? 'LOADER', serviceDate = options.serviceDate ?? LOADER_SYNTHETIC_DATE;
   const fixture = await installPlanningFixture(db, { ...options, key, serviceDate });
   const orderRef = `SYN-LOADER-${key}-ORDER-192`;

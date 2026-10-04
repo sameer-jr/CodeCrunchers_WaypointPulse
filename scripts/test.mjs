@@ -19,7 +19,7 @@ const database = await localPostgres({ databaseDir: directory, user: 'waypoint_t
 const databaseUrl = `postgresql://waypoint_test:${password}@127.0.0.1:${port}/waypoint_test`;
 const env = { ...process.env, DATABASE_URL: databaseUrl, TEST_DATABASE_URL: databaseUrl, NODE_ENV: 'test',
   AUTH_SECRET: randomBytes(48).toString('hex'), WEB_ORIGIN: 'http://localhost:5173', STORE_ALLOW_SYNTHETIC: 'false', PLANNING_ALLOW_SYNTHETIC: 'false',
-  SEED_DEMO_PASSWORD: randomBytes(20).toString('hex') };
+  SEED_DEMO_PASSWORD: randomBytes(20).toString('hex'), PUBLIC_JUDGE_DEMO: 'false' };
 let started = false;
 try {
   await database.initialise();
@@ -49,6 +49,10 @@ try {
   const driverDatabaseUrl = `postgresql://waypoint_test:${password}@127.0.0.1:${port}/waypoint_driver_test`;
   await initializeDatabase({ ...env, DATABASE_URL: driverDatabaseUrl });
   env.DRIVER_TEST_DATABASE_URL = driverDatabaseUrl;
+  await database.createDatabase('waypoint_public_judge_test');
+  const publicJudgeDatabaseUrl = `postgresql://waypoint_test:${password}@127.0.0.1:${port}/waypoint_public_judge_test`;
+  await initializeDatabase({ ...env, DATABASE_URL: publicJudgeDatabaseUrl });
+  env.PUBLIC_JUDGE_TEST_DATABASE_URL = publicJudgeDatabaseUrl;
   console.log('Testing against a fresh isolated PostgreSQL database; development data is untouched.');
   await runNode('node_modules/vitest/vitest.mjs', ['run'], env);
 } finally { if (started) await database.stop(); }

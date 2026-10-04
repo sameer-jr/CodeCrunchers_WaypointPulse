@@ -24,10 +24,10 @@ import type { DriverServiceOptions } from './driver/services.js';
 const dummyHash = hashPassword('timing-only-invalid-account');
 
 export function createApp(prisma: PrismaClient, config: Config, options: { store?: StoreServiceOptions; dispatcher?: DispatcherServiceOptions; planning?: PlanningServiceOptions; loader?: LoaderServiceOptions; driver?: DriverServiceOptions } = {}) {
-  const storeOptions = { allowSyntheticReferences: config.STORE_ALLOW_SYNTHETIC, ...options.store };
-  if (config.NODE_ENV === 'production' && storeOptions.allowSyntheticReferences) throw new Error('Synthetic Store eligibility is not allowed in production.');
-  const planningOptions = { allowSyntheticReferences: config.PLANNING_ALLOW_SYNTHETIC, ...options.planning };
-  if (config.NODE_ENV === 'production' && planningOptions.allowSyntheticReferences) throw new Error('Synthetic planning references are not allowed in production.');
+  const storeOptions = { allowSyntheticReferences: config.PUBLIC_JUDGE_DEMO || config.STORE_ALLOW_SYNTHETIC, ...options.store };
+  if (config.NODE_ENV === 'production' && storeOptions.allowSyntheticReferences && !config.PUBLIC_JUDGE_DEMO) throw new Error('Synthetic Store eligibility is not allowed in production.');
+  const planningOptions = { allowSyntheticReferences: config.PUBLIC_JUDGE_DEMO || config.PLANNING_ALLOW_SYNTHETIC, ...options.planning };
+  if (config.NODE_ENV === 'production' && planningOptions.allowSyntheticReferences && !config.PUBLIC_JUDGE_DEMO) throw new Error('Synthetic planning references are not allowed in production.');
   const app = express();
   app.disable('x-powered-by');
   if (config.API_TRUST_PROXY) app.set('trust proxy', 1);

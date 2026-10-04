@@ -19,4 +19,4 @@ WORKDIR /app
 COPY --from=build --chown=node:node /app /app
 USER node
 EXPOSE 3001
-CMD ["sh", "-c", "npm run db:migrate && npm run db:seed && node apps/api/dist/server.js"]
+CMD ["sh", "-c", "node apps/api/dist/production-preflight.js && npm run db:migrate && npm run db:seed && npm run seed:public-judge && node apps/api/dist/server.js"]

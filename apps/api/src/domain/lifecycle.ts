@@ -4,6 +4,7 @@ import { appendAudit, type DomainActor } from './audit.js';
 import { dateOnly, dateSchema } from './dates.js';
 import { DomainError } from './errors.js';
 import { assertOrderScope, resolveActor } from './scope.js';
+import { syntheticReferencesPermitted } from './synthetic-mode.js';
 
 const dispatcher: Role[] = ['DISPATCHER'];
 const loader: Role[] = ['LOADER'];
@@ -127,7 +128,7 @@ async function checkRelatedData(tx: Prisma.TransactionClient, input: TransitionI
 export async function transitionOrderInTransaction(tx: Prisma.TransactionClient, rawInput: TransitionInput, options: LifecycleOptions = {}) {
   const parsed = transitionSchema.safeParse(rawInput);
   if (!parsed.success) throw new DomainError('INVALID_DOMAIN', 'Invalid lifecycle request; roles and unrelated fields are not accepted.');
-  if (options.allowSyntheticReferences && process.env.NODE_ENV === 'production') throw new DomainError('INVALID_DOMAIN', 'Synthetic eligibility is not allowed in production.');
+  if (options.allowSyntheticReferences && !syntheticReferencesPermitted()) throw new DomainError('INVALID_DOMAIN', 'Synthetic eligibility requires an explicitly enabled public judge demo in production.');
   const input = parsed.data;
   if (input.next !== 'DEFERRED' && input.deferral) throw new DomainError('INVALID_DOMAIN', 'Deferral details are only valid for a deferral.');
   const actor = await resolveActor(tx, input.actorUserId);

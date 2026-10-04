@@ -3,10 +3,11 @@ import type { StoreContext, StoreTemperature } from '@waypoint/shared';
 import { BUSINESS_TIME_ZONE, businessDate, dateOnly } from '../domain/dates.js';
 import { DomainError } from '../domain/errors.js';
 import { outletDto, type StoreScope } from './scope.js';
+import { syntheticReferencesPermitted } from '../domain/synthetic-mode.js';
 
 export type StoreServiceOptions = { now?: () => Date; allowSyntheticReferences?: boolean };
 export function storeNow(options: StoreServiceOptions): Date {
-  if (options.allowSyntheticReferences && process.env.NODE_ENV === 'production') throw new DomainError('INVALID_DOMAIN', 'Synthetic Store references are not allowed in production.');
+  if (options.allowSyntheticReferences && !syntheticReferencesPermitted()) throw new DomainError('INVALID_DOMAIN', 'Synthetic Store references require an explicitly enabled public judge demo in production.');
   const now = options.now?.() ?? new Date();
   if (!Number.isFinite(now.getTime())) throw new DomainError('INVALID_DOMAIN', 'A valid server clock is required.');
   return now;

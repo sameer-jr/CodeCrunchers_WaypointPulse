@@ -27,6 +27,9 @@ services:
       API_TRUST_PROXY: "true"
       SESSION_HOURS: ${SESSION_HOURS:-8}
       NODE_ENV: ${NODE_ENV:-development}
+      PUBLIC_JUDGE_DEMO: ${PUBLIC_JUDGE_DEMO:-false}
+      STORE_ALLOW_SYNTHETIC: ${STORE_ALLOW_SYNTHETIC:-false}
+      PLANNING_ALLOW_SYNTHETIC: ${PLANNING_ALLOW_SYNTHETIC:-false}
     depends_on:
       postgres:
         condition: service_healthy

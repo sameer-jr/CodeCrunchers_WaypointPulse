@@ -4,6 +4,7 @@ import { dateOnly, isoWeek, weekStart } from '../../domain/dates.js';
 import { transitionOrder } from '../../domain/lifecycle.js';
 import { addBusinessDays } from '../../store/testing/synthetic.js';
 import type { GeneratedPlan, PlanningInput, PlanningOrder, PlanningVehicle } from '../model.js';
+import { syntheticReferencesPermitted } from '../../domain/synthetic-mode.js';
 
 export const PLANNING_SYNTHETIC_DATE = '2040-03-05';
 
@@ -69,7 +70,7 @@ async function ensureFixtureOrder(db: PrismaClient, dispatcherId: string, servic
 
 // Explicit fixture preparation only. Repetition never resets orders, planning runs, receipts, audits or fuel use created by review.
 export async function installPlanningFixture(db: PrismaClient, options: FixtureOptions = {}) {
-  if (process.env.NODE_ENV === 'production') throw new Error('Synthetic allocation fixtures are forbidden in production.');
+  if (!syntheticReferencesPermitted()) throw new Error('Synthetic allocation fixtures require an explicitly enabled public judge demo in production.');
   const serviceDate = options.serviceDate ?? PLANNING_SYNTHETIC_DATE, key = options.key ?? 'JUDGE';
   if (!/^[A-Z0-9-]{1,24}$/.test(key)) throw new Error('Use a short uppercase synthetic fixture key.');
   const prefix = `SYN-PLAN-${key}`;

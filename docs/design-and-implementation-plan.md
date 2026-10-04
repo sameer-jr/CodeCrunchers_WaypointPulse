@@ -1,6 +1,6 @@
 # Waypoint Pulse: design reference and implementation checklist
 
-Status: Milestones 0–8 completed local acceptance, including combined Driver execution and real offline/sync recovery. The combined report records required checks, real network-offline reload/reconnect, retained conflict and cross-role evidence. Read `prototype-audit.md` and the milestone reports for evidence limits. Final integration/packaging/deployment and Datathon work are not started by this scope.
+Status: Milestones 0–8 completed local acceptance, including combined Driver execution and real offline/sync recovery. The combined report records required checks, real network-offline reload/reconnect, retained conflict and cross-role evidence. Read `prototype-audit.md` and the milestone reports for evidence limits. Approved final integration/packaging/deployment verification is in progress with product features frozen; acceptance remains pending in [final Hackathon verification](final-hackathon-verification.md). No new product milestone, redesign or Datathon work is started.
 
 ## Design contract
 
@@ -71,7 +71,7 @@ Milestones 1–6 implement the authentication/domain foundation, Store/Dispatche
 
 ## Ordered milestone checklist
 
-Milestones 0–8 passed local acceptance. Combined M7+8 retains all earlier tests and adds actual offline/reconnect/conflict and cross-role browser evidence. The pre-Driver source `05e8eb1` passed remote Docker baseline verification; current Driver/offline images and the ninth migration remain unverified in containers. Each milestone needs typecheck, lint, tests, build and required browser evidence. Commit logically if Git has been initialized; never stage confidential reference data. Publication and final packaging are outside the current combined task.
+Milestones 0–8 passed local acceptance. Combined M7+8 retains all earlier tests and adds actual offline/reconnect/conflict and cross-role browser evidence. Approved final integration/packaging/deployment now verifies that frozen product and its existing Store receipt; final acceptance remains pending. The current-source Docker run and actual public-host four-role/offline evidence are required separately from earlier local acceptance. Each milestone needs typecheck, lint, tests, build and required browser evidence. Commit logically if Git has been initialized; never stage confidential reference data. [The final report](final-hackathon-verification.md) owns the exact commit, quality gate, deployment evidence and readiness result.
 
 | Milestone | Checklist | Acceptance evidence |
 | --- | --- | --- |
@@ -85,7 +85,7 @@ Milestones 0–8 passed local acceptance. Combined M7+8 retains all earlier test
 | 7: Driver | [x] Assigned ready routes, start/arrival/outcomes, revised quantities, recipient metadata proof and finish | Required checks, all 246 earlier tests plus Driver/client regressions; real generated trip 192 → 188 → 188, partial/failed guards, four-stop finish and same-record Store/Dispatcher browser evidence |
 | 8: Offline | [x] Production shell SW, per-user IndexedDB cache/UUID queue, reconnect/retry/idempotency/conflicts | Real browser network-offline arrival/delivery, offline reload, ordered reconnect, synced proof and retained two-tab conflict; PostgreSQL reconciliation and logout race regressions in combined report |
 | 9: Receipt | [ ] Further receipt integration/evidence scope | Existing M3 receipt services remain; Driver exposes the same real delivered record without auto-receipt. Binary storage and any additional receipt changes deferred |
-| 10: Integration | [ ] Final integration acceptance and any remaining exception actions | Combined M7+8 verified the connected generated plan → Loader → Driver → Store reads; broader final integration, resolution and release acceptance deferred |
+| 10: Integration | [ ] Approved frozen final integration verification in progress; acceptance pending | Existing generated plan → Loader → Driver → explicit Store receipt → final Dispatcher walkthrough; current-source Docker and public-host evidence pending in the final report. General exception resolution is not added |
 | 11: Quality | [ ] Domain/API/browser tests, mobile/tablet/desktop review, accessibility, error states, performance | Required constraints, permission failures, sync replay/conflicts, and responsive journey pass |
 | 12: Packaging | [ ] Fresh Compose startup, README, architecture/ER diagrams, AI disclosure, exact judge IDs, deployment | Documented installation and judge journey verified; datasets/secrets excluded; deployed build verified separately |
 
