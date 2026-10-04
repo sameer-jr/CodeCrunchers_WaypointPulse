@@ -1,276 +1,582 @@
 # Waypoint Pulse
 
-Team Code Crunchers · Tech-Triathlon 2026
+**Team Code Crunchers · Tech-Triathlon 2026**
 
-## Current scope
+[![Docker Compose Verification](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/workflows/docker-compose-verification.yml/badge.svg)](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/workflows/docker-compose-verification.yml)
 
-Milestones 1–4 establish credential login, sessions, responsive role shells, the normalized operational domain, the persisted Store Manager workflow and Dispatcher views. Milestone 5 adds locally verified deterministic allocation, independent validation and transactional plan release in Planning Studio. Pulse, Orders, Routes / Trips and Exception Centre read scoped PostgreSQL records; Future Capacity states its current limits. Milestone 6 connects released generated trips to Loader’s persisted checklist, shortfall reporting, Dispatcher review and Ready for Dispatch. Driver, offline synchronization and predictions remain later milestones.
+Waypoint Pulse is a responsive delivery-operations platform for the fictional **Waypoint Group**. It connects the complete delivery workflow across four roles:
 
-The original Designathon prototype remains unchanged under `input resources/prototype/` following the workspace's reference-file reorganization. It is a private local reference and is excluded from Git and Docker. The root application copies only the two brand PNGs. The supplied dataset ZIP is private and is not imported by the auth seed or bundled into the web app.
+**Store Manager → Dispatcher → Loader → Driver → Store Manager**
 
-## Architecture and technology
+The system is built around one principle:
 
-- npm workspaces; TypeScript; React/Vite; React Router; TanStack Query; Zod; React Hook Form; Tailwind CSS.
-- Express API, Zod request validation, centralized authentication/authorization/error handling.
-- PostgreSQL with Prisma: User/Session plus 24 normalized domain/support models, explicit daily VehicleAvailability, transactional services and SQL integrity guards.
-- Passwords use salted Node scrypt. Random opaque session tokens are issued as HTTP-only, SameSite=Strict cookies. Only an HMAC digest of each token is stored in PostgreSQL. User role and active status are checked on every protected API request.
-- Role routes are protected in the client and server; failed cross-role client navigation shows an access-denied page. There is no authenticated role-switch control.
-- [Architecture](docs/architecture.md), [data model](docs/data-model.md), [AI disclosure](docs/AI_DISCLOSURE.md).
-- [Milestone 1 verification report](docs/milestone-1-foundation.md), including browser evidence and the unverified Docker runtime limitation.
-- [Milestone 2 verification report](docs/milestone-2-domain.md), including real database upgrades, private import and 46 automated tests.
-- [Milestone 3 Store report](docs/milestone-3-store.md), including scoped creation, cutoff, tracking, receipts, 102 automated tests and browser evidence.
-- [Milestone 4 Dispatcher report](docs/milestone-4-dispatcher.md), including date context, depot scope, read-only planning and cross-role verification.
-- [Milestone 5 allocation report](docs/milestone-5-allocation.md), including heuristic, constraints, timing/fuel assumptions, independent validation and release verification status.
+> **One order. One system. Four perspectives.**
+
+It replaces fragmented spreadsheet, phone-call and paper-based coordination with a shared operational state, constraint-aware planning, explainable decisions, loading feedback, delivery records and receipt confirmation.
+
+---
+
+## Competition
+
+- **Event:** Tech-Triathlon 2026
+- **Team:** Code Crunchers
+- **Phase:** Hackathon
+- **Repository:** `CodeCrunchers_WaypointPulse`
+
+### Submission links
+
+| Item | Link |
+| --- | --- |
+| Source repository | https://github.com/sameer-jr/CodeCrunchers_WaypointPulse |
+| Live application | _Add deployed URL before submission_ |
+| Demo video | _Add unlisted YouTube URL before submission_ |
+| Docker verification | [GitHub Actions](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/workflows/docker-compose-verification.yml) |
+
+---
+
+## What Waypoint Pulse solves
+
+Waypoint Group operates a shared distribution network for three brands:
+
+- **Waypoint Fresh** — groceries, chilled and frozen goods
+- **Waypoint Style** — garments and cartons
+- **Waypoint Tech** — appliances and consumer electronics
+
+The operation must coordinate 120 outlets, two depots and a mixed vehicle fleet while handling:
+
+- weight and volume limits
+- ambient vs refrigerated transport
+- van-only outlet access
+- delivery and mall windows
+- Fresh morning deadlines
+- weekly fuel limits
+- a maximum of two trips per vehicle per day
+- loading shortages
+- delivery exceptions
+- unreliable field connectivity
+
+Waypoint Pulse turns those constraints into a connected workflow rather than separate role-specific tools.
+
+---
+
+## Core workflow
+
+```text
+Store Manager
+    │
+    │ Place & confirm order
+    ▼
+Dispatcher
+    │
+    │ Review demand
+    │ Generate plan
+    │ Validate constraints
+    │ Release plan
+    ▼
+Loader
+    │
+    │ Load by stop sequence
+    │ Record actual quantities
+    │ Report shortfalls
+    ▼
+Driver
+    │
+    │ Follow assigned trip
+    │ Record outcome & proof
+    ▼
+Store Manager
+    │
+    └── Confirm receipt / report issue
+```
+
+All roles operate on the same persisted order, trip and delivery state.
+
+---
+
+## Key capabilities
+
+### Dispatcher
+
+- Today’s Delivery Pulse
+- persisted order queue with filtering and search
+- deterministic Planning Studio
+- real vehicle/trip allocation
+- independent plan validation
+- **Explain My Plan** constraint evidence
+- served/deferred decisions
+- repeat-deferral visibility
+- Routes / Trips
+- operational Exception Centre
+- honest Future Capacity placeholder without fabricated ML predictions
+
+### Store Manager
+
+- assigned-outlet Home
+- Place Order
+- server-side **16:00 Asia/Colombo** cutoff handling
+- operating-day validation
+- order tracking from persisted lifecycle data
+- deferral visibility
+- receipt confirmation
+- quantity/damage issue reporting
+- separate ordered, loaded, delivered and received quantities
+
+### Loader
+
+- released trips only
+- real planner stop sequence
+- loading checklist
+- actual loaded quantities
+- loading shortfall reporting
+- Dispatcher manifest review
+- guarded Ready for Dispatch state
+
+### Driver
+
+The Driver application shell is present in the repository. The final Driver delivery and offline/synchronization workflow is being completed for the Hackathon submission and should be verified against the final submitted commit.
+
+---
+
+## Signature planning feature — Explain My Plan
+
+Waypoint Pulse does not treat planning as a black box.
+
+The allocation engine produces structured evidence for each decision, including:
+
+- depot compatibility
+- vehicle availability
+- temperature compatibility
+- van-only access
+- weight capacity
+- volume capacity
+- trip limits
+- receiving windows
+- mall windows
+- Fresh deadline
+- fuel quota
+- trip-time feasibility
+
+A served order can explain why its vehicle/trip was selected and why useful alternatives were rejected.
+
+A deferred order retains machine-readable blocking reasons and a human-readable explanation.
+
+The engine is deterministic and explainable; it does **not** use an LLM, ML model or the supplied precomputed allocation as its output.
+
+---
+
+## Allocation strategy
+
+The planner uses an explainable heuristic rather than claiming global mathematical optimality.
+
+Demand priority considers:
+
+1. previous deferrals
+2. scarcity of structurally compatible vehicles
+3. receiving-window tightness
+4. initial eligible date
+5. creation time
+6. stable order reference
+
+Feasible candidates then prefer:
+
+1. avoiding unnecessary use of scarce reefer/van capability
+2. filling an existing draft trip before creating another
+3. lower incremental estimated fuel
+4. better remaining capacity fit
+5. earlier completion
+6. stable vehicle/trip tie-breakers
+
+The complete generated plan is then checked by an **independent validator** before release.
+
+Invalid or stale plans cannot be released.
+
+---
+
+## Loading Shortfall Cascade
+
+Waypoint Pulse implements the Designathon degradation scenario as a real cross-role workflow.
+
+Example:
+
+```text
+Ordered / expected: 192
+Loaded:             188
+Reason:             STOCK_UNAVAILABLE
+```
+
+Flow:
+
+```text
+Loader records 188
+        │
+        ▼
+LOADING_SHORTFALL exception created
+        │
+        ▼
+Trip readiness blocked
+        │
+        ▼
+Dispatcher reviews revised manifest
+        │
+        ▼
+Approved loaded quantity remains 188
+        │
+        ▼
+Loader completes loading
+        │
+        ▼
+Trip becomes READY_FOR_DISPATCH
+```
+
+The original ordered quantity is never overwritten.
+
+---
+
+## Architecture
+
+```text
+┌───────────────────────────────────────────────┐
+│              React / Vite Web App             │
+│                                               │
+│ Dispatcher · Loader · Driver · Store Manager │
+└───────────────────────┬───────────────────────┘
+                        │ /api
+                        ▼
+┌───────────────────────────────────────────────┐
+│                Express API                    │
+│                                               │
+│ Auth / RBAC / Scope Guards                    │
+│ Order Lifecycle                               │
+│ Planning & Validation                         │
+│ Loading / Delivery / Receipt                  │
+│ Audit & Exception Services                    │
+└───────────────────────┬───────────────────────┘
+                        │ Prisma
+                        ▼
+┌───────────────────────────────────────────────┐
+│                 PostgreSQL                    │
+│                                               │
+│ Users · Orders · Vehicles · Trips · Stops     │
+│ Allocations · Loads · Deliveries · Receipts   │
+│ Exceptions · Deferrals · Audit Events         │
+└───────────────────────────────────────────────┘
+```
+
+More detail:
+
+- [Architecture documentation](docs/architecture.md)
+- [Data model](docs/data-model.md)
+- [AI disclosure](docs/AI_DISCLOSURE.md)
+
+---
+
+## Technology stack
+
+### Frontend
+
+- React
+- TypeScript
+- Vite
+- React Router
+- TanStack Query
+- React Hook Form
+- Zod
+- Tailwind CSS
+
+### Backend
+
+- Node.js
+- TypeScript
+- Express
+- Zod
+
+### Persistence
+
+- PostgreSQL
+- Prisma ORM
+- versioned SQL migrations
+- transactional domain services
+- database integrity guards
+
+### Infrastructure
+
+- Docker
+- Docker Compose
+- Nginx
+- GitHub Actions
+
+### Testing
+
+- Vitest
+- Supertest
+- real PostgreSQL integration tests
+- browser/responsive acceptance checks
+
+---
 
 ## Repository structure
 
 ```text
-apps/web/          React application, brand assets, Nginx configuration
-apps/api/          Express transport, domain services and PostgreSQL tests
-packages/shared/   Shared roles, auth schemas, safe API identity types
-prisma/            Normalized schema, versioned SQL migrations, auth-only seed
-scripts/           Local setup, embedded PostgreSQL, test and safety runners
-docs/              Audit, design plan, architecture and milestone report
-input resources/   Private original brief/prototype/dataset ZIP (not published)
-private-data/      Private reference CSV import sources (not published)
+CodeCrunchers_WaypointPulse/
+│
+├── apps/
+│   ├── web/                 # React application
+│   └── api/                 # Express API and domain services
+│
+├── packages/
+│   └── shared/              # Shared schemas, DTOs and role contracts
+│
+├── prisma/                  # Schema, migrations and auth seed
+├── scripts/                 # Setup, test and safe demo helpers
+├── docs/                    # Architecture, data model and reports
+│
+├── .github/
+│   └── workflows/
+│       └── docker-compose-verification.yml
+│
+├── docker-compose.yml
+├── .env.example
+├── package.json
+└── README.md
 ```
 
-## Prerequisites
+Competition datasets and private development resources are intentionally excluded from Git and Docker build contexts.
 
-Use Node.js 24 LTS and npm. A PostgreSQL service or Docker is optional for local development: `dev:db` uses a workspace-local PostgreSQL binary installed through the `embedded-postgres` npm dependency. It does not install a system service or create a system user.
+---
 
-If Windows PowerShell blocks `npm.ps1`, use `npm.cmd` for these commands; no execution-policy change is needed.
+## Quick start with Docker
 
-On Windows, stop the API before installing dependencies or generating Prisma: the running API locks its native query-engine DLL. Local database start/stop uses PostgreSQL's `pg_ctl` so shutdown waits for its worker processes to finish.
+### Requirements
 
-## Development setup
+- Docker
+- Docker Compose
 
-```sh
+Clone the repository:
+
+```bash
+git clone https://github.com/sameer-jr/CodeCrunchers_WaypointPulse.git
+cd CodeCrunchers_WaypointPulse
+```
+
+Create your environment file:
+
+```bash
+cp .env.example .env
+```
+
+Review the values in `.env`, then start the complete stack:
+
+```bash
+docker compose up --build
+```
+
+Open:
+
+```text
+http://localhost:5173
+```
+
+The Compose stack starts:
+
+- PostgreSQL
+- API
+- Web application
+
+The API automatically applies the committed migrations and creates the safe demo accounts.
+
+To stop:
+
+```bash
+docker compose down
+```
+
+To remove the development database volume as well:
+
+```bash
+docker compose down -v
+```
+
+---
+
+## Docker verification
+
+The root Compose stack is continuously checked by GitHub Actions on Ubuntu.
+
+The verification workflow checks:
+
+- API and Web image builds
+- PostgreSQL health
+- API health
+- Web HTTP availability
+- committed database migrations
+- four safe seeded accounts
+- database-backed login/session restoration
+- protected endpoint authorization
+- logout
+- cleanup of containers and volumes
+
+See:
+
+- [Docker verification workflow](.github/workflows/docker-compose-verification.yml)
+- [Remote Docker verification report](docs/remote-docker-verification.md)
+
+> A successful CI run verifies the exact commit tested by the workflow. The final submission commit should also have a green Docker verification run.
+
+---
+
+## Local development without Docker
+
+Node.js 24 LTS and npm are recommended.
+
+Install dependencies:
+
+```bash
 npm install
+```
+
+Prepare local configuration:
+
+```bash
 npm run setup:local
+```
+
+Start the managed local PostgreSQL instance:
+
+```bash
 npm run dev:db
 ```
 
-Leave that terminal running. In a second terminal:
+Keep that terminal running.
 
-```sh
+In a second terminal:
+
+```bash
 npm run dev
 ```
 
-Open **http://localhost:5173**. The API listens privately on port 3001 and the Vite proxy serves `/api` at the same browser origin. Use `localhost` consistently with `WEB_ORIGIN`; a `127.0.0.1` browser origin is different. If you choose another browser origin, update `WEB_ORIGIN` accordingly.
+Open:
 
-`setup:local` creates ignored `.env` with random local database/session secrets and preserves an existing `.env`. `dev:db` initializes `.local/postgres`, applies migrations, and seeds users before reporting readiness. Ctrl+C stops the cluster but retains local data. Its managed database must be `/waypoint` on `127.0.0.1`; another DATABASE_URL requires your own database service.
-
-For an existing PostgreSQL service, configure `.env` from `.env.example`, create the empty database, then run:
-
-```sh
-npm run db:migrate
-npm run db:seed
-npm run dev
+```text
+http://localhost:5173
 ```
 
-Do not use development credentials for a shared deployment. Passwords with reserved URL characters must be encoded in DATABASE_URL; the generated local passwords are hexadecimal.
+For Windows PowerShell environments that block `npm.ps1`, use `npm.cmd`, for example:
+
+```powershell
+npm.cmd run dev
+```
+
+---
 
 ## Demo accounts
 
-The development password generated from `.env.example` is **`WaypointDemo!2026`**. Configure `SEED_DEMO_PASSWORD` before first initialization to change it; it must be 12–128 characters. The seed creates missing accounts and deliberately preserves existing users, passwords, roles, and active status on repeated startup. Changing the seed environment does not rotate existing accounts.
+The default development seed uses:
 
-| Email | Role | Home |
+**Password:** `WaypointDemo!2026`
+
+| Role | Email | Default route |
 | --- | --- | --- |
-| dispatcher@waypoint.local | DISPATCHER | `/dispatcher/pulse` |
-| loader@waypoint.local | LOADER | `/loader/loads` |
-| driver@waypoint.local | DRIVER | `/driver/today` |
-| store@waypoint.local | STORE_MANAGER | `/store/home` |
+| Dispatcher | `dispatcher@waypoint.local` | `/dispatcher/pulse` |
+| Loader | `loader@waypoint.local` | `/loader/loads` |
+| Driver | `driver@waypoint.local` | `/driver/today` |
+| Store Manager | `store@waypoint.local` | `/store/home` |
 
-The login demo selector fills the email only. The password is verified by the server. No competition data or domain assignments are seeded. Without explicit UserOutlet/UserDepot or driver-trip assignments, domain object access defaults to denial.
+The password can be changed before initialization with `SEED_DEMO_PASSWORD`.
 
-## Private reference import
+For a public deployment, use fresh deployment credentials and provide the final judge credentials through the competition submission.
 
-Place the five official files in ignored `private-data/reference/`: `outlets.csv`, `vehicles.csv`, `calendar.csv`, `district_travel.csv`, `service_allowance.csv`. With the configured database running:
+---
 
-```sh
-npm run import:reference -- --source official --dry-run
-npm run import:reference -- --source official
-```
+## Judge walkthrough
 
-`--directory` can select another directory within ignored `private-data/` or `input resources/`. Provenance must be explicit; all files are required. The importer validates exact headers, explicit numeric/enum/time/date conversions, positive capacities, duplicate keys and references before an atomic database import. Content digests make repeated imports a no-op. Changed sources that collide with existing keys fail without partial changes; reconciliation is not silently performed. Synthetic imports require explicit labelling and are forbidden in production. Imports do not grant user assignments or create orders, trips or allocations.
+> **Important:** The final submission walkthrough should be executed against the final deployed build. The current repository has the full Store → Dispatcher → Loader path implemented; Driver/offline completion should be verified on the final submission commit before using the Driver steps below.
 
-The supplied private ZIP contains all five expected reference files. The local import has 120 outlets, 60 vehicles, 910 calendar days, 12 travel rows and 9 service allowances, marked OFFICIAL. These counts describe the private import, not installation seed data. The official calendar ends on **2026-06-28**, so it cannot authorize future orders on the current review date, 2026-10-03. A fresh official calendar is required for current official operation. The Store API blocks dates absent from its eligible calendar. Raw files remain excluded from Git, Docker and web bundles. No source GPS/address fields or verified opening fuel history were supplied. Fuel remaining is unknown until an opening balance is established; quota alone does not imply zero consumption. Business dates/weeks use Asia/Colombo; the fuel week begins Monday.
+### 1. Store Manager
 
-Deploy the committed migrations rather than `prisma db push`; custom SQL checks, partial indexes and integrity/history triggers are required. Delivery proof currently stores durable key metadata only; actual file storage is deferred.
+1. Sign in as Store Manager.
+2. Open **Place Order**.
+3. Create a valid order.
+4. Open **Track Delivery**.
+5. Confirm the new order is persisted and awaiting planning.
 
-## Store assignment and local review
+### 2. Dispatcher
 
-The auth seed does not assign outlets. Store access requires exactly one active user's `UserOutlet` mapping; missing or multiple mappings deny access. With the local database running, an explicit operator command assigns a known outlet. Add `--replace` only to deliberately change an existing assignment:
+6. Sign out and sign in as Dispatcher.
+7. Open **Orders** and find the same Store order.
+8. Open **Planning Studio**.
+9. Select the judge operational day.
+10. Click **Generate Plan**.
+11. Inspect served/deferred decisions.
+12. Select an allocation and review **Explain My Plan**.
+13. Click **Validate Plan**.
+14. Confirm the plan has no blocking issues.
+15. Click **Release Plan**.
 
-```sh
-npm run demo:assign-store -- --outlet-id <outlet-uuid>
-```
+### 3. Loader
 
-`--outlet-ref` is also supported for private local references; `--email` defaults to `store@waypoint.local`. The script rejects production and non-loopback databases. Identity never comes from the frontend.
+16. Sign out and sign in as Loader.
+17. Open **Today’s Loads**.
+18. Open the released trip.
+19. Confirm the actual planner stop sequence.
+20. Record normal loaded quantities.
+21. For the degradation stop, record a shortfall such as **192 expected → 188 loaded**.
+22. Choose the shortfall reason and submit.
+23. Confirm the trip is blocked awaiting review.
 
-For current-date review when the official calendar has no future rows:
+### 4. Dispatcher shortfall review
 
-```sh
-npm run demo:store-synthetic
-```
+24. Sign in as Dispatcher.
+25. Open **Exceptions**.
+26. Open the same loading shortfall.
+27. Review the expected/loaded quantities.
+28. Approve the revised manifest.
 
-This explicit local-only command adds an independently authored **SYNTHETIC** Fresh outlet, assigns the Store demo account, and inserts up to 60 future synthetic calendar days without replacing existing official days. Its Monday–Saturday pattern belongs only to this fixture. Set `STORE_ALLOW_SYNTHETIC=true` in ignored local `.env` and restart the API to permit those labelled dates. The flag defaults to false and is forbidden in production. The current local preview uses this opt-in. No orders, plans or deliveries are created by this setup command.
+### 5. Loader readiness
 
-For prepared receipt, planned-arrival and deferral review, `npm run demo:store-judge` creates a separate loopback database named `waypoint_store_judge` and five labelled scenarios. Stop the normal API/web app, keep PostgreSQL running, and temporarily change only the database name in private `DATABASE_URL` from `/waypoint` to `/waypoint_store_judge`. Keep `STORE_ALLOW_SYNTHETIC=true` and run `npm run dev` using the usual localhost origin/ports. Sign in as Store Manager and select a `SYN-JUDGE-*` order. After review, stop that app and restore `/waypoint` before restarting. The setup helper itself does not change `.env`, official references or the main development assignment. See the Store report for scenario references and outcomes; these prepared records do not demonstrate Dispatcher, Loader or Driver workflows. If running separate previews on different ports, cookies on the same hostname are shared: keep only one active Store browser preview.
+29. Return to Loader.
+30. Confirm the approved revision appears.
+31. Finish the remaining load records.
+32. Mark the trip **Ready for Dispatch**.
 
-## Store workflow and API
+### 6. Driver
 
-| Method | Endpoint | Behavior |
-| --- | --- | --- |
-| GET | `/api/store/context` | Assigned outlet, server time/cutoff, brand rules, imported operating dates |
-| GET | `/api/store/home` | Persisted counts, recent orders and attention items |
-| GET | `/api/store/orders?status=&date=` | Scoped list, newest 100; date filters originally requested delivery date |
-| GET | `/api/store/orders/:id` | Scoped quantities, recorded timeline, deferrals, trip and proof metadata |
-| POST | `/api/store/orders` | Atomic validated order creation and confirmation |
-| POST | `/api/store/orders/:id/receipt` | Versioned atomic receipt and any actionable exception |
+33. Sign in as Driver.
+34. Open the assigned ready trip.
+35. Start the trip.
+36. Open the next stop.
+37. Record arrival, delivery outcome, quantity and recipient/proof metadata.
+38. Complete the stop.
 
-Fresh supports ambient/chilled/frozen requests; Style and Tech support ambient. Daily, weekly and as-needed descriptions are operational context, not a product catalog or automatic schedule. The server derives outlet, brand, depot and creator. References use `WP-YYYYMMDD-` followed by a UUID without separators; counts are never used for uniqueness.
+For the offline scenario:
 
-The server applies the **16:00 Asia/Colombo** cutoff, including exactly 16:00. A tomorrow request at/after cutoff keeps its original requested date and creation timestamp, and receives the next later operating `CalendarDay` as `eligibleDeliveryDate`. Today/past, malformed, missing or non-operating dates are rejected; lack of a later eligible run rejects the late request. The UI explains any shift and the response is authoritative.
+39. Cache/open the route while online.
+40. Switch the browser offline.
+41. Record a delivery.
+42. Confirm it is shown as **Pending Sync**.
+43. Reload while offline and confirm the pending operation remains available.
+44. Reconnect.
+45. Sync.
+46. Confirm the delivery exists exactly once.
 
-Tracking displays actual persisted audit events, deferrals and planned/actual stop timestamps. Unplanned orders remain confirmed/awaiting planning without vehicle or ETA. Proof displays saved recipient/evidence metadata only; image/signature content is unavailable.
+### 7. Store receipt
 
-Receipts retain ordered, loaded, delivered and received quantities independently. Matching good-condition receipts become `CONFIRMED` / `RECEIPT_CONFIRMED`. A quantity difference, damage or other reported issue requires a useful note and creates `ISSUE_REPORTED`, an unresolved exception and `RECEIPT_ISSUE`; it does not cleanly close the order. Duplicate/stale receipts conflict, and Store Managers cannot read or mutate foreign outlet orders.
+47. Sign in as Store Manager.
+48. Open the delivered order.
+49. Verify ordered / loaded / delivered quantities.
+50. Confirm receipt or report a discrepancy.
 
-## Dispatcher assignment and local review
+### 8. Dispatcher completion
 
-Dispatcher access requires an active Dispatcher account with one or more explicit `UserDepot` assignments. Missing scope denies every Dispatcher data endpoint. The auth seed never grants these mappings. Assign only the depots needed for local review:
+51. Sign in as Dispatcher.
+52. Confirm the trip/order progress and any final issue state.
 
-```sh
-npm run demo:assign-dispatcher -- --depot-name "SYNTHETIC Store Demo Depot"
-```
-
-`--depot-id` is also supported. Repeat the same option for multiple depots, use `--email` for another active Dispatcher, and add `--replace` only to deliberately replace an existing local assignment. The command rejects production and non-loopback databases. The UI cannot grant or enlarge scope.
-
-For reproducible Dispatcher review, keep `npm run dev:db` running and use:
-
-```sh
-npm run demo:dispatcher-judge
-npm run dev:dispatcher-judge
-```
-
-Open **http://localhost:5175**. This separate `/waypoint_dispatcher_judge` database uses independently authored **SYNTHETIC** references and a fixed default operational day, **2040-02-06**. The helper preserves `.env`, main development records and official references. It installs confirmed demand across Fresh/Style/Tech, all three Fresh temperature requirements, a van-only outlet, two persisted deferrals, explicitly prepared trips and receipt scenarios. Prepared trips demonstrate reading persisted facts; they are not generated plans. The Store account is assigned to `SYN-STORE-FRESH`, and Dispatcher has the minimum own-depot scope. Rerunning setup preserves orders and receipts already entered during review.
-
-The judge preview uses API port 3002 and Vite port 5175; Ctrl+C stops both preview processes and retains its data. Session cookies share a hostname across ports: keep only one active localhost application tab during role handoffs. The optional `DISPATCHER_DEMO_DATE` environment value selects a default day and creates no calendar rows. Otherwise the server chooses meaningful scoped persisted demand/trip dates before falling back to the current Sri Lanka date. Date selection survives navigation and refresh in the URL.
-
-| Method | Endpoint | Behavior |
-| --- | --- | --- |
-| GET | `/api/dispatcher/context` | Assigned depots, selected day and actual calendar provenance |
-| GET | `/api/dispatcher/pulse` | Complete scoped counts, fleet master totals and open attention |
-| GET | `/api/dispatcher/orders` | Date-basis, status, brand, depot, district, temperature, deferral and reference filters |
-| GET | `/api/dispatcher/orders/:id` | Four quantity facts, dates, access/windows, history, trips and issues |
-| GET | `/api/dispatcher/planning-context` | Eligible unassigned demand, fleet, trips and reference constraints |
-| GET | `/api/dispatcher/trips` and `/api/dispatcher/trips/:id` | Persisted trip facts and recorded stop sequence |
-| GET | `/api/dispatcher/exceptions` and `/api/dispatcher/exceptions/:id` | Scoped issue facts, safe notes, provenance and related quantities |
-
-Lists default to 25 records and cap page size at 100. Pulse totals and Planning demand totals aggregate all matching records; their previews are bounded and labelled. Planning context previews cap orders/deferred review at 100 each, vehicles at 200 and trips at 50; generation reads the full authoritative eligible backlog. Operational order date means the active trip's service day, otherwise the initial eligible delivery date (requested date fallback). Orders can explicitly filter originally requested dates instead. Planning requires an actual operating calendar row. Deferred records appear separately in the read context; the M5 engine uses retained deferral history in its documented prioritization policy.
-
-The Milestone 4 judge retains its independently prepared read scenarios. Fleet capacities describe master records; planning requires explicit daily availability and known weekly fuel rather than inferring readiness from those capacities. Routes show recorded stop sequence and planned/actual timestamps without simulated tracking or invented coordinates. Exception Centre remains read-only because resolution business rules are undefined. Proof exposes metadata and saved-evidence flags only; binary storage and access are deferred. Future Capacity has no connected forecast or prediction model.
-
-## Allocation engine and independent judge
-
-Planning Studio generates one depot/day run from persisted eligible demand. Served orders receive real draft trip/stop/allocation records; excess or infeasible demand receives retained deferral evidence. The independent Validate action recomputes complete plan constraints and transitions valid served orders to PLANNED. Release requires the current valid, non-stale version and a confirmation dialog, then commits the run/trips and RELEASED_TO_LOADING order states atomically. Drafts are inspectable by Dispatcher and remain inaccessible to Loader/Driver until release. Loader records actual quantities against the same released stops.
-
-The documented heuristic prioritizes prior deferrals and scarce/tight demand, applies blocking constraints, then selects feasible candidates using explicit lexicographic tie-breakers. Decimal weight and volume limits stay separate. Temperature, access, depot, delivery/mall windows, Fresh before 08:00, two-trip limit, daily availability and weekly fuel are enforced. Depot/district references estimate travel without invented GPS; waits/service/return and a conservative 15-minute turnaround are recorded. The strategy is deterministic, not globally optimal.
-
-| Method | Endpoint | Behavior |
-| --- | --- | --- |
-| GET | `/api/dispatcher/plans?date=&depotId=` | Bounded generated-run history and current active run |
-| POST | `/api/dispatcher/plans` | Generate or version-bound supersede/regenerate an unreleased draft |
-| GET | `/api/dispatcher/plans/:id` | Scoped decisions, trips, timing, capacities and constraint evidence |
-| POST | `/api/dispatcher/plans/:id/validate` | Independent persisted-result checks with optimistic run version |
-| POST | `/api/dispatcher/plans/:id/release` | Fresh checks and atomic release of a validated current run |
-
-For a deterministic independently authored excess-demand scenario, keep local PostgreSQL running and use:
-
-```sh
-npm run demo:allocation-judge
-npm run dev:allocation-judge
-```
-
-Open **http://localhost:5176** and choose **2040-03-05**. This separate `/waypoint_allocation_judge` database supplies synthetic demand, explicit availability, known opening/usage fuel, calendar and travel/service facts. It creates no precomputed planning result. Click Generate → inspect served/deferred decisions and Explain My Plan → Validate → Release and confirm. Reload reads the same persisted run. Repeated setup preserves actual orders, generated/released histories and deferrals. Fresh isolated integration databases provide repeatable clean scenarios; setup does not reset the main database or M4 judge.
-
-The preview enables `PLANNING_ALLOW_SYNTHETIC=true` only in its process environment. That flag defaults to false and is forbidden in production, independently of `STORE_ALLOW_SYNTHETIC`. Existing imported fleet records with unknown daily availability or opening fuel remain blocked. No availability/zero fuel history is inferred, and no old allocation CSV or AI/ML service is used. API port 3003 and Vite port 5176 are separate from the main preview; `.env` is preserved. Stop the preview with Ctrl+C; its data remains.
-
-## Docker
-
-After `npm run setup:local`, review `.env` and run:
-
-```sh
-docker compose up --build
-```
-
-Compose defines PostgreSQL → API → Web health dependencies. API startup automatically applies the committed migration and runs the idempotent user seed. Web is exposed at http://localhost:5173; API and PostgreSQL have no host port mappings. PostgreSQL 18 data is mounted at `/var/lib/postgresql` in a named volume. Do not run Compose and local Vite on the same web port simultaneously.
-
-This local Compose configuration defaults to `NODE_ENV=development` so cookies work over local HTTP. A shared deployment must terminate HTTPS and set `NODE_ENV=production`, `WEB_ORIGIN=https://your-host`, and fresh secrets. Production startup requires HTTPS origin and issues Secure cookies. `API_TRUST_PROXY=true` trusts exactly one proxy hop within the private Compose network; standalone development defaults to false.
-
-Container runtime verification passed on GitHub Actions on 4 October 2026; see the [remote Docker verification report](docs/remote-docker-verification.md). A validated YAML file or local PostgreSQL test alone does not prove a container build/startup passed.
-
-## Remote Docker verification
-
-Local development can run without Docker using `npm run dev:db` and `npm run dev` as described above. Competition startup remains:
-
-```sh
-docker compose up --build
-```
-
-The [Docker Compose verification workflow](.github/workflows/docker-compose-verification.yml) verifies the same root Compose stack on GitHub Actions `ubuntu-latest`. It runs on pushes, pull requests and manual **Run workflow** requests after the repository is published. It builds the API/Web images, starts PostgreSQL/API/Web and uses [Compose's health wait](https://docs.docker.com/reference/cli/docker/compose/up/) before checking the published Web page and API health over HTTP.
-
-The workflow creates a disposable `.env` from these documented, public CI-only values; no GitHub secrets or competition dataset are required:
-
-| Variable | Non-secret CI value |
-| --- | --- |
-| `POSTGRES_USER` | `waypoint_ci` |
-| `POSTGRES_PASSWORD` | `waypoint-ci-only-db-password` |
-| `POSTGRES_DB` | `waypoint_ci` |
-| `AUTH_SECRET` | `waypoint-ci-only-auth-secret-not-for-deployment-2026` |
-| `SEED_DEMO_PASSWORD` | `WaypointCIOnly!2026` |
-| `WEB_ORIGIN` | `http://localhost:5173` |
-| `WEB_PORT` | `5173` |
-| `SESSION_HOURS` | `1` |
-| `NODE_ENV` | `development` |
-
-These credentials belong only to the runner's temporary, loopback-exposed stack. Use fresh private secrets for a shared deployment. Each run uses a unique Compose project name and a fresh database volume. API startup applies all committed migrations and the idempotent auth-only seed. The verifier checks every migration, exactly the four safe demo identities and empty reference, assignment and operational tables. It then signs in as `dispatcher@waypoint.local`, restores the database-backed session with `/api/auth/me`, checks the protected Dispatcher workspace and logs out. An unauthenticated workspace request must return 401.
-
-Private `input resources/`, `private-data/`, prototype files, the local prototype audit containing private identifiers, raw CSVs, dataset ZIPs and local `.env` remain excluded from Git and Docker build contexts. Installation uses only application files, committed migrations and publication-safe auth accounts; private imports and judge fixtures are not run. The workflow collects Compose logs on failure and always runs `docker compose down -v --remove-orphans` to remove its containers and volume.
-
-For an already running Docker stack, an optional smoke check is available:
-
-```sh
-npm run verify:docker
-```
-
-This command checks HTTP, seeded authentication and session/logout behavior without resetting data. CI additionally uses `--installation` to verify a fresh database. This script is not required for normal local development. An existing volume retains its original seeded passwords, so the configured `SEED_DEMO_PASSWORD` must match that installation.
-
-**Docker runtime verification: PASS on 4 October 2026.** [GitHub Actions run 37189530460](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37189530460) successfully verified source commit `05e8eb1b19b5a14538b37f2f615f3eba8c034a8c`, including container build/startup, HTTP checks, migrations, safe seed, authentication and volume cleanup. See the [verification report](docs/remote-docker-verification.md) for evidence and scope. Future container/application changes require a fresh successful workflow run; preparing files or passing local source checks alone does not establish Docker PASS.
-
-## API foundation
-
-| Method | Endpoint | Access |
-| --- | --- | --- |
-| GET | `/api/health` | Public database readiness; 503 if unavailable |
-| POST | `/api/auth/login` | Validated credentials; rate limited |
-| POST | `/api/auth/logout` | Revokes current session; idempotent |
-| GET | `/api/auth/me` | Authenticated user, safe fields only |
-| GET | `/api/workspaces/dispatcher` | Dispatcher only |
-| GET | `/api/workspaces/loader` | Loader only |
-| GET | `/api/workspaces/driver` | Driver only |
-| GET | `/api/workspaces/store` | Store Manager only |
-| GET | `/api/domain/outlets/:id` | Store outlet or Dispatcher/Loader depot scope |
-| GET | `/api/domain/orders/:id` | Assigned outlet/depot or released assigned trip scope |
-| GET | `/api/domain/trips/:id` | Dispatcher depot; Loader released depot trip; Driver assigned released trip |
-
-All mutations reject unapproved browser origins. Sessions expire after `SESSION_HOURS` (default 8), active users are rechecked, logout invalidates server state, and authentication/domain responses disable caching. No bearer credential is stored in localStorage. API errors omit stack traces, password hashes and session tokens. Domain GETs return safe DTOs; Store mutations added in Milestone 3 use the same authentication, origin and lifecycle guards.
+---
 
 ## Verification commands
 
-```sh
+Run before submission:
+
+```bash
 npm run typecheck
 npm run lint
 npm run test
@@ -278,46 +584,127 @@ npm run build
 npm run check:safety
 ```
 
-`npm run test` initializes a fresh isolated loopback PostgreSQL cluster, migrates/seeds twice, and runs Vitest/Supertest against real Prisma. Separate databases verify Milestone 1 auth preservation, Milestone 2 quantity/date preservation during upgrade, Store scenarios and Dispatcher scenarios independently of the original domain suite. The runner disables synthetic eligibility unless a test explicitly opts in, irrespective of local demo settings. Tests do not reset the development database; clusters stop and temporary files are removed. No database-dependent tests are silently skipped.
+Current completed implementation through the Loader milestone passed the full project verification suite with **246 automated tests**. The final submission commit should be re-tested after Driver/offline integration.
 
-Tests cover all seeded logins, bad/unknown credentials, unauthenticated requests, the complete role/resource access matrix, role injection, invalid JSON, origin checks, logout replay, expiration, deactivated users, and hash storage. Test TypeScript is included in typecheck.
+---
 
-The 30 domain tests additionally cover atomic reference imports, constraints, valid/invalid/unauthorized lifecycle transitions, concurrent versions, audit rollback/history, four independent quantities, actionable discrepancies, depot/trip/outlet scope, trip limits, repeated deferrals and unknown fuel history. Synthetic fixtures are independently authored and used only in isolated tests. Prepared related records in tests do not imply an implemented operational workflow or allocator. Safety checks scan private exclusions, dataset markers and 180 locally available official identifiers against frontend/shared/seed/build content.
+## Security and authorization
 
-`deepmerge-ts` is overridden to patched 8.x for Prisma's CLI dependency tree; migration/generation and integration checks must remain part of future dependency upgrades. See the [dependency advisory](https://github.com/advisories/GHSA-ggr8-5vv4-36mx).
+- salted `scrypt` password hashes
+- HTTP-only session cookies
+- only token HMAC digests stored in PostgreSQL
+- server-owned roles
+- backend authorization on protected routes
+- object-level outlet/depot/trip scoping
+- origin checks for mutations
+- safe API DTOs
+- no bearer token stored in `localStorage`
+- optimistic version checks on critical mutations
+- transactional operational state changes
 
-## Foundation review walkthrough
+The frontend never grants role, depot, outlet or trip ownership.
 
-1. Open the login page and choose a demo email.
-2. Enter the configured password; verify the assigned role home.
-3. Open every item in that role's menu. Store and Dispatcher show their scoped persisted workflows after explicit assignment; Loader shows the persisted dock/checklist/shortfall/readiness workflow; Driver retains foundation states.
-4. Refresh a protected URL; the server session restores the same identity.
-5. Try a different role's URL; verify access denied and return to the assigned workspace.
-6. Sign out; revisiting a protected URL must return to login.
-7. Repeat with all four accounts. Review Dispatcher at 1440px, Loader at 390/768px, Driver at 360/390px, and Store at 390/768px.
-8. At phone widths, open the menu to reach all role screens, use the bottom navigation, and test Escape/Tab/focus behavior.
+---
 
-## Designathon fidelity and limitations
+## Data confidentiality
 
-The shell keeps the logo, light canvas, charcoal sidebar, lime accents, system typography, rounded cards, compact role navigation, and phone bottom-navigation concept. Text sizing and focus/touch targets are made readable. Login is a new screen required for real authentication. The prototype's experience selector is replaced by server-owned role identity.
+The competition datasets are **not committed to this repository**.
 
-Store has real persisted counts, forms, tracking and receipt actions. Dispatcher preserves the prototype's card hierarchy, compact table/inspector, three-area Planning Studio and issue/trip compositions while showing real scoped facts. Planning Studio generates, independently validates and releases persisted plans with constraint evidence. Loader preserves dock cards, planned sequence, quantity checklist, shortfall dialog and dispatch readiness; Driver retains foundation states. No screen claims simulated telemetry, scanner operations or offline queues. No prepared allocation fixture is treated as generated output.
+Private resources such as:
 
-Milestone 5 — Allocation Engine passed local acceptance: 224 tests, required typecheck/lint/build/safety checks, the synthetic Generate → Validate → Release browser journey and responsive review. Exact evidence and remaining limits are recorded in the allocation report. Milestone 6 — Loader passed local acceptance: 246 tests including all 224 earlier cases, required checks and the browser 192 → 188 approval/readiness journey at 360/390/768px. See [the Loader report](docs/milestone-6-loader.md). Deployment and container runtime acceptance remain separate from local acceptance. A physical mobile onscreen keyboard has not been tested.
+- raw competition ZIPs
+- official reference CSVs
+- local imported data
+- private prototype data
+- local databases
+- `.env`
 
-## Loader workflow and local judge
+are excluded from Git and Docker build contexts.
 
-Loader reads UserDepot scope from the session and shows only released generated plans for the selected day. Normal counts persist; lower counts require a reason and Dispatcher approval. Original ordered quantities remain intact. Ready for Dispatch checks every stop and blocking exception transactionally; departure belongs to Milestone 7.
+The repository contains the application, migrations, publication-safe authentication seed and independently authored synthetic development/test scenarios only.
 
-| Method | Endpoint | Behavior |
-| --- | --- | --- |
-| GET | `/api/loader/loads?date=` | Released generated trips in assigned depots/day |
-| GET | `/api/loader/trips/:id` | Actual sequence and quantities/readiness |
-| POST | `/api/loader/stops/:id/load` | Versioned normal count or shortfall |
-| POST | `/api/loader/trips/:id/ready` | Guarded persistent readiness |
-| POST | `/api/dispatcher/exceptions/:id/review-load` | Scoped approve/reject decision |
+---
 
-Keep local PostgreSQL running, stop other app previews, then run `npm run demo:loader-judge` and `npm run dev:loader-judge`. Open **http://localhost:5177**; API port 3004. The separate `waypoint_loader_judge` leaves .env and main/M4/M5 data intact. Setup installs independent SYNTHETIC demand/references and controlled Loader/Dispatcher UserDepot assignments, with no precomputed Loader trip. Repeat setup preserves history.
+## Designathon continuity
 
-Dispatcher selects **2040-03-05**, Generates, Validates and Releases. Loader opens **SYN-PLAN-LOADER-AMBIENT · Trip 1**, records normal stops and reports **SYN-LOADER-LOADER-ORDER-192: 192 expected → 188 actual / STOCK_UNAVAILABLE**. Dispatcher approves in Exception Centre; Loader completes the other stops and marks Ready. Use one active localhost preview because cookies share the hostname.
+The Hackathon implementation follows the submitted Waypoint Pulse Designathon experience.
 
+Preserved concepts include:
+
+- one connected system for four roles
+- Dispatcher Today’s Delivery Pulse
+- Planning Studio
+- Explain My Plan
+- Loader loading workflow
+- Loading Shortfall Cascade
+- Driver mobile-first experience
+- Store order tracking and receipt workflow
+- light operational workspace
+- charcoal navigation
+- lime accent
+- compact role-focused information architecture
+
+### Significant implementation departures / clarifications
+
+- A real credential login was added because the working system requires authenticated roles.
+- Precise live GPS is not claimed because verified outlet coordinates were not supplied.
+- The route experience therefore relies on operational stop sequence rather than fabricated live tracking.
+- Scanner and reefer telemetry are not claimed as integrated hardware capabilities.
+- Delivery proof currently prioritizes durable operational metadata; binary photo/signature storage is only claimed if present in the final build.
+- Future Capacity does not fabricate Datathon predictions.
+- Planning uses a deterministic explainable heuristic and an independent validator rather than claiming global optimization.
+
+---
+
+## Engineering documentation
+
+- [Architecture](docs/architecture.md)
+- [Data model](docs/data-model.md)
+- [AI assistance disclosure](docs/AI_DISCLOSURE.md)
+- [Design and implementation plan](docs/design-and-implementation-plan.md)
+- [Milestone 5 — Allocation Engine](docs/milestone-5-allocation.md)
+- [Milestone 6 — Loader](docs/milestone-6-loader.md)
+- [Remote Docker verification](docs/remote-docker-verification.md)
+
+---
+
+## AI assistance disclosure
+
+AI-assisted work is documented transparently in:
+
+[`docs/AI_DISCLOSURE.md`](docs/AI_DISCLOSURE.md)
+
+AI tools assisted with implementation, code review, testing, documentation and development planning. The project brief and submitted Designathon remained the product specification, and final submission decisions remain the responsibility of **Team Code Crunchers**.
+
+No AI service is required by the running Waypoint Pulse application.
+
+---
+
+## Known limitations
+
+Current limitations that should be reviewed before the final Hackathon submission:
+
+- Driver delivery/offline synchronization is still being completed at the time of this README revision.
+- precise live GPS is not available
+- binary delivery-proof storage is not yet claimed
+- Future Capacity has no Datathon prediction integration
+- authoritative current/future competition calendar data was not supplied beyond the available reference horizon
+- production deployment must use fresh secrets and deployment-specific credentials
+
+These limitations are stated explicitly rather than represented as completed functionality.
+
+---
+
+## Team
+
+**Code Crunchers**
+
+Tech-Triathlon 2026 — Hackathon
+
+---
+
+## License / competition use
+
+This repository was created for the Tech-Triathlon 2026 competition.
+
+Competition datasets are subject to the competition’s confidentiality and usage rules and are intentionally not distributed through this repository.
