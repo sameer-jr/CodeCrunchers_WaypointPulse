@@ -1,0 +1,102 @@
+[
+  {
+    "areas": [
+      {
+        "heading": "12 eligible decisions",
+        "width": 309,
+        "x": 286,
+        "y": 772
+      },
+      {
+        "heading": "5 planned trip groups",
+        "width": 472,
+        "x": 610,
+        "y": 772
+      },
+      {
+        "heading": "SYN-PLAN-JUDGE-ORDER-NEWER-AMBIENT",
+        "width": 298,
+        "x": 1097,
+        "y": 772
+      }
+    ],
+    "clientWidth": 1425,
+    "scrollWidth": 1425,
+    "viewport": 1440
+  },
+  {
+    "areas": [
+      {
+        "heading": "12 eligible decisions",
+        "width": 369,
+        "x": 286,
+        "y": 804
+      },
+      {
+        "heading": "5 planned trip groups",
+        "width": 565,
+        "x": 670,
+        "y": 804
+      },
+      {
+        "heading": "SYN-PLAN-JUDGE-ORDER-NEWER-AMBIENT",
+        "width": 949,
+        "x": 286,
+        "y": 5138
+      }
+    ],
+    "clientWidth": 1265,
+    "scrollWidth": 1265,
+    "viewport": 1280
+  },
+  {
+    "areas": [
+      {
+        "heading": "12 eligible decisions",
+        "width": 268,
+        "x": 30,
+        "y": 855
+      },
+      {
+        "heading": "5 planned trip groups",
+        "width": 410,
+        "x": 313,
+        "y": 855
+      },
+      {
+        "heading": "SYN-PLAN-JUDGE-ORDER-NEWER-AMBIENT",
+        "width": 693,
+        "x": 30,
+        "y": 5285
+      }
+    ],
+    "clientWidth": 753,
+    "scrollWidth": 753,
+    "viewport": 768
+  },
+  {
+    "areas": [
+      {
+        "heading": "12 eligible decisions",
+        "width": 343,
+        "x": 16,
+        "y": 1133
+      },
+      {
+        "heading": "5 planned trip groups",
+        "width": 343,
+        "x": 16,
+        "y": 3370
+      },
+      {
+        "heading": "SYN-PLAN-JUDGE-ORDER-NEWER-AMBIENT",
+        "width": 343,
+        "x": 16,
+        "y": 9576
+      }
+    ],
+    "clientWidth": 375,
+    "scrollWidth": 375,
+    "viewport": 390
+  }
+]

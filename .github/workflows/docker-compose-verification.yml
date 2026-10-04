@@ -1,0 +1,66 @@
+name: Docker Compose verification
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      COMPOSE_PROJECT_NAME: waypoint-ci-${{ github.run_id }}-${{ github.run_attempt }}
+      POSTGRES_USER: waypoint_ci
+      POSTGRES_PASSWORD: waypoint-ci-only-db-password
+      POSTGRES_DB: waypoint_ci
+      AUTH_SECRET: waypoint-ci-only-auth-secret-not-for-deployment-2026
+      SEED_DEMO_PASSWORD: WaypointCIOnly!2026
+      WEB_ORIGIN: http://localhost:5173
+      WEB_PORT: "5173"
+      SESSION_HOURS: "1"
+      NODE_ENV: development
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Create disposable non-secret CI environment
+        shell: bash
+        run: |
+          for key in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB AUTH_SECRET SEED_DEMO_PASSWORD WEB_ORIGIN WEB_PORT SESSION_HOURS NODE_ENV; do
+            printf '%s=%s\n' "$key" "${!key}"
+          done > .env
+          docker compose config --quiet
+
+      - name: Build the competition container stack
+        run: docker compose build
+
+      - name: Start stack and wait for all container health checks
+        run: docker compose up -d --wait --wait-timeout 180
+
+      - name: Show container status
+        if: always()
+        run: docker compose ps -a
+
+      - name: Verify published Web and API health over HTTP
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --max-time 15 "$WEB_ORIGIN/" --output /tmp/waypoint-web.html
+          grep -qi '<!doctype html' /tmp/waypoint-web.html
+          curl --fail --silent --show-error --max-time 15 "$WEB_ORIGIN/api/health"
+
+      - name: Verify migrations, safe installation seed and database-backed authentication
+        run: docker compose exec -T api node scripts/verify-docker.mjs --installation
+
+      - name: Collect container logs on failure
+        if: failure()
+        run: docker compose logs --no-color --timestamps
+
+      - name: Always remove CI containers and volumes
+        if: always()
+        run: docker compose down -v --remove-orphans

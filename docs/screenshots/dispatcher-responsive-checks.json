@@ -1,0 +1,146 @@
+[
+  {
+    "viewport": 1280,
+    "view": "Pulse",
+    "scrollWidth": 1265,
+    "width": 1265
+  },
+  {
+    "viewport": 1280,
+    "view": "Orders",
+    "scrollWidth": 1265,
+    "width": 1265
+  },
+  {
+    "viewport": 1280,
+    "view": "Planning",
+    "scrollWidth": 1265,
+    "width": 1265
+  },
+  {
+    "viewport": 1280,
+    "view": "Routes / Trips",
+    "scrollWidth": 1265,
+    "width": 1265
+  },
+  {
+    "viewport": 1280,
+    "view": "Exceptions",
+    "scrollWidth": 1265,
+    "width": 1265
+  },
+  {
+    "viewport": 1280,
+    "view": "Future Capacity",
+    "scrollWidth": 1280,
+    "width": 1280
+  },
+  {
+    "viewport": 390,
+    "view": "Pulse",
+    "scrollWidth": 375,
+    "width": 375
+  },
+  {
+    "viewport": 390,
+    "view": "Orders",
+    "scrollWidth": 375,
+    "width": 375
+  },
+  {
+    "viewport": 390,
+    "view": "Planning",
+    "scrollWidth": 375,
+    "width": 375
+  },
+  {
+    "viewport": 390,
+    "view": "Routes / Trips",
+    "scrollWidth": 375,
+    "width": 375
+  },
+  {
+    "viewport": 390,
+    "view": "Exceptions",
+    "scrollWidth": 375,
+    "width": 375
+  },
+  {
+    "viewport": 390,
+    "view": "Future Capacity",
+    "scrollWidth": 375,
+    "width": 375
+  },
+  {
+    "viewport": 768,
+    "view": "Pulse",
+    "scrollWidth": 753,
+    "width": 753
+  },
+  {
+    "viewport": 768,
+    "view": "Orders",
+    "scrollWidth": 753,
+    "width": 753
+  },
+  {
+    "viewport": 768,
+    "view": "Planning",
+    "scrollWidth": 753,
+    "width": 753
+  },
+  {
+    "viewport": 768,
+    "view": "Routes / Trips",
+    "scrollWidth": 753,
+    "width": 753
+  },
+  {
+    "viewport": 768,
+    "view": "Exceptions",
+    "scrollWidth": 753,
+    "width": 753
+  },
+  {
+    "viewport": 768,
+    "view": "Future Capacity",
+    "scrollWidth": 768,
+    "width": 768
+  },
+  {
+    "viewport": 1440,
+    "view": "Pulse",
+    "scrollWidth": 1425,
+    "width": 1425
+  },
+  {
+    "viewport": 1440,
+    "view": "Orders",
+    "scrollWidth": 1425,
+    "width": 1425
+  },
+  {
+    "viewport": 1440,
+    "view": "Planning",
+    "scrollWidth": 1425,
+    "width": 1425
+  },
+  {
+    "viewport": 1440,
+    "view": "Routes / Trips",
+    "scrollWidth": 1425,
+    "width": 1425
+  },
+  {
+    "viewport": 1440,
+    "view": "Exceptions",
+    "scrollWidth": 1425,
+    "width": 1425
+  },
+  {
+    "viewport": 1440,
+    "view": "Future Capacity",
+    "scrollWidth": 1440,
+    "width": 1440
+  }
+]

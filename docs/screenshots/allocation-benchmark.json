@@ -1,0 +1,11 @@
+{
+  "outlets": 120,
+  "orders": 120,
+  "vehicles": 60,
+  "districts": 4,
+  "generationMs": 1533.7268,
+  "independentValidationMs": 14.795100000000275,
+  "trips": 33,
+  "served": 120,
+  "deferred": 0
+}

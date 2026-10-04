@@ -1,0 +1,22 @@
+node_modules
+**/node_modules
+**/dist
+.git
+.env
+.env.*
+.local
+prototype
+input resources
+private
+private-data
+docs/prototype-audit.md
+datasets
+data
+*.zip
+**/*.zip
+**/*.csv
+**/*.xlsx
+**/*.xls
+coverage
+test-results
+playwright-report

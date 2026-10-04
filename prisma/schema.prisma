@@ -1,0 +1,740 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  DISPATCHER
+  LOADER
+  DRIVER
+  STORE_MANAGER
+}
+
+model User {
+  id           String           @id @default(uuid()) @db.Uuid
+  email        String           @unique @db.VarChar(254)
+  passwordHash String
+  role         Role
+  displayName  String           @db.VarChar(120)
+  active       Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  sessions     Session[]
+  outlets      UserOutlet[]
+  depots       UserDepot[]
+  orders       Order[]
+  driverTrips  Trip[]
+  loads        LoadRecord[]     @relation("LoadRecorder")
+  loadReviews  LoadRecord[]     @relation("LoadReviewer")
+  deliveries   DeliveryRecord[]
+  receipts     Receipt[]
+  exceptions   Exception[]      @relation("ExceptionCreator")
+  assignments  Exception[]      @relation("ExceptionAssignee")
+  reviews      Exception[]      @relation("ExceptionReviewer")
+  deferrals    DeferralRecord[]
+  auditEvents  AuditEvent[]
+  planningRuns PlanningRun[]
+  vehicleAvailability VehicleAvailability[]
+  fuelUsage    FuelUsage[]
+
+  @@index([role])
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  tokenHash String   @unique
+  userId    String   @db.Uuid
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+enum ReferenceSource {
+  OFFICIAL
+  SYNTHETIC
+}
+
+enum Brand {
+  FRESH
+  STYLE
+  TECH
+}
+
+enum DockType {
+  STREET
+  REAR_DOCK
+  MALL_BAY
+}
+
+enum AccessConstraint {
+  NORMAL
+  VAN_ONLY
+  MALL_DOCK
+}
+
+enum VehicleType {
+  TRUCK
+  VAN
+}
+
+enum TemperatureCapability {
+  AMBIENT
+  REEFER
+}
+
+enum TemperatureRequirement {
+  AMBIENT
+  CHILLED
+  FROZEN
+}
+
+enum FuelType {
+  DIESEL
+  PETROL
+}
+
+enum RoadClass {
+  URBAN
+  SUBURBAN
+  HIGHWAY
+  HILL
+}
+
+enum OrderStatus {
+  DRAFT
+  CONFIRMED
+  CLOSED_FOR_PLANNING
+  PLANNED
+  DEFERRED
+  RELEASED_TO_LOADING
+  LOADING
+  LOADING_EXCEPTION
+  READY_FOR_DISPATCH
+  IN_TRANSIT
+  ARRIVED
+  DELIVERED
+  PARTIALLY_DELIVERED
+  DELIVERY_FAILED
+  AWAITING_RECEIPT
+  RECEIPT_CONFIRMED
+  RECEIPT_ISSUE
+}
+
+enum TripStatus {
+  DRAFT
+  PLANNED
+  RELEASED
+  LOADING
+  READY_FOR_DISPATCH
+  IN_TRANSIT
+  COMPLETED
+  CANCELLED
+}
+
+enum StopStatus {
+  PLANNED
+  ARRIVED
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum PlanningStatus {
+  DRAFT
+  VALIDATED
+  RELEASED
+  SUPERSEDED
+}
+
+enum VehicleAvailabilityStatus {
+  AVAILABLE
+  UNAVAILABLE
+}
+
+enum AllocationDecision {
+  ASSIGNED
+  DEFERRED
+}
+
+enum LoadStatus {
+  PENDING
+  LOADING
+  COMPLETE
+  EXCEPTION
+}
+
+enum ReviewStatus {
+  NOT_REQUIRED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum DeliveryOutcome {
+  DELIVERED
+  PARTIALLY_DELIVERED
+  FAILED
+}
+
+enum ReceiptStatus {
+  CONFIRMED
+  ISSUE_REPORTED
+}
+
+enum ReceiptIssueType {
+  QUANTITY_DISCREPANCY
+  DAMAGED_GOODS
+  OTHER
+}
+
+enum ExceptionType {
+  LOADING_SHORTFALL
+  DAMAGED_GOODS
+  DELIVERY_PARTIAL
+  DELIVERY_FAILED
+  RECEIPT_DISCREPANCY
+  SYNC_CONFLICT
+}
+
+enum ExceptionStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+}
+
+enum DeferralReason {
+  NO_FEASIBLE_ASSIGNMENT
+  CAPACITY
+  TEMPERATURE
+  ACCESS
+  DELIVERY_WINDOW
+  NON_OPERATING_DAY
+  FUEL_UNKNOWN
+  FUEL_QUOTA
+  DELIVERY_RETRY
+}
+
+enum AuditEventType {
+  ORDER_CREATED
+  ORDER_CONFIRMED
+  ORDER_STATE_CHANGED
+  PLAN_GENERATED
+  PLAN_VALIDATED
+  ORDER_ALLOCATED
+  ORDER_DEFERRED
+  PLAN_RELEASED
+  LOADING_STARTED
+  LOADING_SHORTFALL_REPORTED
+  LOAD_RECORDED
+  MANIFEST_REVISION_APPROVED
+  MANIFEST_REVISION_REJECTED
+  MANIFEST_REVISED
+  READY_FOR_DISPATCH
+  TRIP_STARTED
+  STOP_COMPLETED
+  DELIVERY_PARTIAL
+  DELIVERY_FAILED
+  OFFLINE_ACTION_SYNCED
+  RECEIPT_CONFIRMED
+  RECEIPT_ISSUE_REPORTED
+  REFERENCE_DATA_IMPORTED
+}
+
+enum AuditEntityType {
+  ORDER
+  TRIP
+  LOAD_RECORD
+  DELIVERY_RECORD
+  RECEIPT
+  IMPORT_BATCH
+  FUEL_LEDGER
+  PLANNING_RUN
+}
+
+enum FuelUsageKind {
+  CONSUMED
+  RESERVED
+}
+
+enum FuelUsageStatus {
+  ACTIVE
+  VOIDED
+}
+
+model ReferenceImport {
+  id          String             @id @default(uuid()) @db.Uuid
+  source      ReferenceSource
+  digest      String             @unique @db.VarChar(64)
+  fileDigests Json
+  counts      Json
+  importedAt  DateTime           @default(now()) @db.Timestamptz(3)
+  outlets     Outlet[]
+  vehicles    Vehicle[]
+  calendar    CalendarDay[]
+  travel      DistrictTravel[]
+  allowances  ServiceAllowance[]
+}
+
+model Depot {
+  id        String           @id @default(uuid()) @db.Uuid
+  name      String           @unique @db.VarChar(80)
+  createdAt DateTime         @default(now()) @db.Timestamptz(3)
+  outlets   Outlet[]
+  vehicles  Vehicle[]
+  travel    DistrictTravel[]
+  users     UserDepot[]
+  plans     PlanningRun[]
+}
+
+model Outlet {
+  id                  String           @id @default(uuid()) @db.Uuid
+  outletRef           String           @unique @db.VarChar(80)
+  brand               Brand
+  district            String           @db.VarChar(80)
+  depotId             String           @db.Uuid
+  dockType            DockType
+  accessConstraint    AccessConstraint
+  mallWindowOpen      Int?
+  mallWindowClose     Int?
+  deliveryWindowOpen  Int
+  deliveryWindowClose Int
+  source              ReferenceSource
+  importId            String?          @db.Uuid
+  createdAt           DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime         @updatedAt @db.Timestamptz(3)
+  depot               Depot            @relation(fields: [depotId], references: [id], onDelete: Restrict)
+  import              ReferenceImport? @relation(fields: [importId], references: [id], onDelete: Restrict)
+  orders              Order[]
+  users               UserOutlet[]
+
+  @@index([depotId, district])
+}
+
+model Vehicle {
+  id                    String                @id @default(uuid()) @db.Uuid
+  vehicleRef            String                @unique @db.VarChar(80)
+  type                  VehicleType
+  temperatureCapability TemperatureCapability
+  weightCapacityKg      Decimal               @db.Decimal(12, 3)
+  volumeCapacityM3      Decimal               @db.Decimal(12, 3)
+  fuelType              FuelType
+  kmPerLitre            Decimal               @db.Decimal(10, 3)
+  weeklyFuelQuotaLitres Decimal               @db.Decimal(12, 3)
+  depotId               String                @db.Uuid
+  active                Boolean               @default(true)
+  source                ReferenceSource
+  importId              String?               @db.Uuid
+  createdAt             DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime              @updatedAt @db.Timestamptz(3)
+  depot                 Depot                 @relation(fields: [depotId], references: [id], onDelete: Restrict)
+  import                ReferenceImport?      @relation(fields: [importId], references: [id], onDelete: Restrict)
+  trips                 Trip[]
+  fuelLedgers           FuelLedger[]
+  availability          VehicleAvailability[]
+
+  @@index([depotId, active])
+}
+
+model CalendarDay {
+  date           DateTime         @id @db.Date
+  operatingDay   Boolean
+  dayOfWeek      Int
+  dayName        String           @db.VarChar(3)
+  weekend        Boolean
+  isoYear        Int
+  isoWeek        Int
+  payday         Boolean
+  festival       String?          @db.VarChar(80)
+  festivalRamp   Decimal          @db.Decimal(4, 3)
+  holiday        Boolean
+  monsoon        Boolean
+  source         ReferenceSource
+  importId       String?          @db.Uuid
+  import         ReferenceImport? @relation(fields: [importId], references: [id], onDelete: Restrict)
+  orders         Order[]
+  eligibleOrders Order[]          @relation("EligibleCalendar")
+  trips          Trip[]
+  plans          PlanningRun[]
+  vehicleAvailability VehicleAvailability[]
+}
+
+model DistrictTravel {
+  id               String           @id @default(uuid()) @db.Uuid
+  depotId          String           @db.Uuid
+  district         String           @db.VarChar(80)
+  roadClass        RoadClass
+  freeFlowKmh      Decimal          @db.Decimal(10, 3)
+  depotDistanceKm  Decimal          @db.Decimal(12, 3)
+  depotMinutes     Decimal          @db.Decimal(12, 3)
+  interStopKm      Decimal          @db.Decimal(12, 3)
+  interStopMinutes Decimal          @db.Decimal(12, 3)
+  source           ReferenceSource
+  importId         String?          @db.Uuid
+  depot            Depot            @relation(fields: [depotId], references: [id], onDelete: Restrict)
+  import           ReferenceImport? @relation(fields: [importId], references: [id], onDelete: Restrict)
+
+  @@unique([depotId, district])
+}
+
+model ServiceAllowance {
+  id             String           @id @default(uuid()) @db.Uuid
+  brand          Brand
+  dockType       DockType
+  serviceMinutes Decimal          @db.Decimal(10, 3)
+  source         ReferenceSource
+  importId       String?          @db.Uuid
+  import         ReferenceImport? @relation(fields: [importId], references: [id], onDelete: Restrict)
+
+  @@unique([brand, dockType])
+}
+
+model UserOutlet {
+  userId   String @db.Uuid
+  outletId String @db.Uuid
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outlet   Outlet @relation(fields: [outletId], references: [id], onDelete: Restrict)
+
+  @@id([userId, outletId])
+}
+
+model UserDepot {
+  userId  String @db.Uuid
+  depotId String @db.Uuid
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  depot   Depot  @relation(fields: [depotId], references: [id], onDelete: Restrict)
+
+  @@id([userId, depotId])
+}
+
+model Order {
+  id                     String                 @id @default(uuid()) @db.Uuid
+  orderRef               String                 @unique @db.VarChar(80)
+  outletId               String                 @db.Uuid
+  requestedDeliveryDate  DateTime               @db.Date
+  eligibleDeliveryDate   DateTime?              @db.Date
+  temperatureRequirement TemperatureRequirement
+  orderedUnits           Int
+  orderedWeightKg        Decimal                @db.Decimal(12, 3)
+  orderedVolumeM3        Decimal                @db.Decimal(12, 3)
+  status                 OrderStatus            @default(DRAFT)
+  createdByUserId        String?                @db.Uuid
+  confirmedAt            DateTime?              @db.Timestamptz(3)
+  createdAt              DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt              DateTime               @updatedAt @db.Timestamptz(3)
+  version                Int                    @default(1)
+  outlet                 Outlet                 @relation(fields: [outletId], references: [id], onDelete: Restrict)
+  calendar               CalendarDay            @relation(fields: [requestedDeliveryDate], references: [date], onDelete: Restrict)
+  eligibleCalendar       CalendarDay?           @relation("EligibleCalendar", fields: [eligibleDeliveryDate], references: [date], onDelete: Restrict)
+  createdBy              User?                  @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  stops                  TripStop[]
+  allocations            Allocation[]
+  exceptions             Exception[]
+  deferrals              DeferralRecord[]
+
+  @@index([requestedDeliveryDate, status])
+  @@index([eligibleDeliveryDate, status])
+  @@index([outletId, status])
+}
+
+model PlanningRun {
+  id              String           @id @default(uuid()) @db.Uuid
+  planningRef     String           @unique @db.VarChar(80)
+  serviceDate     DateTime         @db.Date
+  depotId         String           @db.Uuid
+  status          PlanningStatus   @default(DRAFT)
+  createdByUserId String?          @db.Uuid
+  createdAt       DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime         @default(now()) @updatedAt @db.Timestamptz(3)
+  version         Int              @default(1)
+  revision        Int?
+  strategyVersion String?          @db.VarChar(80)
+  generatedAt     DateTime?        @db.Timestamptz(3)
+  supersededAt    DateTime?        @db.Timestamptz(3)
+  snapshot        Json?
+  snapshotHash    String?          @db.VarChar(64)
+  orderVersions   Json?
+  summary         Json?
+  validation      Json?
+  validatedSnapshotHash String?    @db.VarChar(64)
+  validatedAt     DateTime?        @db.Timestamptz(3)
+  releasedAt      DateTime?        @db.Timestamptz(3)
+  calendar        CalendarDay      @relation(fields: [serviceDate], references: [date], onDelete: Restrict)
+  depot           Depot            @relation(fields: [depotId], references: [id], onDelete: Restrict)
+  createdBy       User?            @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  allocations     Allocation[]
+  deferrals       DeferralRecord[]
+  trips           Trip[]
+
+  @@index([serviceDate, depotId])
+  @@unique([serviceDate, depotId, revision])
+}
+
+model VehicleAvailability {
+  id                   String                    @id @default(uuid()) @db.Uuid
+  vehicleId            String                    @db.Uuid
+  serviceDate          DateTime                  @db.Date
+  status               VehicleAvailabilityStatus
+  availableFromMinute  Int?
+  availableUntilMinute Int?
+  source               ReferenceSource
+  note                 String?                   @db.VarChar(500)
+  createdByUserId      String?                   @db.Uuid
+  createdAt            DateTime                  @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime                  @updatedAt @db.Timestamptz(3)
+  vehicle              Vehicle                   @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  calendar             CalendarDay               @relation(fields: [serviceDate], references: [date], onDelete: Restrict)
+  createdBy            User?                     @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([vehicleId, serviceDate])
+  @@index([serviceDate, status])
+}
+
+model Trip {
+  id                  String      @id @default(uuid()) @db.Uuid
+  tripRef             String      @unique @db.VarChar(80)
+  serviceDate         DateTime    @db.Date
+  vehicleId           String      @db.Uuid
+  tripNumber          Int
+  status              TripStatus  @default(DRAFT)
+  driverUserId        String?     @db.Uuid
+  plannedDeparture    DateTime?   @db.Timestamptz(3)
+  actualDeparture     DateTime?   @db.Timestamptz(3)
+  plannedReturn       DateTime?   @db.Timestamptz(3)
+  actualReturn        DateTime?   @db.Timestamptz(3)
+  estimatedDistanceKm Decimal?    @db.Decimal(12, 3)
+  estimatedFuelLitres  Decimal?    @db.Decimal(12, 3)
+  planningRunId       String?     @db.Uuid
+  createdAt           DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime    @updatedAt @db.Timestamptz(3)
+  version             Int         @default(1)
+  vehicle             Vehicle     @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  calendar            CalendarDay @relation(fields: [serviceDate], references: [date], onDelete: Restrict)
+  driver              User?       @relation(fields: [driverUserId], references: [id], onDelete: Restrict)
+  planningRun         PlanningRun? @relation(fields: [planningRunId], references: [id], onDelete: Restrict)
+  stops               TripStop[]
+  exceptions          Exception[]
+  fuelUsage           FuelUsage[]
+
+  @@index([vehicleId, serviceDate, tripNumber])
+  @@index([planningRunId])
+  @@index([driverUserId, serviceDate])
+  @@index([serviceDate, status])
+}
+
+model TripStop {
+  id                    String          @id @default(uuid()) @db.Uuid
+  tripId                String          @db.Uuid
+  orderId               String          @db.Uuid
+  sequence              Int
+  active                Boolean         @default(true)
+  plannedArrival        DateTime?       @db.Timestamptz(3)
+  plannedServiceStart   DateTime?       @db.Timestamptz(3)
+  plannedServiceComplete DateTime?      @db.Timestamptz(3)
+  plannedWaitingMinutes Decimal?       @db.Decimal(10, 3)
+  actualArrival         DateTime?       @db.Timestamptz(3)
+  plannedServiceMinutes Decimal?        @db.Decimal(10, 3)
+  actualServiceMinutes  Decimal?        @db.Decimal(10, 3)
+  status                StopStatus      @default(PLANNED)
+  createdAt             DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime        @updatedAt @db.Timestamptz(3)
+  trip                  Trip            @relation(fields: [tripId], references: [id], onDelete: Restrict)
+  order                 Order           @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  allocations           Allocation[]
+  load                  LoadRecord?
+  delivery              DeliveryRecord?
+
+  @@unique([tripId, sequence])
+  @@unique([id, orderId])
+  @@index([orderId])
+}
+
+model Allocation {
+  id            String             @id @default(uuid()) @db.Uuid
+  orderId       String             @db.Uuid
+  planningRunId String             @db.Uuid
+  tripStopId    String?            @db.Uuid
+  decision      AllocationDecision
+  allocatedAt   DateTime           @default(now()) @db.Timestamptz(3)
+  checkMetadata Json?
+  order         Order              @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  planningRun   PlanningRun        @relation(fields: [planningRunId], references: [id], onDelete: Restrict)
+  tripStop      TripStop?          @relation(fields: [tripStopId, orderId], references: [id, orderId], onDelete: Restrict)
+
+  @@unique([planningRunId, orderId])
+  @@index([tripStopId])
+}
+
+model LoadRecord {
+  id               String          @id @default(uuid()) @db.Uuid
+  tripStopId       String          @unique @db.Uuid
+  expectedUnits    Int
+  loadedUnits      Int?
+  status           LoadStatus      @default(PENDING)
+  reason           String?         @db.VarChar(500)
+  revision         Int             @default(1)
+  reviewStatus     ReviewStatus    @default(NOT_REQUIRED)
+  recordedByUserId String?         @db.Uuid
+  recordedAt       DateTime?       @db.Timestamptz(3)
+  reviewedByUserId String?         @db.Uuid
+  reviewedAt       DateTime?       @db.Timestamptz(3)
+  createdAt        DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime        @updatedAt @db.Timestamptz(3)
+  tripStop         TripStop        @relation(fields: [tripStopId], references: [id], onDelete: Restrict)
+  recordedBy       User?           @relation("LoadRecorder", fields: [recordedByUserId], references: [id], onDelete: Restrict)
+  reviewedBy       User?           @relation("LoadReviewer", fields: [reviewedByUserId], references: [id], onDelete: Restrict)
+  delivery         DeliveryRecord?
+  exceptions       Exception[]
+
+  @@unique([id, tripStopId])
+}
+
+model DeliveryRecord {
+  id                  String          @id @default(uuid()) @db.Uuid
+  tripStopId          String          @unique @db.Uuid
+  loadRecordId        String          @unique @db.Uuid
+  outcome             DeliveryOutcome
+  expectedLoadedUnits Int
+  deliveredUnits      Int
+  driverNote          String?         @db.VarChar(1000)
+  arrivedAt           DateTime        @db.Timestamptz(3)
+  completedAt         DateTime        @db.Timestamptz(3)
+  recordedByDriverId  String          @db.Uuid
+  createdAt           DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime        @updatedAt @db.Timestamptz(3)
+  tripStop            TripStop        @relation(fields: [tripStopId], references: [id], onDelete: Restrict)
+  loadRecord          LoadRecord      @relation(fields: [loadRecordId, tripStopId], references: [id, tripStopId], onDelete: Restrict)
+  recordedByDriver    User            @relation(fields: [recordedByDriverId], references: [id], onDelete: Restrict)
+  proof               DeliveryProof?
+  receipt             Receipt?
+  exceptions          Exception[]
+
+  @@unique([loadRecordId, tripStopId])
+}
+
+model DeliveryProof {
+  id                  String         @id @default(uuid()) @db.Uuid
+  deliveryRecordId    String         @unique @db.Uuid
+  recipientName       String?        @db.VarChar(120)
+  recipientRole       String?        @db.VarChar(80)
+  photoStorageKey     String?        @db.VarChar(500)
+  signatureStorageKey String?        @db.VarChar(500)
+  createdAt           DateTime       @default(now()) @db.Timestamptz(3)
+  deliveryRecord      DeliveryRecord @relation(fields: [deliveryRecordId], references: [id], onDelete: Restrict)
+}
+
+model Receipt {
+  id                String            @id @default(uuid()) @db.Uuid
+  deliveryRecordId  String            @unique @db.Uuid
+  receivedUnits     Int
+  status            ReceiptStatus
+  confirmedByUserId String            @db.Uuid
+  confirmedAt       DateTime          @db.Timestamptz(3)
+  issueNote         String?           @db.VarChar(1000)
+  issueType         ReceiptIssueType?
+  createdAt         DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime          @updatedAt @db.Timestamptz(3)
+  deliveryRecord    DeliveryRecord    @relation(fields: [deliveryRecordId], references: [id], onDelete: Restrict)
+  confirmedBy       User              @relation(fields: [confirmedByUserId], references: [id], onDelete: Restrict)
+  exceptions        Exception[]
+}
+
+model Exception {
+  id               String          @id @default(uuid()) @db.Uuid
+  orderId          String?         @db.Uuid
+  tripId           String?         @db.Uuid
+  loadRecordId     String?         @db.Uuid
+  deliveryRecordId String?         @db.Uuid
+  receiptId        String?         @db.Uuid
+  type             ExceptionType
+  status           ExceptionStatus @default(OPEN)
+  message          String          @db.VarChar(1000)
+  createdByUserId  String?         @db.Uuid
+  assignedUserId   String?         @db.Uuid
+  reviewedByUserId String?         @db.Uuid
+  createdAt        DateTime        @default(now()) @db.Timestamptz(3)
+  resolvedAt       DateTime?       @db.Timestamptz(3)
+  order            Order?          @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  trip             Trip?           @relation(fields: [tripId], references: [id], onDelete: Restrict)
+  loadRecord       LoadRecord?     @relation(fields: [loadRecordId], references: [id], onDelete: Restrict)
+  deliveryRecord   DeliveryRecord? @relation(fields: [deliveryRecordId], references: [id], onDelete: Restrict)
+  receipt          Receipt?        @relation(fields: [receiptId], references: [id], onDelete: Restrict)
+  createdBy        User?           @relation("ExceptionCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  assignedTo       User?           @relation("ExceptionAssignee", fields: [assignedUserId], references: [id], onDelete: Restrict)
+  reviewedBy       User?           @relation("ExceptionReviewer", fields: [reviewedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([status, type])
+  @@index([createdAt, id])
+  @@index([orderId])
+  @@index([tripId])
+}
+
+model DeferralRecord {
+  id               String         @id @default(uuid()) @db.Uuid
+  orderId          String         @db.Uuid
+  planningRunId    String?        @db.Uuid
+  reasonCode       DeferralReason
+  reasonDetail     String         @db.VarChar(1000)
+  deferredAt       DateTime       @default(now()) @db.Timestamptz(3)
+  deferredByUserId String?        @db.Uuid
+  nextEligibleDate DateTime?      @db.Date
+  resolvedAt       DateTime?      @db.Timestamptz(3)
+  order            Order          @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  planningRun      PlanningRun?   @relation(fields: [planningRunId], references: [id], onDelete: Restrict)
+  deferredBy       User?          @relation(fields: [deferredByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([orderId, planningRunId])
+  @@index([orderId, deferredAt])
+}
+
+model AuditEvent {
+  id          String          @id @default(uuid()) @db.Uuid
+  actorUserId String?         @db.Uuid
+  actorRole   Role?
+  eventType   AuditEventType
+  entityType  AuditEntityType
+  entityId    String          @db.Uuid
+  timestamp   DateTime        @default(now()) @db.Timestamptz(3)
+  metadata    Json
+  actor       User?           @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([entityType, entityId, timestamp])
+  @@index([actorUserId])
+}
+
+model FuelLedger {
+  id                    String           @id @default(uuid()) @db.Uuid
+  vehicleId             String           @db.Uuid
+  weekStart             DateTime         @db.Date
+  openingConsumedLitres Decimal?         @db.Decimal(12, 3)
+  openingSource         ReferenceSource?
+  createdAt             DateTime         @default(now()) @db.Timestamptz(3)
+  vehicle               Vehicle          @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  usage                 FuelUsage[]
+
+  @@unique([vehicleId, weekStart])
+}
+
+model FuelUsage {
+  id               String          @id @default(uuid()) @db.Uuid
+  ledgerId         String          @db.Uuid
+  tripId           String?         @db.Uuid
+  kind             FuelUsageKind
+  status           FuelUsageStatus @default(ACTIVE)
+  litres           Decimal         @db.Decimal(12, 3)
+  occurredAt       DateTime        @db.Timestamptz(3)
+  source           ReferenceSource
+  recordedByUserId String?         @db.Uuid
+  createdAt        DateTime        @default(now()) @db.Timestamptz(3)
+  ledger           FuelLedger      @relation(fields: [ledgerId], references: [id], onDelete: Restrict)
+  trip             Trip?           @relation(fields: [tripId], references: [id], onDelete: Restrict)
+  recordedBy       User?           @relation(fields: [recordedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([ledgerId, kind, status])
+}

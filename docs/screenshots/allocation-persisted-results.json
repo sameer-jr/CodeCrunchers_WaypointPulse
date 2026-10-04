@@ -1,0 +1,320 @@
+{
+  "source": "SYNTHETIC",
+  "reviewDate": "2026-10-04",
+  "readOnlyReconciliation": true,
+  "runs": [
+    {
+      "id": "c19a9709-200d-4dd3-a406-790cfa16e953",
+      "planningRef": "WP-PLAN-2040-03-05-a081010f-a2d8-4406-8d0d-069dd83480ea",
+      "status": "SUPERSEDED",
+      "revision": 1,
+      "version": 2,
+      "serviceDate": "2040-03-05T00:00:00.000Z",
+      "summary": {
+        "trips": 5,
+        "served": 8,
+        "deferred": 4,
+        "eligibleOrders": 12,
+        "orderedVolumeM3": "14.5",
+        "orderedWeightKg": "1210",
+        "generationDurationMs": 679
+      },
+      "validation": null,
+      "releasedAt": null,
+      "_count": {
+        "trips": 5,
+        "allocations": 12,
+        "deferrals": 4
+      }
+    },
+    {
+      "id": "4131d5ce-8b4b-4237-b4fc-de9d03064db2",
+      "planningRef": "WP-PLAN-2040-03-05-696bc9cb-a999-45c0-87a4-a3c0c2dd87c1",
+      "status": "RELEASED",
+      "revision": 2,
+      "version": 3,
+      "serviceDate": "2040-03-05T00:00:00.000Z",
+      "summary": {
+        "trips": 5,
+        "served": 8,
+        "deferred": 4,
+        "eligibleOrders": 12,
+        "orderedVolumeM3": "14.5",
+        "orderedWeightKg": "1210",
+        "generationDurationMs": 673
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "checkedAt": "2026-10-04T05:49:08.199Z"
+      },
+      "releasedAt": "2026-10-04T05:49:52.520Z",
+      "_count": {
+        "trips": 5,
+        "allocations": 12,
+        "deferrals": 4
+      }
+    }
+  ],
+  "trips": [
+    {
+      "id": "3abaf9c2-a489-4662-90c9-fbf55245aa81",
+      "status": "RELEASED",
+      "tripNumber": 1,
+      "vehicle": {
+        "vehicleRef": "SYN-PLAN-JUDGE-REEFER"
+      },
+      "estimatedFuelLitres": "5.25",
+      "stops": [
+        {
+          "sequence": 1,
+          "orderId": "0d14e1f4-ea6d-4e9e-ab7c-9cf88bd9ba99",
+          "order": {
+            "orderRef": "SYN-PLAN-JUDGE-ORDER-CHILLED",
+            "status": "RELEASED_TO_LOADING",
+            "orderedUnits": 25
+          }
+        },
+        {
+          "sequence": 2,
+          "orderId": "921088f7-6ad0-4caf-87b9-9b3ddbf1ee26",
+          "order": {
+            "orderRef": "SYN-PLAN-JUDGE-ORDER-FROZEN",
+            "status": "RELEASED_TO_LOADING",
+            "orderedUnits": 25
+          }
+        }
+      ],
+      "fuelUsage": [
+        {
+          "kind": "RESERVED",
+          "litres": "5.25",
+          "source": "SYNTHETIC",
+          "occurredAt": "2040-03-04T23:30:00.000Z",
+          "ledger": {
+            "weekStart": "2040-03-05T00:00:00.000Z"
+          }
+        }
+      ]
+    },
+    {
+      "id": "eb392cef-f1cd-4a64-8144-84f3d582c7fb",
+      "status": "RELEASED",
+      "tripNumber": 1,
+      "vehicle": {
+        "vehicleRef": "SYN-PLAN-JUDGE-AMBIENT"
+      },
+      "estimatedFuelLitres": "10.2",
+      "stops": [
+        {
+          "sequence": 1,
+          "orderId": "0268fba1-5175-450d-8441-7ace2d554742",
+          "order": {
+            "orderRef": "SYN-PLAN-JUDGE-ORDER-NEWER-AMBIENT",
+            "status": "RELEASED_TO_LOADING",
+            "orderedUnits": 25
+          }
+        },
+        {
+          "sequence": 2,
+          "orderId": "ad8be4ff-8222-4ee5-a1b4-5ac0151173a1",
+          "order": {
+            "orderRef": "SYN-PLAN-JUDGE-ORDER-PREVIOUSLY-DEFERRED",
+            "status": "RELEASED_TO_LOADING",
+            "orderedUnits": 25
+          }
+        },
+        {
+          "sequence": 3,
+          "orderId": "446c7799-ec8c-43bc-a32b-a3aab6a1b438",
+          "order": {
+            "orderRef": "SYN-PLAN-JUDGE-ORDER-MALL",
+            "status": "RELEASED_TO_LOADING",
+            "orderedUnits": 25
+          }
+        }
+      ],
+      "fuelUsage": [
+        {
+          "kind": "RESERVED",
+          "litres": "10.2",
+          "source": "SYNTHETIC",
+          "occurredAt": "2040-03-04T23:30:00.000Z",
+          "ledger": {
+            "weekStart": "2040-03-05T00:00:00.000Z"
+          }
+        }
+      ]
+    },
+    {
+      "id": "4f6b90f4-7a8b-457d-b50f-0e06957fb542",
+      "status": "RELEASED",
+      "tripNumber": 2,
+      "vehicle": {
+        "vehicleRef": "SYN-PLAN-JUDGE-AMBIENT"
+      },
+      "estimatedFuelLitres": "6",
+      "stops": [
+        {
+          "sequence": 1,
+          "orderId": "fe1eeab1-abb3-4703-b794-0ffdfe74551f",
+          "order": {
+            "orderRef": "SYN-PLAN-JUDGE-ORDER-TECH",
+            "status": "RELEASED_TO_LOADING",
+            "orderedUnits": 25
+          }
+        }
+      ],
+      "fuelUsage": [
+        {
+          "kind": "RESERVED",
+          "litres": "6",
+          "source": "SYNTHETIC",
+          "occurredAt": "2040-03-05T05:35:00.000Z",
+          "ledger": {
+            "weekStart": "2040-03-05T00:00:00.000Z"
+          }
+        }
+      ]
+    },
+    {
+      "id": "75192bc2-a73e-4080-9aa8-ae4dfc15c021",
+      "status": "RELEASED",
+      "tripNumber": 1,
+      "vehicle": {
+        "vehicleRef": "SYN-PLAN-JUDGE-VAN"
+      },
+      "estimatedFuelLitres": "4",
+      "stops": [
+        {
+          "sequence": 1,
+          "orderId": "b3a76a6c-85f0-4034-a2b4-ec5d6dc27549",
+          "order": {
+            "orderRef": "SYN-PLAN-JUDGE-ORDER-VAN-OLD",
+            "status": "RELEASED_TO_LOADING",
+            "orderedUnits": 25
+          }
+        }
+      ],
+      "fuelUsage": [
+        {
+          "kind": "RESERVED",
+          "litres": "4",
+          "source": "SYNTHETIC",
+          "occurredAt": "2040-03-04T23:30:00.000Z",
+          "ledger": {
+            "weekStart": "2040-03-05T00:00:00.000Z"
+          }
+        }
+      ]
+    },
+    {
+      "id": "af480494-f394-4ab6-be4a-e380de364c7d",
+      "status": "RELEASED",
+      "tripNumber": 2,
+      "vehicle": {
+        "vehicleRef": "SYN-PLAN-JUDGE-VAN"
+      },
+      "estimatedFuelLitres": "4",
+      "stops": [
+        {
+          "sequence": 1,
+          "orderId": "1f57a864-b012-4664-9afc-ccad7b606f5c",
+          "order": {
+            "orderRef": "SYN-PLAN-JUDGE-ORDER-VAN-EXCESS",
+            "status": "RELEASED_TO_LOADING",
+            "orderedUnits": 25
+          }
+        }
+      ],
+      "fuelUsage": [
+        {
+          "kind": "RESERVED",
+          "litres": "4",
+          "source": "SYNTHETIC",
+          "occurredAt": "2040-03-05T00:35:00.000Z",
+          "ledger": {
+            "weekStart": "2040-03-05T00:00:00.000Z"
+          }
+        }
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "orderId": "ad8be4ff-8222-4ee5-a1b4-5ac0151173a1",
+      "decision": "ASSIGNED",
+      "tripStopId": "3774a20e-1fd5-4e9a-b66d-bd95a75f7eee"
+    },
+    {
+      "orderId": "b3a76a6c-85f0-4034-a2b4-ec5d6dc27549",
+      "decision": "ASSIGNED",
+      "tripStopId": "0cade6b3-3a2c-419e-b9fa-855306d98af6"
+    },
+    {
+      "orderId": "56adbe43-0a94-4e76-b597-662307ee1e04",
+      "decision": "DEFERRED",
+      "tripStopId": null
+    },
+    {
+      "orderId": "0d14e1f4-ea6d-4e9e-ab7c-9cf88bd9ba99",
+      "decision": "ASSIGNED",
+      "tripStopId": "9f2eb11d-c880-461a-96f8-2c55b77996a9"
+    },
+    {
+      "orderId": "921088f7-6ad0-4caf-87b9-9b3ddbf1ee26",
+      "decision": "ASSIGNED",
+      "tripStopId": "c5e3ed13-507b-4f84-9fa1-f3396019cddd"
+    },
+    {
+      "orderId": "1f57a864-b012-4664-9afc-ccad7b606f5c",
+      "decision": "ASSIGNED",
+      "tripStopId": "888d7d64-f75f-4463-bf10-13f682c3ba62"
+    },
+    {
+      "orderId": "25aed4a4-c25c-42db-8710-73935b56f4b8",
+      "decision": "DEFERRED",
+      "tripStopId": null
+    },
+    {
+      "orderId": "446c7799-ec8c-43bc-a32b-a3aab6a1b438",
+      "decision": "ASSIGNED",
+      "tripStopId": "0fafa954-fa9d-4d62-a54f-a54b9558dcba"
+    },
+    {
+      "orderId": "0268fba1-5175-450d-8441-7ace2d554742",
+      "decision": "ASSIGNED",
+      "tripStopId": "0667c910-f771-4d25-93c3-dd10bf51b1af"
+    },
+    {
+      "orderId": "8e81c44a-45fe-466d-a10f-838c272e6530",
+      "decision": "DEFERRED",
+      "tripStopId": null
+    },
+    {
+      "orderId": "7548917e-ef9c-4f50-ad07-fb7e698c157e",
+      "decision": "DEFERRED",
+      "tripStopId": null
+    },
+    {
+      "orderId": "fe1eeab1-abb3-4703-b794-0ffdfe74551f",
+      "decision": "ASSIGNED",
+      "tripStopId": "6308b1ae-7f4b-4209-b036-5b1ce252902a"
+    }
+  ],
+  "retainedGeneratedDeferrals": 8,
+  "runAudit": [
+    {
+      "_count": 2,
+      "eventType": "PLAN_GENERATED"
+    },
+    {
+      "_count": 1,
+      "eventType": "PLAN_RELEASED"
+    },
+    {
+      "_count": 1,
+      "eventType": "PLAN_VALIDATED"
+    }
+  ]
+}

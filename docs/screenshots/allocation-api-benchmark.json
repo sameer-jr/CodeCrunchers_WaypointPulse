@@ -1,0 +1,9 @@
+{
+  "trips": 6,
+  "served": 9,
+  "deferred": 4,
+  "eligibleOrders": 13,
+  "orderedVolumeM3": "15.25",
+  "orderedWeightKg": "1251.25",
+  "generationDurationMs": 645
+}
