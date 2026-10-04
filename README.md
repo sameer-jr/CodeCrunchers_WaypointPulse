@@ -4,7 +4,7 @@ Team Code Crunchers · Tech-Triathlon 2026
 
 ## Current scope
 
-Milestones 1–4 establish credential login, sessions, responsive role shells, the normalized operational domain, the persisted Store Manager workflow and Dispatcher views. Milestone 5 adds locally verified deterministic allocation, independent validation and transactional plan release in Planning Studio. Pulse, Orders, Routes / Trips and Exception Centre read scoped PostgreSQL records; Future Capacity states its current limits. Milestone 6 connects released generated trips to Loader’s persisted checklist, shortfall reporting, Dispatcher review and Ready for Dispatch. Driver, offline synchronization and predictions remain later milestones.
+Milestones 1–6 provide authentication, the operational domain, Store workflows, Dispatcher planning/validation/release and Loader checklist/shortfall/review/readiness. Combined Milestones 7+8 passed local acceptance for the assigned Driver journey and real offline recovery against those same released records. See [the Driver/offline report](docs/milestone-7-8-driver-offline.md) for automated checks, the actual offline/reconnect/conflict browser journeys and evidence limits. Predictions and final integration/packaging/deployment remain outside this scope.
 
 The original Designathon prototype remains unchanged under `input resources/prototype/` following the workspace's reference-file reorganization. It is a private local reference and is excluded from Git and Docker. The root application copies only the two brand PNGs. The supplied dataset ZIP is private and is not imported by the auth seed or bundled into the web app.
 
@@ -12,7 +12,8 @@ The original Designathon prototype remains unchanged under `input resources/prot
 
 - npm workspaces; TypeScript; React/Vite; React Router; TanStack Query; Zod; React Hook Form; Tailwind CSS.
 - Express API, Zod request validation, centralized authentication/authorization/error handling.
-- PostgreSQL with Prisma: User/Session plus 24 normalized domain/support models, explicit daily VehicleAvailability, transactional services and SQL integrity guards.
+- PostgreSQL with Prisma: 27 normalized models, including User/Session, explicit daily VehicleAvailability and OfflineOperation; transactional services and SQL integrity guards.
+- Driver offline: production service worker for the application shell, per-user IndexedDB route cache and durable UUID operation queue.
 - Passwords use salted Node scrypt. Random opaque session tokens are issued as HTTP-only, SameSite=Strict cookies. Only an HMAC digest of each token is stored in PostgreSQL. User role and active status are checked on every protected API request.
 - Role routes are protected in the client and server; failed cross-role client navigation shows an access-denied page. There is no authenticated role-switch control.
 - [Architecture](docs/architecture.md), [data model](docs/data-model.md), [AI disclosure](docs/AI_DISCLOSURE.md).
@@ -21,6 +22,8 @@ The original Designathon prototype remains unchanged under `input resources/prot
 - [Milestone 3 Store report](docs/milestone-3-store.md), including scoped creation, cutoff, tracking, receipts, 102 automated tests and browser evidence.
 - [Milestone 4 Dispatcher report](docs/milestone-4-dispatcher.md), including date context, depot scope, read-only planning and cross-role verification.
 - [Milestone 5 allocation report](docs/milestone-5-allocation.md), including heuristic, constraints, timing/fuel assumptions, independent validation and release verification status.
+- [Milestone 6 Loader report](docs/milestone-6-loader.md), including the persisted 192 → 188 approval/readiness cascade.
+- [Milestone 7+8 Driver/offline report](docs/milestone-7-8-driver-offline.md), including 192 → 188 → 188, offline reload/reconnect and retained conflict evidence.
 
 ## Repository structure
 
@@ -95,9 +98,9 @@ npm run import:reference -- --source official
 
 `--directory` can select another directory within ignored `private-data/` or `input resources/`. Provenance must be explicit; all files are required. The importer validates exact headers, explicit numeric/enum/time/date conversions, positive capacities, duplicate keys and references before an atomic database import. Content digests make repeated imports a no-op. Changed sources that collide with existing keys fail without partial changes; reconciliation is not silently performed. Synthetic imports require explicit labelling and are forbidden in production. Imports do not grant user assignments or create orders, trips or allocations.
 
-The supplied private ZIP contains all five expected reference files. The local import has 120 outlets, 60 vehicles, 910 calendar days, 12 travel rows and 9 service allowances, marked OFFICIAL. These counts describe the private import, not installation seed data. The official calendar ends on **2026-06-28**, so it cannot authorize future orders on the current review date, 2026-10-03. A fresh official calendar is required for current official operation. The Store API blocks dates absent from its eligible calendar. Raw files remain excluded from Git, Docker and web bundles. No source GPS/address fields or verified opening fuel history were supplied. Fuel remaining is unknown until an opening balance is established; quota alone does not imply zero consumption. Business dates/weeks use Asia/Colombo; the fuel week begins Monday.
+The supplied private ZIP contains all five expected reference files. The local import has 120 outlets, 60 vehicles, 910 calendar days, 12 travel rows and 9 service allowances, marked OFFICIAL. These counts describe the private import, not installation seed data. The official calendar ends on **2026-06-28**, so it cannot authorize future orders on the current review date, 2026-10-04. A fresh official calendar is required for current official operation. The Store API blocks dates absent from its eligible calendar. Raw files remain excluded from Git, Docker and web bundles. No source GPS/address fields or verified opening fuel history were supplied. Fuel remaining is unknown until an opening balance is established; quota alone does not imply zero consumption. Business dates/weeks use Asia/Colombo; the fuel week begins Monday.
 
-Deploy the committed migrations rather than `prisma db push`; custom SQL checks, partial indexes and integrity/history triggers are required. Delivery proof currently stores durable key metadata only; actual file storage is deferred.
+Deploy the committed migrations rather than `prisma db push`; custom SQL checks, partial indexes and integrity/history triggers are required. Driver delivery proof persists recipient name/role alongside outcome, quantity, note and completion time. Photo/signature capture and binary storage are unavailable; no illustrative image is presented as proof.
 
 ## Store assignment and local review
 
@@ -171,11 +174,11 @@ The judge preview uses API port 3002 and Vite port 5175; Ctrl+C stops both previ
 
 Lists default to 25 records and cap page size at 100. Pulse totals and Planning demand totals aggregate all matching records; their previews are bounded and labelled. Planning context previews cap orders/deferred review at 100 each, vehicles at 200 and trips at 50; generation reads the full authoritative eligible backlog. Operational order date means the active trip's service day, otherwise the initial eligible delivery date (requested date fallback). Orders can explicitly filter originally requested dates instead. Planning requires an actual operating calendar row. Deferred records appear separately in the read context; the M5 engine uses retained deferral history in its documented prioritization policy.
 
-The Milestone 4 judge retains its independently prepared read scenarios. Fleet capacities describe master records; planning requires explicit daily availability and known weekly fuel rather than inferring readiness from those capacities. Routes show recorded stop sequence and planned/actual timestamps without simulated tracking or invented coordinates. Exception Centre remains read-only because resolution business rules are undefined. Proof exposes metadata and saved-evidence flags only; binary storage and access are deferred. Future Capacity has no connected forecast or prediction model.
+The Milestone 4 judge retains its independently prepared read scenarios. Fleet capacities describe master records; planning requires explicit daily availability and known weekly fuel rather than inferring readiness from those capacities. Routes show recorded stop sequence and planned/actual timestamps without simulated tracking or invented coordinates. Exception Centre supports the minimal loading-shortfall approval/rejection flow; general issue resolution remains deferred. Proof exposes metadata and saved-evidence flags only; binary storage and access are deferred. Future Capacity has no connected forecast or prediction model.
 
 ## Allocation engine and independent judge
 
-Planning Studio generates one depot/day run from persisted eligible demand. Served orders receive real draft trip/stop/allocation records; excess or infeasible demand receives retained deferral evidence. The independent Validate action recomputes complete plan constraints and transitions valid served orders to PLANNED. Release requires the current valid, non-stale version and a confirmation dialog, then commits the run/trips and RELEASED_TO_LOADING order states atomically. Drafts are inspectable by Dispatcher and remain inaccessible to Loader/Driver until release. Loader records actual quantities against the same released stops.
+Planning Studio generates one depot/day run from persisted eligible demand. Served orders receive real draft trip/stop/allocation records; excess or infeasible demand receives retained deferral evidence. The independent Validate action recomputes complete plan constraints and transitions valid served orders to PLANNED. Release requires the current valid, non-stale version and a confirmation dialog, then commits the run/trips and RELEASED_TO_LOADING order states atomically. Drafts are inspectable by Dispatcher and remain inaccessible to Loader/Driver until release. Loader records actual quantities against the same released stops; Driver access additionally requires assignment and satisfactory ready loading.
 
 The documented heuristic prioritizes prior deferrals and scarce/tight demand, applies blocking constraints, then selects feasible candidates using explicit lexicographic tie-breakers. Decimal weight and volume limits stay separate. Temperature, access, depot, delivery/mall windows, Fresh before 08:00, two-trip limit, daily availability and weekly fuel are enforced. Depot/district references estimate travel without invented GPS; waits/service/return and a conservative 15-minute turnaround are recorded. The strategy is deterministic, not globally optimal.
 
@@ -210,7 +213,7 @@ Compose defines PostgreSQL → API → Web health dependencies. API startup auto
 
 This local Compose configuration defaults to `NODE_ENV=development` so cookies work over local HTTP. A shared deployment must terminate HTTPS and set `NODE_ENV=production`, `WEB_ORIGIN=https://your-host`, and fresh secrets. Production startup requires HTTPS origin and issues Secure cookies. `API_TRUST_PROXY=true` trusts exactly one proxy hop within the private Compose network; standalone development defaults to false.
 
-Container runtime verification passed on GitHub Actions on 4 October 2026; see the [remote Docker verification report](docs/remote-docker-verification.md). A validated YAML file or local PostgreSQL test alone does not prove a container build/startup passed.
+The pre-Driver baseline container runtime passed on GitHub Actions on 4 October 2026; see the [remote Docker verification report](docs/remote-docker-verification.md). The new Driver/offline images and ninth migration have not been container-verified. YAML validation or local PostgreSQL tests alone do not establish current container acceptance.
 
 ## Remote Docker verification
 
@@ -248,7 +251,7 @@ npm run verify:docker
 
 This command checks HTTP, seeded authentication and session/logout behavior without resetting data. CI additionally uses `--installation` to verify a fresh database. This script is not required for normal local development. An existing volume retains its original seeded passwords, so the configured `SEED_DEMO_PASSWORD` must match that installation.
 
-**Docker runtime verification: PASS on 4 October 2026.** [GitHub Actions run 37189530460](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37189530460) successfully verified source commit `05e8eb1b19b5a14538b37f2f615f3eba8c034a8c`, including container build/startup, HTTP checks, migrations, safe seed, authentication and volume cleanup. See the [verification report](docs/remote-docker-verification.md) for evidence and scope. Future container/application changes require a fresh successful workflow run; preparing files or passing local source checks alone does not establish Docker PASS.
+**Baseline Docker runtime PASS; current Driver/offline images unverified.** [GitHub Actions run 37189710589](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37189710589) verified source commit `05e8eb1b19b5a14538b37f2f615f3eba8c034a8c`. The [verification report](docs/remote-docker-verification.md) records the baseline build/startup, HTTP checks, eight migrations, safe seed, authentication and volume cleanup. Combined M7+8 changes require a fresh successful workflow run before a current Docker PASS can be claimed.
 
 ## API foundation
 
@@ -263,8 +266,8 @@ This command checks HTTP, seeded authentication and session/logout behavior with
 | GET | `/api/workspaces/driver` | Driver only |
 | GET | `/api/workspaces/store` | Store Manager only |
 | GET | `/api/domain/outlets/:id` | Store outlet or Dispatcher/Loader depot scope |
-| GET | `/api/domain/orders/:id` | Assigned outlet/depot or released assigned trip scope |
-| GET | `/api/domain/trips/:id` | Dispatcher depot; Loader released depot trip; Driver assigned released trip |
+| GET | `/api/domain/orders/:id` | Assigned outlet/depot or Driver's assigned ready generated trip scope |
+| GET | `/api/domain/trips/:id` | Dispatcher depot; Loader released depot trip; Driver assigned ready/in-transit/completed generated trip |
 
 All mutations reject unapproved browser origins. Sessions expire after `SESSION_HOURS` (default 8), active users are rechecked, logout invalidates server state, and authentication/domain responses disable caching. No bearer credential is stored in localStorage. API errors omit stack traces, password hashes and session tokens. Domain GETs return safe DTOs; Store mutations added in Milestone 3 use the same authentication, origin and lifecycle guards.
 
@@ -290,10 +293,10 @@ The 30 domain tests additionally cover atomic reference imports, constraints, va
 
 1. Open the login page and choose a demo email.
 2. Enter the configured password; verify the assigned role home.
-3. Open every item in that role's menu. Store and Dispatcher show their scoped persisted workflows after explicit assignment; Loader shows the persisted dock/checklist/shortfall/readiness workflow; Driver retains foundation states.
+3. Open every item in that role's menu. Store and Dispatcher show their scoped persisted workflows after explicit assignment; Loader shows its dock/checklist/shortfall/readiness workflow; Driver shows its assigned ready route, arrival/delivery/proof and synchronization state.
 4. Refresh a protected URL; the server session restores the same identity.
 5. Try a different role's URL; verify access denied and return to the assigned workspace.
-6. Sign out; revisiting a protected URL must return to login.
+6. Sign out; revisiting a protected URL must return to login. Driver sign-out requires connection and no unsynced work, and clears only that user's safe local route/operation cache after successful logout.
 7. Repeat with all four accounts. Review Dispatcher at 1440px, Loader at 390/768px, Driver at 360/390px, and Store at 390/768px.
 8. At phone widths, open the menu to reach all role screens, use the bottom navigation, and test Escape/Tab/focus behavior.
 
@@ -301,7 +304,7 @@ The 30 domain tests additionally cover atomic reference imports, constraints, va
 
 The shell keeps the logo, light canvas, charcoal sidebar, lime accents, system typography, rounded cards, compact role navigation, and phone bottom-navigation concept. Text sizing and focus/touch targets are made readable. Login is a new screen required for real authentication. The prototype's experience selector is replaced by server-owned role identity.
 
-Store has real persisted counts, forms, tracking and receipt actions. Dispatcher preserves the prototype's card hierarchy, compact table/inspector, three-area Planning Studio and issue/trip compositions while showing real scoped facts. Planning Studio generates, independently validates and releases persisted plans with constraint evidence. Loader preserves dock cards, planned sequence, quantity checklist, shortfall dialog and dispatch readiness; Driver retains foundation states. No screen claims simulated telemetry, scanner operations or offline queues. No prepared allocation fixture is treated as generated output.
+Store has real persisted counts, forms, tracking and receipt actions. Dispatcher preserves the card hierarchy, compact table/inspector, three-area Planning Studio and issue/trip compositions while showing real scoped facts. Loader retains dock cards, actual stop sequence, quantity checklist, shortfall dialog and dispatch readiness. Driver retains phone-first Today, Route, Proof and Offline / Sync with a vehicle hero, current-stop card, recipient/outcome proof and actual persisted device queue. No screen claims GPS, scanner or temperature telemetry. No prepared allocation fixture is treated as generated output.
 
 Milestone 5 — Allocation Engine passed local acceptance: 224 tests, required typecheck/lint/build/safety checks, the synthetic Generate → Validate → Release browser journey and responsive review. Exact evidence and remaining limits are recorded in the allocation report. Milestone 6 — Loader passed local acceptance: 246 tests including all 224 earlier cases, required checks and the browser 192 → 188 approval/readiness journey at 360/390/768px. See [the Loader report](docs/milestone-6-loader.md). Deployment and container runtime acceptance remain separate from local acceptance. A physical mobile onscreen keyboard has not been tested.
 
@@ -320,4 +323,49 @@ Loader reads UserDepot scope from the session and shows only released generated 
 Keep local PostgreSQL running, stop other app previews, then run `npm run demo:loader-judge` and `npm run dev:loader-judge`. Open **http://localhost:5177**; API port 3004. The separate `waypoint_loader_judge` leaves .env and main/M4/M5 data intact. Setup installs independent SYNTHETIC demand/references and controlled Loader/Dispatcher UserDepot assignments, with no precomputed Loader trip. Repeat setup preserves history.
 
 Dispatcher selects **2040-03-05**, Generates, Validates and Releases. Loader opens **SYN-PLAN-LOADER-AMBIENT · Trip 1**, records normal stops and reports **SYN-LOADER-LOADER-ORDER-192: 192 expected → 188 actual / STOCK_UNAVAILABLE**. Dispatcher approves in Exception Centre; Loader completes the other stops and marks Ready. Use one active localhost preview because cookies share the hostname.
+
+## Driver and offline workflow
+
+Driver access resolves the current session and `Trip.driverUserId`; the frontend cannot choose an actor or expand assignment scope. Only assigned generated trips with released planning provenance and complete/approved loading are exposed. READY_FOR_DISPATCH trips can start; IN_TRANSIT trips can record their current stop; completed trips retain their delivery history. Draft, unreleased, loading-blocked and foreign trips are excluded.
+
+| Method | Endpoint | Behavior |
+| --- | --- | --- |
+| GET | `/api/driver/routes?date=` | Assigned ready/in-transit/completed generated routes for the selected day |
+| GET | `/api/driver/trips/:id` | Actual sequence, loaded quantities, timing, proof and permitted actions |
+| POST | `/api/driver/trips/:id/start` | Versioned READY_FOR_DISPATCH → IN_TRANSIT with actual departure |
+| POST | `/api/driver/stops/:id/arrival` | Versioned current-stop arrival without GPS verification |
+| POST | `/api/driver/stops/:id/complete` | Transactional delivery/outcome/proof, order lifecycle and audit |
+| POST | `/api/driver/trips/:id/finish` | All terminal stops → trip COMPLETED; actualReturn remains null |
+| POST | `/api/driver/sync` | Sequential UUID operations with idempotent results and retained conflicts |
+| GET | `/api/dispatcher/drivers` | Active Driver choices for scoped Dispatcher assignment |
+| POST | `/api/dispatcher/trips/:id/driver` | Versioned assignment to a released generated trip before departure |
+
+DELIVERED records the actual loaded amount; PARTIALLY_DELIVERED requires a lower positive quantity and reason; FAILED requires zero delivered and a reason. No delivery may exceed the load or alter ordered/loaded quantities. Successful/partial proof requires recipient name and role. OTHER, damaged-in-transit and quantity-rejected reasons require a useful note. Full delivery reaches AWAITING_RECEIPT; partial/failed outcomes retain their own state and create operational exceptions. Store reads the same DeliveryRecord and still records its receipt separately.
+
+The UI saves each arrival/delivery action durably in IndexedDB before sending it. Operations carry UUID, entity/action/payload, created/client-event timestamps and expected versions. The queue displays PENDING, SYNCING, SYNCED, FAILED and CONFLICT separately; unsynced local projections are visibly labelled. Reconnect attempts ordered synchronization, with manual **Sync now** as fallback. Replays with the same UUID and payload return the saved result without duplicate delivery/audit; changed UUID payloads or stale versions conflict. Failed/conflicted work is retained and is never silently overwritten or deleted.
+
+Production builds precache only the application shell and essential static assets in the service worker. Authenticated API responses are not service-worker cached. Assigned route data and the device queue use per-user IndexedDB; a sanitized Driver identity permits cached-route access on network failure, never after a server 401. Passwords/session tokens/raw datasets are not stored there. Sign-out is blocked while offline or unsynced work exists. Session-generation checks prevent late requests from restoring cleared identity/routes after logout. Device storage remains essential: clearing browser data, private browsing expiry or losing the device can lose unsynchronized work.
+
+The Web build wrapper explicitly sets Vite's NODE_ENV to production even when local `.env` selects development, ensuring the built preview contains the service-worker registration. Direct development mode does not provide offline reload acceptance. Fresh connected queued actions use server event time; offline/delayed actions retain client time with seven-day age, five-minute clock skew and departure/arrival ordering checks. A conflict retains the original proof for review and blocks dependent writes; no automatic conflict-resolution workflow is provided.
+
+### Combined Driver/offline judge
+
+Keep `npm run dev:db` running and stop other localhost previews, then:
+
+```sh
+npm run demo:driver-judge
+npm run build
+npm run preview:driver-judge
+```
+
+Open **http://localhost:5178** (API 3005). The independent `/waypoint_driver_judge` scenario prepares SYNTHETIC demand/references and role mappings for **2040-03-05**, with a 192-unit order. It creates no precomputed trip, plan or delivery; repeated preparation retains actual workflow history and leaves `.env`, main and earlier judge databases intact. `dev:driver-judge` is available for development, but its Vite development server does not establish production service-worker offline acceptance.
+
+1. Dispatcher generates, validates and releases the plan, then assigns the Driver in Routes / Trips.
+2. Loader records normal loads, reports the 192 → 188 shortfall, and awaits Dispatcher approval. After approval and remaining loads, Loader marks Ready for Dispatch.
+3. Driver signs in online, opens the assigned route, confirms **Route cached on this device** and **Offline reload ready**, then starts the trip online.
+4. Use the browser's real network-offline control. Record arrival and complete the current stop with 188 delivered, recipient details and a note. Review **Saved locally / Pending sync**.
+5. Reload while still offline: the cached route and queued proof must remain. Restore network and use Sync now if needed; wait for SYNCED.
+6. Driver reviews the next stop/finish flow. Store tracking must show the same 192 ordered / 188 loaded / 188 delivered record without an automatically created receipt; Dispatcher must show the same route progress.
+
+The final combined full test run passed **299/299** (all 246 earlier tests, 28 Driver API tests and 25 client offline/session tests). The built browser journey passed real offline arrival/delivery, offline reload, sequential reconnect, server proof, all four terminal stops, Store/Dispatcher propagation and a separate retained stale-version conflict. Current Driver/offline Docker verification remains unperformed; the previous eight-migration remote pass applies only to its recorded baseline. No GPS, turn-by-turn directions, photo/signature upload, Datathon models or final deployment are added.
 

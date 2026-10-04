@@ -8,8 +8,10 @@ import { Login } from './Login';
 import { Shell } from './Shell';
 import { NAVIGATION, ROLE_SLUG } from './navigation';
 import './styles.css';
+import { ensureOfflineShell } from './offline/shell';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1 } } });
+void ensureOfflineShell();
 function Forbidden() {
   const identity = useIdentity();
   return <main className="session-state"><h1>This workspace belongs to another role</h1><p>Your account can access its assigned workspace.</p><Link className="btn primary" to={identity.data ? ROLE_HOME[identity.data.role] : '/login'}>Return to your workspace</Link></main>;

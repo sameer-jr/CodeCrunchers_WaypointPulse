@@ -5,10 +5,17 @@ import { listDispatcherExceptions, listDispatcherOrders, listDispatcherTrips, re
   readDispatcherOrder, readDispatcherPlanningContext, readDispatcherPulse, readDispatcherTrip, type DispatcherServiceOptions } from './services.js';
 import { reviewLoadingShortfall } from '../loader/services.js';
 import { loadingMutation } from '../loader/routes.js';
+import { assignDriverToTrip, getDriverChoices } from '../driver/services.js';
 
 export function dispatcherRouter(db: PrismaClient, options: DispatcherServiceOptions = {}) {
   const router = Router();
   router.use((_request, response, next) => { response.set('Cache-Control', 'no-store'); next(); });
+  router.get('/drivers', async (_request, response) => { response.json(await getDriverChoices(db, (response.locals.user as AuthUser).id)); });
+  router.post('/trips/:id/driver', async (request, response) => {
+    const userId = (response.locals.user as AuthUser).id, tripId = String(request.params.id);
+    await assignDriverToTrip(db, userId, tripId, request.body);
+    response.json(await readDispatcherTrip(db, userId, tripId));
+  });
   router.post('/exceptions/:id/review-load', async (request, response) => { response.json(await loadingMutation('review', () => reviewLoadingShortfall(db, (response.locals.user as AuthUser).id, String(request.params.id), request.body))); });
   const queries = { context: readDispatcherContext, pulse: readDispatcherPulse, orders: listDispatcherOrders,
     'planning-context': readDispatcherPlanningContext, trips: listDispatcherTrips, exceptions: listDispatcherExceptions };

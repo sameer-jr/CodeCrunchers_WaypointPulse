@@ -45,6 +45,10 @@ try {
   const loaderDatabaseUrl = `postgresql://waypoint_test:${password}@127.0.0.1:${port}/waypoint_loader_test`;
   await initializeDatabase({ ...env, DATABASE_URL: loaderDatabaseUrl });
   env.LOADER_TEST_DATABASE_URL = loaderDatabaseUrl;
+  await database.createDatabase('waypoint_driver_test');
+  const driverDatabaseUrl = `postgresql://waypoint_test:${password}@127.0.0.1:${port}/waypoint_driver_test`;
+  await initializeDatabase({ ...env, DATABASE_URL: driverDatabaseUrl });
+  env.DRIVER_TEST_DATABASE_URL = driverDatabaseUrl;
   console.log('Testing against a fresh isolated PostgreSQL database; development data is untouched.');
   await runNode('node_modules/vitest/vitest.mjs', ['run'], env);
 } finally { if (started) await database.stop(); }

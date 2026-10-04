@@ -7,6 +7,8 @@ import { DEMO_ACCOUNTS, loginSchema, ROLE_HOME, ROLE_LABELS, type LoginInput } f
 import { login } from './api';
 import { AUTH_KEY, SessionState, useIdentity } from './auth';
 import { useState } from 'react';
+import { hideDriverSession, rememberDriverIdentity } from './offline/storage';
+import { beginDriverSessionChange, commitDriverSession, driverSessionIsCurrent } from './offline/session';
 
 export function Brand() {
   return <div className="brand"><img src="/assets/logo-mark.png" alt="" /><span><strong>WAYPOINT <b>PULSE</b></strong><small>FLEET COMMAND · SRI LANKA</small></span></div>;
@@ -17,9 +19,23 @@ export function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const form = useForm<LoginInput>({ resolver: zodResolver(loginSchema), defaultValues: { email: '', password: '' } });
-  const mutation = useMutation({ mutationFn: login, onSuccess: user => {
+  const mutation = useMutation({ mutationFn: async (input: LoginInput) => {
+    const generation = beginDriverSessionChange();
+    await hideDriverSession(generation).catch(() => undefined);
+    try { return { user: await login(input), generation }; }
+    catch (error) {
+      const closed = commitDriverSession(null, generation);
+      if (closed) await hideDriverSession(closed).catch(() => undefined);
+      throw error;
+    }
+  }, onSuccess: async ({ user, generation }) => {
+    const confirmed = commitDriverSession(user, generation);
+    if (!confirmed) throw new Error('The session changed while signing in. Sign in again.');
+    if (user.role === 'DRIVER') await rememberDriverIdentity(user, confirmed).catch(() => undefined);
+    else await hideDriverSession(confirmed).catch(() => undefined);
+    if (!driverSessionIsCurrent(confirmed)) throw new Error('The session changed while signing in. Sign in again.');
     queryClient.clear();
-    queryClient.setQueryData(AUTH_KEY, user);
+    queryClient.setQueryData(AUTH_KEY, { user, generation: confirmed });
     navigate(ROLE_HOME[user.role], { replace: true });
   } });
   if (identity.isPending) return <SessionState />;

@@ -1,11 +1,20 @@
-import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Navigate, Outlet } from 'react-router-dom';
 import { ROLE_HOME, type Role } from '@waypoint/shared';
-import { getIdentity } from './api';
+import { identityFromSnapshot, readIdentitySnapshot } from './offline/identity';
+import { DRIVER_SESSION_KEY } from './offline/session';
 
 export const AUTH_KEY = ['auth', 'me'] as const;
 export function useIdentity() {
-  return useQuery({ queryKey: AUTH_KEY, queryFn: getIdentity, staleTime: 0, retry: false, refetchInterval: 60000 });
+  const client = useQueryClient();
+  useEffect(() => {
+    const changed = (event: StorageEvent) => { if (event.key === DRIVER_SESSION_KEY) void client.invalidateQueries({ queryKey: AUTH_KEY }); };
+    window.addEventListener('storage', changed);
+    return () => window.removeEventListener('storage', changed);
+  }, [client]);
+  const query = useQuery({ queryKey: AUTH_KEY, queryFn: () => readIdentitySnapshot(), networkMode: 'always', staleTime: 0, retry: false, refetchInterval: 60000 });
+  return { ...query, data: identityFromSnapshot(query.data) };
 }
 export function SessionState({ message = 'Checking your session…', error, retry }: { message?: string; error?: string; retry?: () => void }) {
   return <main className="session-state"><img src="/assets/logo-mark.png" alt="" /><h1>{error ? 'Connection unavailable' : 'Waypoint Pulse'}</h1><p role={error ? 'alert' : 'status'}>{error || message}</p>{retry && <button className="btn primary" onClick={retry}>Try again</button>}</main>;

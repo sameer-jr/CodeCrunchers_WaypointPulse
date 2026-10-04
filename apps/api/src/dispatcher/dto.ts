@@ -43,6 +43,7 @@ export function tripDto(trip: TripRecord): DispatcherTripSummary {
   const orders = trip.stops.filter(stop => stop.active).map(stop => stop.order);
   const run = trip.planningRun ?? trip.stops.flatMap(stop => stop.allocations).find(row => row.decision === 'ASSIGNED')?.planningRun;
   return { id: trip.id, tripRef: trip.tripRef, serviceDate: trip.serviceDate.toISOString().slice(0, 10), status: trip.status, tripNumber: trip.tripNumber,
+    version: trip.version, driverUserId: trip.driverUserId, completedAt: trip.completedAt?.toISOString() ?? null,
     planningOrigin: run ? run.strategyVersion ? 'GENERATED' : 'PREPARED' : null, planningRunId: run?.id ?? null, planningStatus: run?.status ?? null,
     vehicle: vehicleDto(trip.vehicle), driverName: trip.driver?.displayName ?? null, plannedDeparture: trip.plannedDeparture?.toISOString() ?? null,
     actualDeparture: trip.actualDeparture?.toISOString() ?? null, plannedReturn: trip.plannedReturn?.toISOString() ?? null, actualReturn: trip.actualReturn?.toISOString() ?? null,

@@ -71,7 +71,8 @@ export async function verifyDomainUpgrade(database, directory, env) {
     const fingerprint = async () => {
       const records = [];
       for (const table of ['User', 'Session', 'Order', 'TripStop', 'LoadRecord', 'DeliveryRecord', 'Receipt']) {
-        const allocationColumns = table === 'TripStop' ? " - 'plannedServiceStart' - 'plannedServiceComplete' - 'plannedWaitingMinutes'" : '';
+        const allocationColumns = table === 'TripStop' ? " - 'plannedServiceStart' - 'plannedServiceComplete' - 'plannedWaitingMinutes' - 'version' - 'arrivalClientEventAt' - 'arrivalOperationCreatedAt'"
+          : table === 'DeliveryRecord' ? " - 'reasonCode' - 'clientEventAt' - 'operationCreatedAt'" : '';
         records.push(await client.query(`SELECT to_jsonb(record) - 'eligibleDeliveryDate' - 'issueType'${allocationColumns} AS record FROM "${table}" record ORDER BY id`));
       }
       return createHash('sha256').update(JSON.stringify(records.map(result => result.rows))).digest('hex');

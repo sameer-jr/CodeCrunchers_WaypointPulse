@@ -243,7 +243,7 @@ describe('Trip structure and object authorization', () => {
     const store = await agentFor('store@waypoint.local'), driver = await agentFor('driver@waypoint.local');
     expect((await store.get(`/api/domain/outlets/${fixture.fresh.id}`)).status).toBe(200);
     expect((await store.get(`/api/domain/outlets/${fixture.style.id}`)).status).toBe(403);
-    expect((await driver.get(`/api/domain/trips/${fixture.trip.id}`)).status).toBe(200);
+    expect((await driver.get(`/api/domain/trips/${fixture.trip.id}`)).status).toBe(403);
     expect((await driver.get(`/api/domain/trips/${fixture.otherTrip.id}`)).status).toBe(403);
     expect((await store.get(`/api/domain/trips/${fixture.trip.id}`)).status).toBe(403);
     expect((await request(app).get(`/api/domain/trips/${fixture.trip.id}`)).status).toBe(401);
@@ -262,7 +262,7 @@ describe('Trip structure and object authorization', () => {
     const response = await store.get(`/api/domain/orders/${own.id}`);
     expect(response.status).toBe(200); expect(response.body.data.orderedUnits).toBe(73);
     expect(Object.keys(response.body.data)).not.toContain('createdBy'); expect(JSON.stringify(response.body)).not.toContain('passwordHash');
-    expect((await driver.get(`/api/domain/orders/${own.id}`)).status).toBe(200);
+    expect((await driver.get(`/api/domain/orders/${own.id}`)).status).toBe(403);
     for (const agent of [store, driver, dispatcher]) expect((await agent.get(`/api/domain/orders/${other.id}`)).status).toBe(403);
     expect((await store.get('/api/domain/orders/invalid')).status).toBe(400);
     expect((await store.post(`/api/domain/orders/${own.id}`).send({ status: 'DELIVERED', role: 'DISPATCHER' })).status).toBe(404);

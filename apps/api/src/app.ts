@@ -18,10 +18,12 @@ import { planningRouter } from './planning/routes.js';
 import type { PlanningServiceOptions } from './planning/services.js';
 import { loaderRouter } from './loader/routes.js';
 import type { LoaderServiceOptions } from './loader/services.js';
+import { driverRouter } from './driver/routes.js';
+import type { DriverServiceOptions } from './driver/services.js';
 
 const dummyHash = hashPassword('timing-only-invalid-account');
 
-export function createApp(prisma: PrismaClient, config: Config, options: { store?: StoreServiceOptions; dispatcher?: DispatcherServiceOptions; planning?: PlanningServiceOptions; loader?: LoaderServiceOptions } = {}) {
+export function createApp(prisma: PrismaClient, config: Config, options: { store?: StoreServiceOptions; dispatcher?: DispatcherServiceOptions; planning?: PlanningServiceOptions; loader?: LoaderServiceOptions; driver?: DriverServiceOptions } = {}) {
   const storeOptions = { allowSyntheticReferences: config.STORE_ALLOW_SYNTHETIC, ...options.store };
   if (config.NODE_ENV === 'production' && storeOptions.allowSyntheticReferences) throw new Error('Synthetic Store eligibility is not allowed in production.');
   const planningOptions = { allowSyntheticReferences: config.PLANNING_ALLOW_SYNTHETIC, ...options.planning };
@@ -74,6 +76,7 @@ export function createApp(prisma: PrismaClient, config: Config, options: { store
   app.use('/api/domain', authenticate(prisma, config), domainReadRouter(prisma));
   app.use('/api/store', authenticate(prisma, config), authorize('STORE_MANAGER'), storeRouter(prisma, storeOptions));
   app.use('/api/loader', authenticate(prisma, config), authorize('LOADER'), loaderRouter(prisma, { demoDate: config.DISPATCHER_DEMO_DATE, ...options.loader }));
+  app.use('/api/driver', authenticate(prisma, config), authorize('DRIVER'), driverRouter(prisma, { demoDate: config.DISPATCHER_DEMO_DATE, ...options.driver }));
   app.use('/api/dispatcher/plans', authenticate(prisma, config), authorize('DISPATCHER'), planningRouter(prisma, planningOptions));
   app.use('/api/dispatcher', authenticate(prisma, config), authorize('DISPATCHER'), dispatcherRouter(prisma, { demoDate: config.DISPATCHER_DEMO_DATE, ...options.dispatcher, allowSyntheticReferences: planningOptions.allowSyntheticReferences }));
   app.use((_request, _response, next) => next(new HttpError(404, 'NOT_FOUND', 'This API resource does not exist.')));

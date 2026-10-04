@@ -53,6 +53,7 @@ export interface DispatcherFleet {
 }
 export interface DispatcherTripSummary {
   id: string; tripRef: string; serviceDate: string; status: typeof DISPATCHER_TRIP_STATUSES[number]; tripNumber: number; vehicle: DispatcherVehicle;
+  version: number; driverUserId: string | null; completedAt: string | null;
   driverName: string | null; plannedDeparture: string | null; actualDeparture: string | null; plannedReturn: string | null; actualReturn: string | null;
   stopCount: number; orderedUnits: number; orderedWeightKg: string; orderedVolumeM3: string;
   planningOrigin: 'GENERATED' | 'PREPARED' | null; planningRunId: string | null; planningStatus: 'DRAFT' | 'VALIDATED' | 'RELEASED' | 'SUPERSEDED' | null;
