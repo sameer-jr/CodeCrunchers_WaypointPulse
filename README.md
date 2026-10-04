@@ -19,7 +19,7 @@ Waypoint Pulse is a responsive delivery-operations platform for the fictional **
 | **Live application** | https://web-production-87afe.up.railway.app |
 | **Source repository** | https://github.com/sameer-jr/CodeCrunchers_WaypointPulse |
 | **Docker verification** | https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/workflows/docker-compose-verification.yml |
-| **Demo video** | **Add the final unlisted YouTube URL before submission** |
+| **Demo video** | **null** |
 
 ---
 
