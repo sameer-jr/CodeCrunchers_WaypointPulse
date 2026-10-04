@@ -1,6 +1,6 @@
 # Waypoint Pulse: design reference and implementation checklist
 
-Status: Milestones 0–8 completed local acceptance, including combined Driver execution and real offline/sync recovery. The combined report records required checks, real network-offline reload/reconnect, retained conflict and cross-role evidence. Read `prototype-audit.md` and the milestone reports for evidence limits. Approved final integration/packaging/deployment verification is in progress with product features frozen; acceptance remains pending in [final Hackathon verification](final-hackathon-verification.md). No new product milestone, redesign or Datathon work is started.
+Status: Milestones 0–8 completed local acceptance, including combined Driver execution and real offline/sync recovery. The frozen product passed final local checks, exact-source Docker and the full public HTTPS four-role/offline/receipt journey. Final publication/index checks are pending, and the demo video is not recorded yet; see [final Hackathon verification](final-hackathon-verification.md). No new product milestone, redesign or Datathon work is started.
 
 ## Design contract
 
@@ -71,7 +71,7 @@ Milestones 1–6 implement the authentication/domain foundation, Store/Dispatche
 
 ## Ordered milestone checklist
 
-Milestones 0–8 passed local acceptance. Combined M7+8 retains all earlier tests and adds actual offline/reconnect/conflict and cross-role browser evidence. Approved final integration/packaging/deployment now verifies that frozen product and its existing Store receipt; final acceptance remains pending. The current-source Docker run and actual public-host four-role/offline evidence are required separately from earlier local acceptance. Each milestone needs typecheck, lint, tests, build and required browser evidence. Commit logically if Git has been initialized; never stage confidential reference data. [The final report](final-hackathon-verification.md) owns the exact commit, quality gate, deployment evidence and readiness result.
+Milestones 0–8 passed local acceptance. Combined M7+8 retains earlier tests and adds actual offline/reconnect/conflict and cross-role browser evidence. Approved final integration verified the frozen product and existing Store receipt on public HTTPS. The current 308-test gate, nine-migration Docker run, final staged-tree safety and deployed four-role/offline journey passed. Exact publication/workflow evidence is recorded with the release response; the video remains unrecorded. Each milestone needs typecheck, lint, tests, build and required browser evidence. Commit logically if Git has been initialized; never stage confidential reference data. [The final report](final-hackathon-verification.md) owns the tested source, quality gate, deployment evidence and readiness result.
 
 | Milestone | Checklist | Acceptance evidence |
 | --- | --- | --- |
@@ -85,9 +85,21 @@ Milestones 0–8 passed local acceptance. Combined M7+8 retains all earlier test
 | 7: Driver | [x] Assigned ready routes, start/arrival/outcomes, revised quantities, recipient metadata proof and finish | Required checks, all 246 earlier tests plus Driver/client regressions; real generated trip 192 → 188 → 188, partial/failed guards, four-stop finish and same-record Store/Dispatcher browser evidence |
 | 8: Offline | [x] Production shell SW, per-user IndexedDB cache/UUID queue, reconnect/retry/idempotency/conflicts | Real browser network-offline arrival/delivery, offline reload, ordered reconnect, synced proof and retained two-tab conflict; PostgreSQL reconciliation and logout race regressions in combined report |
 | 9: Receipt | [ ] Further receipt integration/evidence scope | Existing M3 receipt services remain; Driver exposes the same real delivered record without auto-receipt. Binary storage and any additional receipt changes deferred |
-| 10: Integration | [ ] Approved frozen final integration verification in progress; acceptance pending | Existing generated plan → Loader → Driver → explicit Store receipt → final Dispatcher walkthrough; current-source Docker and public-host evidence pending in the final report. General exception resolution is not added |
+| 10: Integration | [x] Approved frozen final integration verification of existing features | Actual generated plan → Loader → Driver offline/reload/sync → explicit Store receipt → final Dispatcher passed on HTTPS. Nine-migration exact-source Docker passed. No new feature or general exception resolution added |
 | 11: Quality | [ ] Domain/API/browser tests, mobile/tablet/desktop review, accessibility, error states, performance | Required constraints, permission failures, sync replay/conflicts, and responsive journey pass |
 | 12: Packaging | [ ] Fresh Compose startup, README, architecture/ER diagrams, AI disclosure, exact judge IDs, deployment | Documented installation and judge journey verified; datasets/secrets excluded; deployed build verified separately |
+
+### Approved final integration verification
+
+- [x] Typecheck, lint, build, safety and diff checks; **308/308 tests in 12 files**.
+- [x] All nine migrations and original-fact retention; exact frozen-source Docker installation/auth/health/cleanup.
+- [x] Public HTTPS Web with private API/PostgreSQL; four role login/scope/logout checks.
+- [x] Actual Generate/Validate/Release, loading shortfall/approval/readiness and assigned Driver start.
+- [x] Actual network-offline arrival/delivery, durable offline reload, ordered reconnect and server proof.
+- [x] Completed four-stop trip; explicit Store receipt and same-record final Dispatcher facts **192/188/188/188**.
+- [x] Fresh history/private-data safety scan and deployment documentation.
+- [ ] Final staged-index audit and exact-HEAD documentation publication CI.
+- [ ] Team demo video: **not recorded yet**; six-minute script ready.
 
 ## Required regression cases
 
@@ -102,7 +114,7 @@ Milestones 0–8 passed local acceptance. Combined M7+8 retains all earlier test
 
 The Milestone 0 inventory found no separate official calendar/raw CSVs, historical fuel context or location files. During Milestone 1 the user reorganized references into `input resources/` and supplied a private dataset ZIP. Milestone 2 inspected its five official reference CSVs and imported them privately with provenance; all expected reference files are now available. No addresses/GPS or verified historical fuel opening balances were supplied. Precomputed allocations and Datathon data are not used as generated planning/ML output. The prototype remains unchanged. Docker runtime, deployment and future source reconciliation remain separate checks.
 
-Milestone 3 verified the supplied official calendar ends on 2026-06-28. Current official future ordering requires a refreshed verified calendar. The current local review explicitly uses independent SYNTHETIC references with `STORE_ALLOW_SYNTHETIC=true`; default/production eligibility remains protected. Receipt, deferral and planned-arrival browser scenarios are independently prepared in a separate judge database. Physical mobile keyboard behavior and container startup remain unverified.
+Milestone 3 verified the supplied official calendar ends on 2026-06-28. Current official future ordering requires a refreshed verified calendar. Local review uses independent SYNTHETIC references; public judging uses explicit default-off `PUBLIC_JUDGE_DEMO=true` on an OFFICIAL-free database. Physical mobile keyboard behavior remains unverified. Container startup and the full deployed integration journey passed in the final report; older milestone limits describe their historical checks.
 
 Milestone 4 retains separate PostgreSQL read fixtures and its independently authored 2040-02-06 judge. Prepared plans/trips remain distinct from allocator output. Its Store/Dispatcher same-record handoffs, 134 tests and required checks passed; that report records historical evidence. M6 and combined M7+8 instead consume actual generated/released plans through Loader and Driver. The independent Driver judge prepares SYNTHETIC demand/references and assignments, never fake trips/deliveries. The generated cross-role/offline acceptance passed, including offline reload/reconnect and a separate retained stale-version conflict.
 

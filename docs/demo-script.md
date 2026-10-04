@@ -13,7 +13,7 @@ Use the built PWA judge preview or an actually verified public deployment. The l
 | Driver | driver@waypoint.local |
 | Store Manager | store@waypoint.local |
 
-The intentionally public **local** judge password is `WaypointDemo!2026` when initialized with the example configuration. Public-host judging credentials must match the actual deployed seed and be verified before recording; deployment/session/database secrets never appear on screen. Use one application origin and explicit sign-out/sign-in at each role handoff. Rehearse the handoffs and remaining-stop form inputs. Allow up to eight minutes if the actual actions need more time.
+The intentionally public **local** judge password is `WaypointDemo!2026` with the example configuration. The verified [Railway judge](https://web-production-87afe.up.railway.app) uses `WaypointJudge!2026` for all four accounts. Its main journey is already completed and retained for inspection; use a fresh separate safe judge database/installation to record all mutations without resetting live history. Deployment/session/database secrets never appear on screen. Use one application origin and explicit sign-out/sign-in at each handoff. Rehearse remaining-stop inputs; allow up to eight minutes if needed.
 
 Follow the real generated trip containing **SYN-LOADER-DRIVER-ORDER-192**, normally **SYN-PLAN-DRIVER-AMBIENT · Trip 1** on a fresh local scenario. Keep its actual selected IDs through every role. Browser DevTools must interrupt real network requests for the offline segment. Restore network before leaving Driver; pending/failed/conflicted work blocks logout. Keep configuration, private CSVs, browser cookies and infrastructure dashboards out of the recording.
 
