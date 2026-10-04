@@ -210,7 +210,7 @@ Compose defines PostgreSQL → API → Web health dependencies. API startup auto
 
 This local Compose configuration defaults to `NODE_ENV=development` so cookies work over local HTTP. A shared deployment must terminate HTTPS and set `NODE_ENV=production`, `WEB_ORIGIN=https://your-host`, and fresh secrets. Production startup requires HTTPS origin and issues Secure cookies. `API_TRUST_PROXY=true` trusts exactly one proxy hop within the private Compose network; standalone development defaults to false.
 
-Container runtime verification is recorded separately in the Milestone 1 report. A validated YAML file or local PostgreSQL test does not prove a container build/startup passed.
+Container runtime verification passed on GitHub Actions on 4 October 2026; see the [remote Docker verification report](docs/remote-docker-verification.md). A validated YAML file or local PostgreSQL test alone does not prove a container build/startup passed.
 
 ## Remote Docker verification
 
@@ -248,7 +248,7 @@ npm run verify:docker
 
 This command checks HTTP, seeded authentication and session/logout behavior without resetting data. CI additionally uses `--installation` to verify a fresh database. This script is not required for normal local development. An existing volume retains its original seeded passwords, so the configured `SEED_DEMO_PASSWORD` must match that installation.
 
-**Docker runtime status remains UNVERIFIED until this GitHub Actions workflow finishes successfully.** Preparing files or passing local source checks does not establish Docker PASS. If Git is not initialized, these files are preparation only; initialize/publish the repository yourself when ready, then inspect the workflow run in GitHub's Actions tab.
+**Docker runtime verification: PASS on 4 October 2026.** [GitHub Actions run 37189530460](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37189530460) successfully verified source commit `05e8eb1b19b5a14538b37f2f615f3eba8c034a8c`, including container build/startup, HTTP checks, migrations, safe seed, authentication and volume cleanup. See the [verification report](docs/remote-docker-verification.md) for evidence and scope. Future container/application changes require a fresh successful workflow run; preparing files or passing local source checks alone does not establish Docker PASS.
 
 ## API foundation
 
