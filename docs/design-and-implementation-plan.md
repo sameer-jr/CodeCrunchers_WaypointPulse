@@ -1,6 +1,6 @@
 # Waypoint Pulse: design reference and implementation checklist
 
-Status: Milestones 0–8 completed local acceptance, including combined Driver execution and real offline/sync recovery. The frozen product passed final local checks, exact-source Docker and the full public HTTPS four-role/offline/receipt journey. Final publication/index checks are pending, and the demo video is not recorded yet; see [final Hackathon verification](final-hackathon-verification.md). No new product milestone, redesign or Datathon work is started.
+Status: Milestones 0–8 and the frozen final integration completed their recorded acceptance. Later photo/signature/maps acceptance is documented in [media/maps verification](media-maps-verification.md). The current release uses normal Asia/Colombo dates, explicit safe starter references and four role accounts, with no preloaded operational test history; users create every order. Current source, Docker, Railway and cleanup evidence is in [production starter readiness](production-starter-readiness.md). The demo video is not recorded yet. No new product milestone, redesign or Datathon work is started.
 
 ## Design contract
 
@@ -38,7 +38,7 @@ The charcoal sidebar, fleet card, and driver hero are intentional existing eleme
 2. Model orders and their transitions centrally, then implement Store creation/tracking and Dispatcher planning using shared state.
 3. Build deterministic allocation and independent validation with stored candidate checks, rejection explanations, and deferral history.
 4. Connect Loader actual quantities/shortfalls, Dispatcher revision decisions, Driver delivery/proof, and Store receipts using transactions and audit events.
-5. Implement real Driver PWA caching, IndexedDB queueing, idempotent synchronization, cross-role freshness, and the deterministic judge journey.
+5. Implement real Driver PWA caching, IndexedDB queueing, idempotent synchronization, cross-role freshness and a connected acceptance journey on a separate safe installation.
 6. Verify functionality and visual fidelity at each milestone, then complete Docker startup, competition documentation, and deployment packaging.
 
 ## Planned technical structure
@@ -66,12 +66,12 @@ Milestones 1–6 implement the authentication/domain foundation, Store/Dispatche
 - Scope Dispatcher and Loader by assigned depots, Driver by assigned trip, and Store by outlet; enforce scope on reads and mutations. Roles and assignments come from the authenticated user and persisted mappings, never a frontend request field. Dispatcher multi-depot reads default to all assigned depots; an explicit unassigned depot is rejected, and foreign direct objects return the same not-found response as missing objects.
 - Preserve the original requested date independently from the eligible date. Dispatcher operational-date queries use the active trip service date first, then the eligible date for unassigned orders. Requested-date filtering is a separate explicit view. Carry the selected date and filters in the URL across Dispatcher navigation.
 - The Milestone 4 context remains a bounded read view of eligible orders, deferred history and master references. Milestone 5 generation reads the full authoritative eligible backlog and requires explicit day-specific availability and known weekly opening/usage fuel facts for feasible candidates. Vehicle master status alone cannot establish availability. Missing or nonoperating calendars cannot establish planning eligibility.
-- Show persisted route/stop sequences and planned versus actual timestamps without claiming live GPS. With no verified location data, use honest district/stop context. Exception Centre derives scope through every stored relationship; M6 adds only loading-shortfall approve/reject review. General resolution and replanning remain later milestones.
+- Show persisted route/stop sequences and planned versus actual timestamps. The later maps follow-up adds explicitly recorded outlet coordinates and opt-in Driver position reports; it never invents locations or promises continuous tracking, road directions or GPS-derived ETA. With no recorded location, retain honest district/stop context. Exception Centre derives scope through every stored relationship; M6 adds loading-shortfall approve/reject review. General exception resolution and execution-stage replanning remain outside the accepted scope.
 - Assign each offline mutation a UUID, full timestamp, entity/action/payload, base version, and sync state. Persist server idempotency results and distinguish replay from conflict; do not clear failed queue items.
 
 ## Ordered milestone checklist
 
-Milestones 0–8 passed local acceptance. Combined M7+8 retains earlier tests and adds actual offline/reconnect/conflict and cross-role browser evidence. Approved final integration verified the frozen product and existing Store receipt on public HTTPS. The current 308-test gate, nine-migration Docker run, final staged-tree safety and deployed four-role/offline journey passed. Exact publication/workflow evidence is recorded with the release response; the video remains unrecorded. Each milestone needs typecheck, lint, tests, build and required browser evidence. Commit logically if Git has been initialized; never stage confidential reference data. [The final report](final-hackathon-verification.md) owns the tested source, quality gate, deployment evidence and readiness result.
+Milestones 0–8 passed local acceptance. The table preserves each milestone's historical test count and limitations; it does not report a fresh run against today's source. Combined M7+8 added actual offline/reconnect/conflict and cross-role browser evidence. [Frozen final integration](final-hackathon-verification.md) verified its 308-test, nine-migration release and connected public HTTPS receipt journey. Later feature and normal-starter releases have their own evidence in the reports linked above. Each milestone requires appropriate source checks and browser evidence; confidential reference data must remain excluded from publication. The video remains unrecorded.
 
 | Milestone | Checklist | Acceptance evidence |
 | --- | --- | --- |
@@ -84,12 +84,12 @@ Milestones 0–8 passed local acceptance. Combined M7+8 retains earlier tests an
 | 6: Loader | [x] Released generated trips, scoped checklist, persisted quantities, shortfall, Dispatcher approve/reject and readiness | 246 tests including prior 224; real browser 192 → 188 approval/readiness/reload, 360/390/768px, eight migrations and required checks pass; Docker unverified |
 | 7: Driver | [x] Assigned ready routes, start/arrival/outcomes, revised quantities, recipient metadata proof and finish | Required checks, all 246 earlier tests plus Driver/client regressions; real generated trip 192 → 188 → 188, partial/failed guards, four-stop finish and same-record Store/Dispatcher browser evidence |
 | 8: Offline | [x] Production shell SW, per-user IndexedDB cache/UUID queue, reconnect/retry/idempotency/conflicts | Real browser network-offline arrival/delivery, offline reload, ordered reconnect, synced proof and retained two-tab conflict; PostgreSQL reconciliation and logout race regressions in combined report |
-| 9: Receipt | [ ] Further receipt integration/evidence scope | Existing M3 receipt services remain; Driver exposes the same real delivered record without auto-receipt. Binary storage and any additional receipt changes deferred |
+| 9: Receipt | [ ] Further receipt integration scope not separately started | Existing M3 receipt services and explicit receipt ownership were verified during final integration. Binary photo/signature storage was added in the later media follow-up; no automatic receipt was introduced |
 | 10: Integration | [x] Approved frozen final integration verification of existing features | Actual generated plan → Loader → Driver offline/reload/sync → explicit Store receipt → final Dispatcher passed on HTTPS. Nine-migration exact-source Docker passed. No new feature or general exception resolution added |
 | 11: Quality | [ ] Domain/API/browser tests, mobile/tablet/desktop review, accessibility, error states, performance | Required constraints, permission failures, sync replay/conflicts, and responsive journey pass |
-| 12: Packaging | [ ] Fresh Compose startup, README, architecture/ER diagrams, AI disclosure, exact judge IDs, deployment | Documented installation and judge journey verified; datasets/secrets excluded; deployed build verified separately |
+| 12: Packaging | [ ] Submission video still outstanding | Compose startup, README, architecture/ER diagrams, AI disclosure, publication safety and deployment have recorded acceptance. Current installation has safe references/accounts and user-created orders, without preloaded judge object IDs |
 
-### Approved final integration verification
+### Historical approved final integration verification
 
 - [x] Typecheck, lint, build, safety and diff checks; **308/308 tests in 12 files**.
 - [x] All nine migrations and original-fact retention; exact frozen-source Docker installation/auth/health/cleanup.
@@ -98,7 +98,7 @@ Milestones 0–8 passed local acceptance. Combined M7+8 retains earlier tests an
 - [x] Actual network-offline arrival/delivery, durable offline reload, ordered reconnect and server proof.
 - [x] Completed four-stop trip; explicit Store receipt and same-record final Dispatcher facts **192/188/188/188**.
 - [x] Fresh history/private-data safety scan and deployment documentation.
-- [ ] Final staged-index audit and exact-HEAD documentation publication CI.
+- [x] Final staged-index audit completed for the frozen integration; subsequent publication/run evidence belongs to its exact release and the current starter report.
 - [ ] Team demo video: **not recorded yet**; six-minute script ready.
 
 ## Required regression cases
@@ -112,9 +112,9 @@ Milestones 0–8 passed local acceptance. Combined M7+8 retains earlier tests an
 
 ## Remaining inputs and verification constraints
 
-The Milestone 0 inventory found no separate official calendar/raw CSVs, historical fuel context or location files. During Milestone 1 the user reorganized references into `input resources/` and supplied a private dataset ZIP. Milestone 2 inspected its five official reference CSVs and imported them privately with provenance; all expected reference files are now available. No addresses/GPS or verified historical fuel opening balances were supplied. Precomputed allocations and Datathon data are not used as generated planning/ML output. The prototype remains unchanged. Docker runtime, deployment and future source reconciliation remain separate checks.
+The historical Milestone 0 inventory found no separate official calendar/raw CSVs, historical fuel context or location files. During Milestone 1 the user reorganized references into `input resources/` and supplied a private dataset ZIP. Milestone 2 inspected its five official reference CSVs and imported them privately with provenance. No verified addresses/GPS or historical fuel opening balances were supplied. Precomputed allocations and Datathon data are not used as generated planning/ML output. The prototype remains unchanged and private. Recorded Docker and deployment runs are tied to their tested release; future revisions require appropriate verification.
 
-Milestone 3 verified the supplied official calendar ends on 2026-06-28. Current official future ordering requires a refreshed verified calendar. Local review uses independent SYNTHETIC references; public judging uses explicit default-off `PUBLIC_JUDGE_DEMO=true` on an OFFICIAL-free database. Physical mobile keyboard behavior remains unverified. Container startup and the full deployed integration journey passed in the final report; older milestone limits describe their historical checks.
+Milestone 3 verified that the supplied private official calendar ends on 2026-06-28; official future ordering requires a refreshed verified calendar. The current public installation instead uses explicit `STARTER_REFERENCE_DATA=true`, `PUBLIC_JUDGE_DEMO=false`, safe SYNTHETIC references and the normal clock, with no seeded orders or fixed demonstration date. Private official records are not published or relabelled. Historical public judging used the separate default-off `PUBLIC_JUDGE_DEMO` mode; that earlier deployment configuration has been superseded. Physical mobile keyboard/GPS reception remains unverified. Current container and deployment acceptance is recorded in the starter report; older milestone limits describe their historical checks.
 
 Milestone 4 retains separate PostgreSQL read fixtures and its independently authored 2040-02-06 judge. Prepared plans/trips remain distinct from allocator output. Its Store/Dispatcher same-record handoffs, 134 tests and required checks passed; that report records historical evidence. M6 and combined M7+8 instead consume actual generated/released plans through Loader and Driver. The independent Driver judge prepares SYNTHETIC demand/references and assignments, never fake trips/deliveries. The generated cross-role/offline acceptance passed, including offline reload/reconnect and a separate retained stale-version conflict.
 

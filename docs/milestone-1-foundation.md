@@ -1,5 +1,7 @@
 # MILESTONE 1 — FOUNDATION
 
+**Historical milestone record.** Test counts, screenshots, fixture dates, limitations and next-milestone statements below describe the dated foundation snapshot. For the current release, normal starter configuration and empty operational starting state, see [production starter readiness](production-starter-readiness.md).
+
 Verified locally on 2026-10-02, Windows, Node.js 24.20.0 and npm 11.19.0.
 
 ## COMPLETED
@@ -57,7 +59,7 @@ Two Windows issues encountered during verification were resolved: Prisma generat
 | Driver | 360px, 390px | 4 at each width | None |
 | Store Manager | 390px, 768px | 4 at each width | None |
 
-Browser evidence: `screenshots/foundation-login-1440.jpg`, `screenshots/foundation-dispatcher-1440.jpg`, `screenshots/foundation-driver-390.jpg`.
+Historical browser evidence: [early branding crop](screenshots/foundation-login-1440.jpg), [desktop Dispatcher](screenshots/foundation-dispatcher-1440.jpg), [phone Driver](screenshots/foundation-driver-390.jpg). The branding crop is 462 × 1000 pixels, has clipped heading text and contains no sign-in form; it does not establish login-form acceptance. The [current sign-in capture](screenshots/production-starter-login.jpg) is separate, later evidence.
 
 ## DOCKER VERIFICATION
 

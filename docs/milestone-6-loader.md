@@ -1,5 +1,7 @@
 # MILESTONE 6 — LOADER
 
+**Historical milestone record.** Test counts, screenshots, synthetic loading history, limitations and next-milestone statements below describe the dated Loader snapshot. Current starter operation has no preloaded manifests; a user-created order and released plan are required before loading. See [production starter readiness](production-starter-readiness.md).
+
 Review date: 2026-10-04 · Asia/Colombo. **Local acceptance PASS.** Driver/offline work is not started.
 
 ## COMPLETED

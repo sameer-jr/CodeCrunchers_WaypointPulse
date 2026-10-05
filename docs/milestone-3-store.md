@@ -1,5 +1,7 @@
 # MILESTONE 3 — STORE
 
+**Historical milestone record.** Test counts, screenshots, prepared synthetic scenarios, limitations and next-milestone statements below describe the dated Store snapshot. These fixtures are not supplied as current live orders. See [production starter readiness](production-starter-readiness.md) for the normal starter release, where users create every order.
+
 Verification date: **2026-10-03**, Asia/Colombo. Scope is Store Manager only. Milestone 4 has not started.
 
 Local Store acceptance is recorded below. Docker runtime, current official-calendar eligibility and physical mobile keyboard verification remain separate limitations.
@@ -112,7 +114,7 @@ Browser verification used the normal loopback development database for creation 
 
 Normal development data still has all 120 official outlets and 910 official calendar days, with **zero trips and zero allocations** after Store creation. Receipt/planned/deferral preparation exists only in the isolated judge database; an auxiliary foreign draft there was created solely for direct scope verification. Temporary judge/prototype web servers were stopped; the normal localhost app and PostgreSQL remain running with data preserved. The browser viewport override was reset.
 
-Final localhost web and `/api/health` both returned HTTP 200; the health endpoint reported the database connected. Commands above were invoked as `npm.cmd` on Windows because PowerShell's npm script entry point was blocked. All required command checks passed after final source changes. [Current local review screenshot](screenshots/store-home-review.png).
+Final milestone localhost web and `/api/health` both returned HTTP 200; the health endpoint reported the database connected. Commands above were invoked as `npm.cmd` on Windows because PowerShell's npm script entry point was blocked. All required command checks passed after final milestone source changes. [Historical local review screenshot](screenshots/store-home-review.png).
 
 Mobile verification uses browser viewport, focus, scroll, typography and touch-target checks. A physical device's onscreen keyboard was not exercised.
 

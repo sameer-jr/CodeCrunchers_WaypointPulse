@@ -1,5 +1,7 @@
 # MILESTONE 2 — DOMAIN
 
+**Historical milestone record.** Test counts, private local imports, fixture restrictions, limitations and next-milestone statements below describe the dated domain snapshot. The later explicit safe-starter production mode is documented in [production starter readiness](production-starter-readiness.md); it does not publish or relabel the private OFFICIAL imports described here.
+
 Result: **PASS** for the authorized domain milestone, verified locally on 2026-10-02. Milestone 3 has not started. Operational UI/workflows, allocation, PWA/offline and Datathon ML are not implemented.
 
 ## COMPLETED

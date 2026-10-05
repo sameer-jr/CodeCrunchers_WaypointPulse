@@ -1,12 +1,12 @@
 # Delivery media and maps verification
 
-Prepared 2026-10-05, Asia/Colombo, for the user-authorized photo/signature/maps follow-up. This report describes the current source and distinguishes focused automated checks from final integrated, browser, container and deployed acceptance. Historical milestone/final-release reports remain unchanged.
+Prepared 2026-10-05, Asia/Colombo, for the user-authorized photo/signature/maps follow-up. This report describes the implemented feature behavior and its **historical acceptance source, tests, synthetic workflow and screenshots**. The production operational test records documented below were cleared later that day after verified private backup/restoration; their IDs and proof galleries are not preloaded examples in the current live system. Features and migrations remain intact. See [production starter readiness](production-starter-readiness.md) for the normal starter configuration and current release evidence.
 
 ## Implemented behavior
 
 Driver Proof includes Take photo, JPEG/PNG upload, photo previews/removal and a recipient signature pad supporting finger, pen or mouse. Use signature attaches the drawing; Clear signature removes it. Preparation and uncommitted signature strokes block delivery submission. Photos/signatures are optional and supplement the existing recipient, outcome, delivered quantity, reason, note and completion time. They never confirm a Store receipt or change the ordered/loaded quantities.
 
-| Limit | Current behavior |
+| Limit | Implemented behavior |
 | --- | --- |
 | Photos | Up to three, each at most 1 MiB after preparation; server output JPEG within 1600 × 1600 |
 | Signature | Up to one, at most 256 KiB; server output PNG within 1600 × 800 |
@@ -55,9 +55,9 @@ Map tiles come from the external OpenStreetMap service after the user opens the 
 | PUT | `/api/location/outlets/:id` | Dispatcher-only, expected version and audited reason |
 | POST | `/api/location/trips/:id/position` | Assigned active Driver, fresh ordered position reading |
 
-Migration `20261004000900_delivery_media_location` adds DeliveryAttachment, OutletLocation and TripPosition, plus outlet-location audit enum values. There are **ten additive migrations and 30 Prisma models**. The prior nine migration files remain unchanged. Fresh installation remains auth-only: the generic Docker installation checker verifies all non-auth models are empty, including these new tables. No competition CSV/ZIP/prototype data, personal delivery photos/signatures, private coordinates, credentials or local databases are placed in repository/build files.
+Migration `20261004000900_delivery_media_location` adds DeliveryAttachment, OutletLocation and TripPosition, plus outlet-location audit enum values. There are **ten additive migrations and 30 Prisma models**. The prior nine migration files remain unchanged. Default fresh Compose installation is auth-only: the generic Docker installation checker verifies all non-auth models are empty, including these new tables. The later explicit `STARTER_REFERENCE_DATA=true` mode additionally supplies safe references and role scope, with no operational orders/history; see the current starter report. No competition CSV/ZIP/prototype data, personal delivery photos/signatures, private coordinates, credentials or local databases are placed in repository/build files.
 
-## Verification status
+## Historical feature verification status
 
 | Evidence | Status |
 | --- | --- |
@@ -74,16 +74,16 @@ Migration `20261004000900_delivery_media_location` adds DeliveryAttachment, Outl
 | Real Driver GPS reading | **UNVERIFIED — user approved the real-location test, but this laptop's provider returned unavailable; no position was stored** |
 | Physical mobile camera/signature/GPS/keyboard acceptance | **PENDING — browser simulation or source checks do not establish physical-device behavior** |
 
-## Browser and deployment acceptance checklist
+## Feature acceptance checklist
 
-1. Use a separate publication-safe synthetic scenario. Preserve the existing live judge's completed delivery/receipt and migration history.
+1. Use a separate publication-safe synthetic scenario, not the live starter database. Preserve migration history and any user-created work. The completed live examples used by this historical acceptance are no longer preloaded.
 2. Follow the existing planning/release/loading/assignment flow. Keep original ordered and actual loaded units separate while executing Driver delivery.
 3. Upload a safe JPEG/PNG, inspect its preview, remove/re-add it; reject an unsupported file and a fourth photo. Draw a signature; verify unfinished ink blocks completion, Clear removes it and Use signature attaches it. Check touch targets/overflow at 360 and 390 px.
 4. Save one delivery with photo/signature while actually offline. Observe pending labels, reload offline, inspect retained local previews, reconnect and observe successful ordered synchronization. Repeat sync/refresh and confirm identical attachment/delivery IDs without duplicates.
 5. Read the same actual photo/signature as Driver, its Store and permitted Dispatcher. Confirm image MIME/cache headers and foreign/Loader denial. Ensure the Store has not been automatically receipted; explicitly confirm receipt and reconcile all four quantities separately.
 6. Verify truthful missing-coordinate output. Explicitly record approved safe demo coordinates with an explanation, inspect stop markers/sequence lines, and check Store sees only its own stop. Opening a map must not imply road directions or a GPS ETA.
 7. Explicitly opt in to GPS for an active trip; distinguish a controlled browser location test from a physical device reading. Verify a received location/accuracy, Stop sharing, permission denial and historical labels. Check hidden/offline/reload behavior and retain usable delivery when tiles cannot load.
-8. Publish only after current source checks and private-data audit. Record the exact commit's real Docker run, deployed matching services, ten migrations, preserved old operational IDs and actual HTTPS media/offline/location smoke before marking release acceptance PASS.
+8. Publish only after source checks and private-data audit. Record the tested commit's real Docker run, matching deployments, ten migrations and actual HTTPS media/offline/location smoke before marking that feature release acceptance PASS. Checking historical record preservation was part of the acceptance below, before the later authorized test-history cleanup.
 
 ## Remaining limits
 
@@ -101,7 +101,7 @@ Screenshots: [route map](screenshots/media-maps-route.png), [offline signature](
 
 The Docker verification script runs an actual in-memory synthetic PNG through the compiled photo/signature normalizer, checking output JPEG/PNG decoding, dimensions and byte lengths without writing operational rows. This probe and Web/database/authentication HTTP checks passed against the isolated Windows localhost stack. Linux container acceptance is recorded separately below.
 
-## Published container and Railway evidence (2026-10-05)
+## Historical published container and Railway evidence (2026-10-05)
 
 The application source tested locally is commit `05ab09575dd74f33692219b98ebaae99b7d3cb49`. The published merge commit `3f204e45559fd9a72e19586dbe9809afb73743a2` preserves the upstream README and adds disclosure documentation; application source is unchanged from the tested commit.
 
@@ -116,7 +116,7 @@ Public application: [Waypoint Pulse](https://web-production-87afe.up.railway.app
 
 The 43-request HTTPS smoke passed all four seeded account logins, Secure/HttpOnly/SameSite=Strict `/api` cookies, restored identity, correct workspace access, wrong-role denial, logout revocation and origin protection. All four role SPA paths returned the app shell. The service worker and ten application-shell resources responded, with authenticated API and cross-origin resources excluded from precaching. These HTTP checks are separate from the browser journey below.
 
-## Production browser and reconciliation evidence (2026-10-05)
+## Historical production browser and reconciliation evidence (2026-10-05)
 
 A separate existing SYNTHETIC Reefer trip (`76ca6012-0f16-4ad1-8e89-4ece823b9b9e`) was assigned, fully loaded by Loader and executed by Driver: two stops of 25 units each, 50 ordered / 50 loaded / 50 delivered, both stops completed. Dispatcher explicitly recorded a labelled synthetic outlet coordinate and inspected the route map; both stops had recorded coordinates. These coordinates describe the test fixture, not verified competition outlet locations.
 
@@ -128,4 +128,4 @@ The earlier judge order (`69fe8c92-e4e2-4aff-bf8b-fe903c9d4ed3`, version 13) and
 
 The user explicitly authorized this laptop's real-location test. Share location entered the opt-in flow, but the browser's location provider returned **GPS is unavailable**. Delivery remained usable and sharing was stopped. Subsequent Driver, Store and Dispatcher location reads confirmed no stored position. This verifies the unavailable-GPS fallback, not successful receipt of a real location. Location emulation and touch-event simulation were unsupported; mouse drawing was verified. Physical mobile camera, finger/pen signature, onscreen keyboard, actual GPS reception and foreground permission/pause behavior remain pending.
 
-Publication-safe production screenshots: [offline signature preview](screenshots/media-production-offline-signature.png), [synced Driver proof](screenshots/media-production-synced-proof.png), [Store proof before receipt](screenshots/media-production-store-proof.png), [Store after explicit receipt](screenshots/media-production-store-receipt.png), [Dispatcher proof](screenshots/media-production-dispatcher-proof.png), [signature preview](screenshots/media-production-signature-preview.png). All proof and operational data pictured are synthetic; no real device coordinates or confidential dataset records are included.
+Historical publication-safe production screenshots: [offline signature preview](screenshots/media-production-offline-signature.png), [synced Driver proof](screenshots/media-production-synced-proof.png), [Store proof before receipt](screenshots/media-production-store-proof.png), [Store after explicit receipt](screenshots/media-production-store-receipt.png), [Dispatcher proof](screenshots/media-production-dispatcher-proof.png), [signature preview](screenshots/media-production-signature-preview.png). All proof and operational data pictured are synthetic; no real device coordinates or confidential dataset records are included. These capture the completed feature acceptance before the later operational test-history cleanup.

@@ -16,16 +16,16 @@ Waypoint Pulse is a responsive delivery-operations platform for the fictional **
 
 | Resource | Link |
 | --- | --- |
-| **Live application** | https://web-production-87afe.up.railway.app |
-| **Source repository** | https://github.com/sameer-jr/CodeCrunchers_WaypointPulse |
-| **Docker verification** | https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/workflows/docker-compose-verification.yml |
-| **Demo video** | **Not recorded yet.** NULL |
+| **Live application** | [Open Waypoint Pulse](https://web-production-87afe.up.railway.app) |
+| **Source repository** | [CodeCrunchers_WaypointPulse](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse) |
+| **Docker verification** | [GitHub Actions workflow and runs](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/workflows/docker-compose-verification.yml) |
+| **Demo video** | **Not recorded yet.** A public recording link remains outstanding. |
 
 ---
 
 ## Starter accounts
 
-The Railway deployment uses these four seeded role accounts.
+The Railway deployment uses these four seeded role accounts. **Seeded accounts** are starting login accounts created during installation, with their assigned roles and access. They let reviewers sign in immediately; they do not mean that orders or completed deliveries are preloaded.
 
 **Password for all four accounts:** `WaypointJudge!2026`
 
@@ -44,7 +44,7 @@ The Railway deployment uses these four seeded role accounts.
 
 ## Normal workflow quickstart
 
-The live starting inventory has been reset to **safe starter accounts and reference records only**, with zero orders, plans, trips, loading, deliveries, proof or receipts. Private backup/restore, the 37-request HTTPS smoke and **all four role browser checks passed**, without creating business records. Users create all orders through the ordinary Store workflow. See the dated snapshot and final publication/access status in [production starter readiness](docs/production-starter-readiness.md).
+The verified **October 5, 2026 starting snapshot** contains safe starter accounts and reference records only, with zero orders, plans, trips, loading, deliveries, proof or receipts. Private backup/restore, the 37-request HTTPS smoke and **all four role browser checks passed**, without creating business records. Users create all orders through the ordinary Store workflow; subsequent user activity persists. See the dated snapshot and release evidence in [production starter readiness](docs/production-starter-readiness.md).
 
 Open [Waypoint Pulse](https://web-production-87afe.up.railway.app), sign in with the appropriate role and use the ordinary navigation. There is no competition-demo panel or fixed demonstration date. Choose the operational/eligible date shown by the application.
 
@@ -59,6 +59,12 @@ Open [Waypoint Pulse](https://web-production-87afe.up.railway.app), sign in with
 Initially all workspaces have no operational work. Store must create demand, Dispatcher must release a plan, and Loader must record readiness before Driver can start. Photos/signatures and GPS remain available when users reach delivery or an active trip. No order or completed example is preloaded.
 
 User actions persist across reload/deployment. Normal startup never resets them. A maintenance reset is a separate guarded operator action requiring a private backup and verified restore. The competition dataset remains private.
+
+### Current screenshots
+
+These actual production captures show the fresh starter workspaces on **October 5, 2026**, plus the full sign-in page on **October 6**. Their dates and empty counts describe their capture, rather than a permanent live inventory. Browse all six role/setup captures and the separately labeled historical workflow evidence in the [screenshot index](docs/screenshots/README.md).
+
+![Planning Studio with the current operational date and no generated plan](docs/screenshots/production-starter-planning.jpg)
 
 ---
 
@@ -341,6 +347,8 @@ Detailed documentation:
 - [Photo/signature/maps verification — prior accepted feature release](docs/media-maps-verification.md)
 - [Production starter readiness — current setup and reset status](docs/production-starter-readiness.md)
 - [Previous prepared review scenario — historical evidence](docs/competition-review-readiness.md)
+- [Documentation index — current guides and historical reports](docs/README.md)
+- [Screenshot index — current starter and historical workflow captures](docs/screenshots/README.md)
 
 ---
 
@@ -369,7 +377,7 @@ Private competition resources are intentionally excluded from Git and Docker bui
 
 ---
 
-# Installation
+## Installation with Docker
 
 The repository can be run as a complete Docker stack.
 
@@ -421,6 +429,8 @@ STARTER_REFERENCE_DATA=true
 
 `STARTER_REFERENCE_DATA=true` prepares only publication-safe operational references and role scope, with dates based on the current Asia/Colombo clock. Keep `PUBLIC_JUDGE_DEMO=false` for normal operation. Startup seeds no orders, plan, trip, loading, delivery, proof or receipt. Users create demand and perform every step through the normal application. Repeat startup preserves their work; it is not a reset. Live cleanup/verification is recorded in [production starter readiness](docs/production-starter-readiness.md). Historical local judge helpers remain separate development fixtures.
 
+Replace both secret placeholders before starting. The checked-in `.env.example` defaults to `STARTER_REFERENCE_DATA=false`, which creates the four authentication accounts only. Enable it as shown above for usable publication-safe references and role scope. Keep private credentials in the ignored `.env` file.
+
 ### 3. Start the complete stack
 
 ```bash
@@ -450,7 +460,7 @@ http://localhost:5173/api/health
 
 ### 4. Local starter credentials
 
-The checked-in example development password is:
+With the example `SEED_DEMO_PASSWORD` above, the local account password is:
 
 ```text
 WaypointDemo!2026
@@ -476,6 +486,36 @@ To also remove the local database volume:
 ```bash
 docker compose down -v
 ```
+
+This permanently deletes that local Compose database volume. Ordinary `docker compose down` preserves it.
+
+## Local development without Docker
+
+Install **Node.js 22.13 or later** and Git. After cloning, install dependencies and create the ignored local configuration:
+
+```bash
+npm ci
+npm run setup:local
+```
+
+`setup:local` generates database/session secrets for a new `.env` and preserves an existing file. For safe starter workflows, edit that file to set `STARTER_REFERENCE_DATA=true`, keep `PUBLIC_JUDGE_DEMO=false`, and remove any `DISPATCHER_DEMO_DATE`. Keep the example localhost database URL/port for the embedded PostgreSQL helper.
+
+In the first terminal:
+
+```bash
+npm run dev:db
+```
+
+Wait for **Local PostgreSQL ready**. This applies migrations and seeds authentication accounts. In a second terminal, install the optional starter references and start API/Web:
+
+```bash
+npm run seed:public-judge
+npm run dev
+```
+
+Despite its legacy command name, `seed:public-judge` installs only starter references when `STARTER_REFERENCE_DATA=true`; it creates no orders or transactions. Open [localhost:5173](http://localhost:5173) and check [API health](http://localhost:5173/api/health). If port 5173 is occupied, stop the conflicting process before starting so the browser origin matches `WEB_ORIGIN`.
+
+Use the four account emails above with your local `SEED_DEMO_PASSWORD`. On Windows, use `npm.cmd` if PowerShell blocks `npm.ps1`. Stop API/Web and then PostgreSQL with **Ctrl+C** in their terminals; the ignored `.local/postgres` database is preserved.
 
 ---
 
@@ -514,9 +554,9 @@ No raw competition ZIP, official CSV, private `.env`, local database or original
 
 ## Remote Docker verification
 
-The normal starter source passed Ubuntu Docker verification on exact commit `c2b19ca17c736ba780586aeaa7802facfde70f26`: [run 37330960034](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37330960034). Earlier prepared-review and media runs remain historical evidence. Current local/container, completed maintenance and live acceptance evidence are recorded in [production starter readiness](docs/production-starter-readiness.md).
+The published starter release `4dde53baa84c97ca82e980b2d2ff82cbc68e80a9` passed Ubuntu Docker verification: [run 37338059525](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37338059525). Its build, health, seeded authentication and always-run container/volume cleanup succeeded. Earlier functional-starter, prepared-review and media runs remain historical evidence. See [production starter readiness](docs/production-starter-readiness.md) for the dated release, maintenance and live acceptance evidence.
 
-Local development can run without Docker using `npm run setup:local`, `npm run dev:db` and, in another terminal, `npm run dev`. Competition startup remains `docker compose up --build`; CI verifies that same container stack on Linux.
+Local development can run [without Docker](#local-development-without-docker). Competition startup remains `docker compose up --build`; CI verifies that same container stack on Linux.
 
 The workflow checks:
 
@@ -536,7 +576,7 @@ Workflow:
 
 [`.github/workflows/docker-compose-verification.yml`](.github/workflows/docker-compose-verification.yml)
 
-The current run's build, health, seeded authentication and always-run `docker compose down -v` cleanup succeeded. It requires no confidential competition dataset and checks a fresh safe-account installation; successful CI does not establish that the live database has been cleared.
+CI requires no confidential competition dataset and checks a fresh authentication-only installation using documented non-secret CI values. It does not exercise a seeded end-to-end order journey or reset the live database. For an already-running local Compose stack, `npm run verify:docker` checks HTTP/authentication; it does not build or start containers. See [remote Docker verification](docs/remote-docker-verification.md).
 
 ---
 
@@ -544,8 +584,7 @@ The current run's build, health, seeded authentication and always-run `docker co
 
 The production system is deployed on **Railway**.
 
-**Live URL:**\
-https://web-production-87afe.up.railway.app
+**Live URL:** [Waypoint Pulse](https://web-production-87afe.up.railway.app)
 
 Topology:
 
@@ -576,7 +615,7 @@ The previously deployed release was verified for:
 
 The prior media/maps release on `3f204e4` passed four-role HTTPS authentication, synthetic delivery, offline photo/signature reload and synchronization, authorized galleries, explicit receipt and reconciliation. Its [feature evidence](docs/media-maps-verification.md) is retained. The approved GPS test reached the sharing flow, but this laptop's provider was unavailable; real GPS reception and physical mobile acceptance remain unverified.
 
-Normal starter source `c2b19ca` passes local checks and Docker CI. Following Railway's [delayed GitHub-build incident](https://status.railway.com/incident/8RELVRFI), a CLI release uploaded 344 public files verified byte-for-byte against that source. Both API and Web reached **SUCCESS**, and public HTTPS `/api/health` returned **200 with the database connected**, at October 5 15:38:46 UTC (21:08:46 Asia/Colombo). CLI commit metadata is `null`; the source SHA is established by the artifact comparison.
+The published starter release `4dde53b` reached **SUCCESS on both Railway services with matching GitHub commit metadata**, verified October 5 at **16:08:43 UTC / 21:38:43 Asia/Colombo**. A separate **37-request post-restart HTTPS smoke passed at 16:08:57 UTC**: database health, all four scoped accounts, secure cookies, current-date empty workspaces and role-denied access. This supersedes the earlier byte-verified CLI deployment of functional source `c2b19ca`.
 
 **Testing history has been cleared.** A real isolated PostgreSQL restore matched the private backup's 30 table digests, including media bytes. The guarded reset returned zero rows in all 18 operational tables while preserving all 12 reference/account table counts and checksums. The live HTTP snapshot passed at October 5 **15:42:01 UTC / 21:12:01 Asia/Colombo**. All four roles then passed browser acceptance with no competition-demo panel or old operational history; test sessions were logged out and no business records were created. A final private read confirmed the same zero/retained inventory. Temporary restore/remote helper copies were removed; the private local backup remains. See the accepted snapshot and screenshots in [production starter readiness](docs/production-starter-readiness.md).
 
@@ -596,7 +635,7 @@ npm run build
 npm run check:safety
 ```
 
-Current normal-starter source checks passed: typecheck, lint, build, publication safety and real PostgreSQL tests.
+Functional starter source `c2b19ca` passed typecheck, lint, build, publication safety and the real PostgreSQL suite. Release `4dde53b` changed only two login wording strings and documentation/screenshots; its typecheck, lint, Web build, publication safety and exact Linux Docker run passed. The 365-test suite below is evidence for the unchanged functional source, rather than a claim that it was rerun for the wording changes.
 
 ```text
 365 / 365 tests passed across 15 files
@@ -746,7 +785,9 @@ No AI service is required by the running Waypoint Pulse application. The plannin
 - [Railway deployment](docs/deployment-railway.md)
 - [Final Hackathon verification — historical release](docs/final-hackathon-verification.md)
 - [Photo/signature/maps verification — prior accepted feature release](docs/media-maps-verification.md)
-- [Demo script](docs/demo-script.md)
+- [Recording script](docs/demo-script.md)
+- [Complete documentation index](docs/README.md)
+- [Current and historical screenshots](docs/screenshots/README.md)
 
 ---
 

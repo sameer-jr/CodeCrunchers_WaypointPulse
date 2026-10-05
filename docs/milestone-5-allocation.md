@@ -1,5 +1,7 @@
 # MILESTONE 5 — ALLOCATION ENGINE
 
+**Historical milestone record.** Test counts, screenshots, benchmark measurements, generated synthetic scenarios and next-milestone statements below describe the dated allocation snapshot. They are acceptance evidence, not plans retained in the current live starter system. See [production starter readiness](production-starter-readiness.md) for the current release and its normal production dates.
+
 Review date: 2026-10-04 · Asia/Colombo. Milestone 5 only; Loader operational work is not started.
 
 ## COMPLETED

@@ -1,5 +1,7 @@
 # FINAL HACKATHON VERIFICATION
 
+**Historical final-integration acceptance, October 4.** The source SHA, 308 tests, nine migrations, deployed synthetic records and screenshots below describe that frozen release. Photo/signature/maps were added and accepted later; see [media/maps verification](media-maps-verification.md). The recorded production test orders, plans, deliveries and receipts were cleared on October 5 after verified backup/restoration. For the current normal starter release, ten migrations, 30 models and user-created-order workflow, see [production starter readiness](production-starter-readiness.md). No historical record ID below is a current reviewer entry point.
+
 Status recorded on **2026-10-04: NOT READY for submission — video not recorded yet**. Product integration, Docker and the complete deployed four-role/offline journey passed. This report separates the accepted local Milestone 7+8 baseline from the frozen application source, container execution and public-host evidence. Final publication SHA and its exact workflow result are recorded in the release response and GitHub Actions.
 
 ## FINAL COMMIT
@@ -14,7 +16,7 @@ The existing workflow is Store order → Dispatcher Generate → independent Val
 
 ## LOCAL QUALITY GATE
 
-| Check | Current result |
+| Check | Frozen-release result |
 | --- | --- |
 | `npm run typecheck` | PASS; corrected new tests also passed scoped compilation |
 | `npm run lint` | PASS; corrected new tests also passed scoped lint |
@@ -27,7 +29,7 @@ The final count is **308 = 299 accepted baseline cases + nine production configu
 
 ## DOCKER
 
-- Current-release workflow: **PASS**.
+- Frozen-release workflow: **PASS**.
 - Exact tested SHA: `fb83ddd42b6a3d7aa03770ccda46eb3a9d25950e`.
 - Run: [37203993474](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37203993474), completed with conclusion **success**.
 - Verified API/Web image builds, PostgreSQL startup, API/Web/database health, **all nine migrations**, four safe seeded accounts, database-backed authentication/session restore, protected access, logout and successful container/volume cleanup.
@@ -35,7 +37,7 @@ The final count is **308 = 299 accepted baseline cases + nine production configu
 
 The successful run covers the frozen application source SHA above. The [official workflow page](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/workflows/docker-compose-verification.yml) shows later main runs; the final response will report the documentation publication's exact-HEAD result after it completes. Future functional source revisions require their own verification.
 
-The earlier [remote Docker report](remote-docker-verification.md) verifies its own pre-Driver, eight-migration baseline only. It does not establish current-source Docker acceptance.
+The earlier [remote Docker report](remote-docker-verification.md) verifies its own pre-Driver, eight-migration baseline only. It does not establish this frozen release's Docker acceptance; the exact run above supplies that evidence. Current starter Docker evidence is recorded separately in the starter report.
 
 ## MIGRATIONS
 
@@ -48,7 +50,7 @@ The earlier [remote Docker report](remote-docker-verification.md) verifies its o
 
 ## PUBLIC DEPLOYMENT
 
-| Item | Current evidence |
+| Item | October 4 release evidence |
 | --- | --- |
 | Host/project | Railway project **CodeCrunchers-WaypointPulse** created with PostgreSQL, API and Web services |
 | PostgreSQL | Managed service online with persistent volume; private network only, no public domain/TCP proxy |
@@ -62,7 +64,7 @@ The verified topology is public HTTPS Web → same-origin `/api` proxy → priva
 
 ## SEEDED ACCOUNTS
 
-| Account | Role | Current public-host result |
+| Account | Role | October 4 public-host result |
 | --- | --- | --- |
 | dispatcher@waypoint.local | Dispatcher | PASS: seeded, secure login, session restore, own workspace, wrong-role 403, logout/replay 401 |
 | loader@waypoint.local | Loader | PASS: seeded, secure login, session restore, own workspace, wrong-role 403, logout/replay 401 |
@@ -90,9 +92,9 @@ The actual root browser has Generated, independently Validated and Released a pl
 
 **Complete deployed browser journey PASS.** Reconnect automatically acknowledged both offline operations, with zero pending and server-synced recipient proof. Driver completed the remaining three 25-unit deliveries and Finish Trip: **4/4 stops, 267 ordered / 263 loaded / 263 delivered**, trip version 20. The browser displayed **10/10 SYNCED queue operations**; this is a browser observation, not a public API count. Before Store confirmation, tracking showed **192 ordered / 188 loaded / 188 delivered / receipt Not recorded**. Store explicitly confirmed 188 in good condition at **2026-10-04T13:34:44.607Z**, producing RECEIPT_CONFIRMED at order version 13. Dispatcher showed the same **192 / 188 / 188 / 188**, completed trip and resolved loading exception. Driver created no automatic Store receipt, and actualReturn remains null.
 
-Independent authenticated read-only API reconciliation in ignored `.local/deployed-final-flow.json` confirmed identical trip/stops, main order, delivery and receipt IDs across Driver, Store and Dispatcher. It verified saved recipient metadata and retained approval revision 2, without operational mutations. Public reads do not expose global OFFICIAL-row or OfflineOperation counts; none are inferred here. The live fixture retains this completed mutable history. Inspect the order on day 2040-03-05, or use a fresh separate safe judge installation to repeat every mutation; never reset the live database.
+Independent authenticated read-only API reconciliation in ignored `.local/deployed-final-flow.json` confirmed identical trip/stops, main order, delivery and receipt IDs across Driver, Store and Dispatcher. It verified saved recipient metadata and retained approval revision 2, without operational mutations. Public reads do not expose global OFFICIAL-row or OfflineOperation counts; none are inferred here. This completed fixture was later removed by the separately authorized October 5 test-history cleanup. These IDs are retained as historical evidence only; repeat mutations on a separate safe installation and preserve current live user work.
 
-The [35-step README walkthrough](../README.md#final-judge-walkthrough) supplies the exact existing actions. Accepted local Milestone 7+8 evidence remains in [its report](milestone-7-8-driver-offline.md), including offline/reload/reconnect, retained conflict and same-record Store/Dispatcher reads before receipt.
+The [README workflow](../README.md#final-judge-walkthrough) now explains the ordinary user-created-order journey; the original 35-step fixture walkthrough is historical. Accepted local Milestone 7+8 evidence remains in [its report](milestone-7-8-driver-offline.md), including offline/reload/reconnect, retained conflict and same-record Store/Dispatcher reads before receipt.
 
 ## OFFLINE DEPLOYED TEST
 
@@ -110,7 +112,7 @@ The [35-step README walkthrough](../README.md#final-judge-walkthrough) supplies 
 | [Store receipt](screenshots/final-production-store-receipt.jpg) | Explicit 188-unit good-condition confirmation |
 | [Final Dispatcher](screenshots/final-production-dispatcher-final.jpg) | Same four quantities, completed trip and retained review |
 
-All nine screenshot signatures were checked as JPEG/JFIF and their extensions match the actual bytes. Local Milestone 7+8 retained-conflict evidence remains separately scoped in its report.
+All nine screenshots are historical synthetic checkpoints captured before the October 5 cleanup, not current preloaded examples. Their file signatures were checked as JPEG/JFIF and their extensions match the actual bytes. Local Milestone 7+8 retained-conflict evidence remains separately scoped in its report.
 
 ## README
 
@@ -133,6 +135,8 @@ The [six-minute demo script](demo-script.md) is prepared for a 5–8 minute team
 
 ## KNOWN LIMITATIONS
 
+These limitations describe the frozen October 4 release. Later photo/signature storage, scoped maps and optional position reporting are documented in the media/maps report. Physical-device acceptance and a real video recording remain unverified as described in the current starter report.
+
 - The authoritative future official competition calendar is unavailable; the reproducible judge uses SYNTHETIC day 2040-03-05.
 - No live GPS, turn-by-turn navigation, scanner hardware, reefer telemetry, binary photo/signature/cloud proof storage or Datathon prediction integration.
 - A physical mobile device/onscreen keyboard was not tested.
@@ -142,12 +146,12 @@ The [six-minute demo script](demo-script.md) is prepared for a 5–8 minute team
 
 ## SUBMISSION LINKS
 
-| Resource | Current state |
+| Resource | State at this historical release |
 | --- | --- |
 | Repository | [CodeCrunchers Waypoint Pulse](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse) |
 | Live application | [Waypoint Pulse on Railway](https://web-production-87afe.up.railway.app) — healthy; full four-role/offline/receipt journey PASS |
 | Demo video | Not recorded yet; no URL available. [Recording script ready](demo-script.md) |
-| Current-release Docker run | [37203993474 — PASS](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37203993474) for `fb83ddd42b6a3d7aa03770ccda46eb3a9d25950e` |
+| Frozen-release Docker run | [37203993474 — PASS](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37203993474) for `fb83ddd42b6a3d7aa03770ccda46eb3a9d25950e` |
 
 ## RESULT
 

@@ -4,7 +4,7 @@ Target 6:00; allowed length 5–8 minutes. No video has been recorded or linked.
 
 ## Prepare before recording
 
-Use a separate safe installation following [Installation](../README.md#installation), with `STARTER_REFERENCE_DATA=true` and `PUBLIC_JUDGE_DEMO=false`. This preserves the public starting inventory for reviewers. The example local password is `WaypointDemo!2026`; the [public Railway application](https://web-production-87afe.up.railway.app) uses `WaypointJudge!2026`. Its private restore/reset and all-role empty-state acceptance passed, with the HTTP snapshot recorded at **2026-10-05T15:42:01Z** in the readiness report. Later users create their own persisted work; the remaining publication/access checklist is separate.
+Use a separate safe installation following [Installation with Docker](../README.md#installation-with-docker) or [local development without Docker](../README.md#local-development-without-docker), with `STARTER_REFERENCE_DATA=true`, `PUBLIC_JUDGE_DEMO=false` and no `DISPATCHER_DEMO_DATE`. Local `npm run dev:db` initializes migrations/auth only; when it is ready, run `npm run seed:public-judge` separately to install the safe starter references. Container startup runs that selected installer automatically. This preserves the public starting inventory for reviewers. The example local password is `WaypointDemo!2026`; the [public Railway application](https://web-production-87afe.up.railway.app) uses `WaypointJudge!2026`. The recorded `4dde53baa84c97ca82e980b2d2ff82cbc68e80a9` release passed exact Docker CI, matching GitHub-linked Railway deployments and the post-restart **2026-10-05T16:08:57Z** HTTPS smoke in the readiness report. Later users create their own persisted work; this is a dated starting-state snapshot, not an automatic reset.
 
 | Role | Account |
 | --- | --- |
@@ -12,6 +12,8 @@ Use a separate safe installation following [Installation](../README.md#installat
 | Dispatcher | dispatcher@waypoint.local |
 | Loader | loader@waypoint.local |
 | Driver | driver@waypoint.local |
+
+These are **seed accounts**: initial role logins so reviewers can enter the system. They do not preload orders or operational results. Users create orders and perform each subsequent action.
 
 Create the recording order through ordinary Place Order. Use the application-confirmed **eligible service date**, which follows the real calendar and 16:00 Asia/Colombo cutoff; no future demonstration date or privileged panel is used. Rehearse when creation/execution are eligible. A 192-unit ambient order and 188-unit shortage below are example inputs entered by the recorder, not seed data or preloaded results.
 

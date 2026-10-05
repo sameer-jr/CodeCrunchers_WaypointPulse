@@ -1,5 +1,7 @@
 # MILESTONE 7 + 8 — DRIVER / OFFLINE
 
+**Historical milestone record.** Test counts, screenshots, fixture IDs, limitations and next-step statements below describe the dated Driver/offline snapshot. Later photo/signature/maps acceptance is in [media/maps verification](media-maps-verification.md); the current normal starter release and cleared operational test history are in [production starter readiness](production-starter-readiness.md).
+
 Combined local acceptance on 2026-10-04. This report covers Driver execution and offline/sync recovery only. Final integration, packaging, deployment and Datathon work have not started. The supplied prototype remains unchanged; all 13 original file hashes match the earlier baseline.
 
 ## COMPLETED
@@ -145,7 +147,7 @@ At 360/390px, document widths stayed within the viewport. Refresh is 44×44px; p
 | [Completed trip at 360px](screenshots/driver-completed-360.jpg) | Finished trip and quantities |
 | [Route at 360px](screenshots/driver-route-360.jpg), [completed route at 390px](screenshots/driver-route-completed-390.jpg) | Persisted sequence/outcomes and phone layout |
 | [Store tracking](screenshots/driver-store-tracking-390.jpg) | 192 / 188 / 188, receipt not recorded |
-| [Dispatcher progress](screenshots/driver-dispatcher-progress.jpg), [exceptions](screenshots/driver-dispatcher-exceptions.jpg) | Same trip, stop progress and actual issue notes |
+| [Dispatcher progress](screenshots/driver-dispatcher-progress.jpg), [Exception Centre list, detail still loading](screenshots/driver-dispatcher-exceptions.jpg) | Same trip progress and exception list; the detail pane still says Loading exception detail, so this image does not establish loaded exception-detail acceptance |
 | [Retained conflict at 390px](screenshots/driver-conflict-390.jpg), [Sync at 360px](screenshots/driver-sync-360.jpg) | Structured conflict plus dependent pending proof |
 | [Final rebuilt Sync view](screenshots/driver-final-sync.jpg) | Retained conflict/proof after the session-fence fix and repeated genuine offline reload |
 

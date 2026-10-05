@@ -1,5 +1,7 @@
 # MILESTONE 4 — DISPATCHER
 
+**Historical milestone record.** Test counts, screenshots, prepared 2040 fixtures, limitations and next-milestone statements below describe the dated Dispatcher snapshot. Current production uses the Asia/Colombo clock and safe starter references without preloaded orders or plans; see [production starter readiness](production-starter-readiness.md).
+
 Review date: 2026-10-03 · Asia/Colombo. Scope: Dispatcher foundation only. Milestone 5 has not started.
 
 ## COMPLETED
@@ -100,7 +102,7 @@ The index-only migration adds `Order(eligibleDeliveryDate,status)` for initial e
 - Search, requested-vs-operational dates, pagination, repeated deferrals, date change/navigation/reload, invalid-date recovery and unknown/non-operating-day Planning were exercised. Direct foreign order and trip links display not-found states with no foreign reference rendered.
 - All three planning actions were observed disabled. Future Capacity states that prediction outputs are not connected.
 - Full-row fingerprints of Order, Trip, TripStop, Allocation, PlanningRun, Exception, Receipt and AuditEvent were unchanged across Dispatcher navigation and the above read-only checks: **17 orders, 6 prepared trips, 7 stops, 7 prepared allocations, 6 prepared planning runs, 3 exceptions, 3 receipts, 74 audit events**. The six-trip/allocation/run records pre-existed in the explicit fixture; GETs added zero plans, trips or allocations and changed zero order states.
-- Screenshots: [Pulse](screenshots/dispatcher-pulse-1440.png), [Store-created order](screenshots/dispatcher-store-order-handoff-1440.png), [receipt handoff](screenshots/dispatcher-receipt-handoff-1440.png), [Planning 1440](screenshots/dispatcher-planning-1440.png), [Planning 1280](screenshots/dispatcher-planning-1280.png), [Routes](screenshots/dispatcher-routes-1440.png), [phone Orders](screenshots/dispatcher-orders-390.png), [phone Exceptions](screenshots/dispatcher-exceptions-390.png).
+- Historical screenshots: [desktop Orders](screenshots/dispatcher-pulse-1440.png), [Store-created order](screenshots/dispatcher-store-order-handoff-1440.png), [receipt handoff](screenshots/dispatcher-receipt-handoff-1440.png), [Planning 1440](screenshots/dispatcher-planning-1440.png), [Future Capacity 1280](screenshots/dispatcher-planning-1280.png), [Routes](screenshots/dispatcher-routes-1440.png), [phone Orders](screenshots/dispatcher-orders-390.png), [phone Exceptions](screenshots/dispatcher-exceptions-390.png). The filenames of the desktop Orders and Future Capacity images predate this caption audit; they do not establish Pulse or 1280px Planning screenshot evidence.
 
 ## DOCKER VERIFICATION
 
