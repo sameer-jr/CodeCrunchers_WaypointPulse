@@ -28,10 +28,11 @@ import { publicJudgeWorkspaceMetadata } from './domain/public-judge-workspace.js
 const dummyHash = hashPassword('timing-only-invalid-account');
 
 export function createApp(prisma: PrismaClient, config: Config, options: { store?: StoreServiceOptions; dispatcher?: DispatcherServiceOptions; planning?: PlanningServiceOptions; loader?: LoaderServiceOptions; driver?: DriverServiceOptions; location?: LocationServiceOptions } = {}) {
-  const storeOptions = { allowSyntheticReferences: config.PUBLIC_JUDGE_DEMO || config.STORE_ALLOW_SYNTHETIC, ...options.store };
-  if (config.NODE_ENV === 'production' && storeOptions.allowSyntheticReferences && !config.PUBLIC_JUDGE_DEMO) throw new Error('Synthetic Store eligibility is not allowed in production.');
-  const planningOptions = { allowSyntheticReferences: config.PUBLIC_JUDGE_DEMO || config.PLANNING_ALLOW_SYNTHETIC, ...options.planning };
-  if (config.NODE_ENV === 'production' && planningOptions.allowSyntheticReferences && !config.PUBLIC_JUDGE_DEMO) throw new Error('Synthetic planning references are not allowed in production.');
+  const safeReferences = config.PUBLIC_JUDGE_DEMO || config.STARTER_REFERENCE_DATA;
+  const storeOptions = { allowSyntheticReferences: safeReferences || config.STORE_ALLOW_SYNTHETIC, ...options.store };
+  if (config.NODE_ENV === 'production' && storeOptions.allowSyntheticReferences && !safeReferences) throw new Error('Synthetic Store eligibility requires an explicit safe-reference mode in production.');
+  const planningOptions = { allowSyntheticReferences: safeReferences || config.PLANNING_ALLOW_SYNTHETIC, ...options.planning };
+  if (config.NODE_ENV === 'production' && planningOptions.allowSyntheticReferences && !safeReferences) throw new Error('Synthetic planning references require an explicit safe-reference mode in production.');
   const app = express();
   app.disable('x-powered-by');
   if (config.API_TRUST_PROXY) app.set('trust proxy', 1);
@@ -78,9 +79,8 @@ export function createApp(prisma: PrismaClient, config: Config, options: { store
   for (const role of ROLES) {
     const slug = ROLE_HOME[role].split('/')[1];
     app.get(`/api/workspaces/${slug}`, authenticate(prisma, config), authorize(role), async (_request, response) => {
-      const user = response.locals.user as { id: string };
       response.set('Cache-Control', 'no-store').json({ role, title: ROLE_LABELS[role], state: 'FOUNDATION',
-        ...(config.PUBLIC_JUDGE_DEMO ? { publicJudge: await publicJudgeWorkspaceMetadata(prisma, user.id, role) } : {}) });
+        ...(config.PUBLIC_JUDGE_DEMO ? { publicJudge: publicJudgeWorkspaceMetadata() } : {}) });
     });
   }
   app.use('/api/domain', authenticate(prisma, config), domainReadRouter(prisma));

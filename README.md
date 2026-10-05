@@ -23,9 +23,9 @@ Waypoint Pulse is a responsive delivery-operations platform for the fictional **
 
 ---
 
-## Judge credentials
+## Starter accounts
 
-The public Railway deployment uses the following seeded accounts.
+The Railway deployment uses these four seeded role accounts.
 
 **Password for all four accounts:** `WaypointJudge!2026`
 
@@ -36,26 +36,29 @@ The public Railway deployment uses the following seeded accounts.
 | Driver | `driver@waypoint.local` | `/driver/today` |
 | Store Manager | `store@waypoint.local` | `/store/home` |
 
-**Default review day:** `2040-03-12`. Use `2040-03-13` for fresh planning and `2040-03-05` for completed examples.
+**Operational dates:** the application uses the current **Asia/Colombo** clock and normal calendar/cutoff rules.
 
-> The public deployment contains an independently authored **SYNTHETIC** judge scenario so the competition dataset is not redistributed through the public repository.
+> Starter reference records are independently authored and publication-safe. The confidential competition dataset is not redistributed through the public repository.
 
 ---
 
-## Live competition quickstart
+## Normal workflow quickstart
 
-Open [Waypoint Pulse](https://web-production-87afe.up.railway.app) and sign in with any judge account above. The role home includes a review guide. These are deliberately registered synthetic days; they do not represent the laptop's current date or an imported competition calendar.
+The requested starting state contains **safe starter accounts and reference records only**. There are no seeded orders, plans, trips, load records, deliveries, proof or receipts. Users create all orders through the ordinary Store workflow. **The live backup/reset and starter-state verification are pending** in [production starter readiness](docs/production-starter-readiness.md).
 
-| Review goal | Day | Where to start |
+Once verified, open [Waypoint Pulse](https://web-production-87afe.up.railway.app), sign in with the appropriate role and use the ordinary navigation. There is no competition-demo panel or fixed demonstration date. Choose the operational/eligible date shown by the application.
+
+| Step | Role | Start here |
 | --- | --- | --- |
-| Load an untouched order | **2040-03-12** | Loader → Today's Loads → **SYN-PLAN-DRIVER-AMBIENT** → **DEMO-REVIEW-AMBIENT-192** |
-| Start a ready delivery | **2040-03-12** | Driver → Today → **SYN-PLAN-DRIVER-REEFER**; the prepared route has CHILLED/FROZEN orders of **25 units each** |
-| Generate a new plan | **2040-03-13** | Dispatcher → Planning Studio → **DEMO-PLAN-AMBIENT-100**; Generate → Explain → Validate → Release |
-| Inspect completed proof and receipt | **2040-03-05** | Store Manager → Track Delivery → **SYN-PLAN-DRIVER-ORDER-CHILLED**; photo, signature and explicit **25 / 25 / 25 / 25** receipt example |
+| 1 | Store Manager | Place Order → assigned outlet → enter demand and submit; inspect its confirmed state and eligible service date |
+| 2 | Dispatcher | Planning Studio → that eligible date → Generate → Explain → Validate → Release; assign Driver |
+| 3 | Loader | Today's Loads → that released trip → record quantities; resolve any shortfall with Dispatcher → Ready for Dispatch |
+| 4 | Driver | Today → assigned ready trip → Start Trip → arrival → proof → sync → Finish Trip |
+| 5 | Store Manager | Track the same delivered order → explicitly confirm the actual received quantity |
 
-Store can inspect the three fresh March 12 orders before delivery. Driver completion and Store receipt remain separate actions; a new delivery will show received quantity as unrecorded until Store confirms it. The ambient order is intended for the loading/shortfall demonstration; the ready cold trip provides a quicker Driver entry point. Finish synchronizing Driver operations before changing accounts.
+Initially all workspaces have no operational work. Store must create demand, Dispatcher must release a plan, and Loader must record readiness before Driver can start. Photos/signatures and GPS remain available when users reach delivery or an active trip. No order or completed example is preloaded.
 
-The [competition review readiness report](docs/competition-review-readiness.md) records the actual preparation/verification status and preserved history. Preparation never resets completed deliveries or redistributes private competition data. Reviewers' actions change the shared public demo, so a previously used example can appear completed on a later visit.
+User actions persist across reload/deployment. Normal startup never resets them. A maintenance reset is a separate guarded operator action requiring a private backup and verified restore. The competition dataset remains private.
 
 ---
 
@@ -122,105 +125,13 @@ All roles work on the same persisted orders, trips, quantities, exceptions and a
 
 ---
 
-# Final Judge Walkthrough
+<a id="final-judge-walkthrough"></a>
 
-This is the original **2040-03-05** walkthrough, preserved for historical evidence and the separate `npm run demo:driver-judge` local fixture. Its live delivery/receipt examples are already completed. For the current public entry points use [Live competition quickstart](#live-competition-quickstart); for a new local recording use an untouched local fixture rather than resetting live history.
+## Workflow and recording
 
-Use **2040-03-05** throughout the walkthrough.
+Users create demand through Store before any planning or execution work appears. Follow the role sequence in [Normal workflow quickstart](#normal-workflow-quickstart). The [six-minute recording script](docs/demo-script.md) follows a newly created order through actual planning, loading, delivery and receipt, using its real eligible date and IDs.
 
-### 1. Dispatcher — Generate, validate and release
-
-1. Sign in as `dispatcher@waypoint.local`.
-2. Open **Planning Studio**.
-3. Select **2040-03-05** and the assigned SYNTHETIC depot.
-4. Click **Generate Plan**.
-5. Inspect served and deferred orders.
-6. Open **Explain My Plan** for a served or deferred order.
-7. Review the actual constraint evidence.
-8. Click **Validate** and confirm the independent validator returns a valid plan.
-9. Click **Release** and confirm the release dialog.
-10. Note the actual released trip containing `SYN-LOADER-DRIVER-ORDER-192`.
-
-### 2. Loader — Load the released trip
-
-11. Sign out and sign in as `loader@waypoint.local`.
-12. Open **Today's Loads** for **2040-03-05**.
-13. Open the released ambient trip.
-14. Mark the normal stops as loaded.
-15. For the 192-unit order, choose **Report Shortfall**.
-16. Enter **188** actual loaded units.
-17. Select **Stock unavailable** and enter a useful shortage note.
-18. Submit the shortfall.
-19. Confirm the trip is blocked with **Awaiting Dispatcher approval**.
-
-### 3. Dispatcher — Review the shortfall
-
-20. Sign in again as Dispatcher.
-21. Open **Exception Centre**.
-22. Open the same loading-shortfall record.
-23. Verify **192 expected / 188 loaded**.
-24. Approve the revised manifest.
-
-### 4. Loader — Ready for Dispatch
-
-25. Return to Loader.
-26. Reopen the same trip.
-27. Confirm **Dispatcher approved this revision**.
-28. Complete any remaining normal loads.
-29. Click **Mark Ready for Dispatch**.
-
-### 5. Dispatcher — Assign Driver
-
-30. Sign in as Dispatcher.
-31. Open the same trip in **Routes / Trips**.
-32. Assign `driver@waypoint.local`.
-33. Sign out.
-
-### 6. Driver — Deliver with offline recovery
-
-34. Sign in as `driver@waypoint.local`.
-35. Select **2040-03-05** and open the assigned trip.
-36. Confirm the route is cached and **Offline reload ready**.
-37. Click **Start Trip** while online.
-38. Switch the browser network to **Offline**.
-39. Record arrival at the 192-unit stop.
-40. Open **Proof**.
-41. Select **Delivered**.
-42. Enter **188** delivered units.
-43. Enter recipient name, receiving role and a useful note.
-44. Save the delivery.
-45. Confirm the arrival and completion operations are shown as **Pending sync**.
-46. Reload the browser while still offline.
-47. Confirm the route, recipient, note and pending work remain available.
-48. Restore the network.
-49. Wait for automatic synchronization or click **Sync now**.
-50. Confirm pending operations become **SYNCED**.
-51. Reload online and confirm the server-side delivery proof.
-52. Complete the remaining stops in sequence.
-53. Click **Finish Trip** when every stop has a terminal outcome.
-
-### 7. Store Manager — Confirm receipt
-
-54. Sign in as `store@waypoint.local`.
-55. Open **Track Delivery**.
-56. Open `SYN-LOADER-DRIVER-ORDER-192`.
-57. Verify:
-   - **Ordered:** 192
-   - **Loaded:** 188
-   - **Delivered:** 188
-   - **Received:** Not recorded
-58. Open **Confirm Receipt**.
-59. Enter **188** as the quantity actually received.
-60. Select **Received in good condition**.
-61. Confirm the receipt.
-62. Reload and verify the receipt remains persisted.
-
-### 8. Dispatcher — Final verification
-
-63. Sign in as Dispatcher.
-64. Reopen the same day/order/trip.
-65. Verify the final quantity chain: **192 ordered / 188 loaded / 188 delivered / 188 received**.
-66. Confirm the trip is completed and the loading-review history remains visible.
+Earlier fixed-date fixture journeys and completed proof remain documented in the historical milestone/release reports. They do not describe the requested normal production starting inventory. Record on a separate safe installation if the public system must remain untouched for reviewers.
 
 ---
 
@@ -428,7 +339,8 @@ Detailed documentation:
 - [AI disclosure](docs/AI_DISCLOSURE.md)
 - [Final Hackathon verification — historical release](docs/final-hackathon-verification.md)
 - [Photo/signature/maps verification — current update](docs/media-maps-verification.md)
-- [Competition review readiness — prepared public demo](docs/competition-review-readiness.md)
+- [Production starter readiness — current setup and reset status](docs/production-starter-readiness.md)
+- [Previous prepared review scenario — historical evidence](docs/competition-review-readiness.md)
 
 ---
 
@@ -457,7 +369,7 @@ Private competition resources are intentionally excluded from Git and Docker bui
 
 ---
 
-# Fresh Competition Judge Installation
+# Installation
 
 The repository can be run as a complete Docker stack.
 
@@ -503,10 +415,11 @@ WEB_PORT=5173
 WEB_ORIGIN=http://localhost:5173
 NODE_ENV=development
 
-PUBLIC_JUDGE_DEMO=true
+PUBLIC_JUDGE_DEMO=false
+STARTER_REFERENCE_DATA=true
 ```
 
-`PUBLIC_JUDGE_DEMO=true` enables independently authored publication-safe judge references and demand for **2040-03-05**, **2040-03-12** and **2040-03-13**. March 12 is the public review default; March 13 has fresh planning demand. A fresh installation seeds accounts/references/orders, then Dispatcher must Generate, Validate and Release through the application. The prepared live loading/readiness states are separately verified in the [readiness report](docs/competition-review-readiness.md); installation does not invent deliveries or proof. The separate local `demo:driver-judge` helper still uses March 5.
+`STARTER_REFERENCE_DATA=true` prepares only publication-safe operational references and role scope, with dates based on the current Asia/Colombo clock. Keep `PUBLIC_JUDGE_DEMO=false` for normal operation. Startup seeds no orders, plan, trip, loading, delivery, proof or receipt. Users create demand and perform every step through the normal application. Repeat startup preserves their work; it is not a reset. Live cleanup/verification is recorded in [production starter readiness](docs/production-starter-readiness.md). Historical local judge helpers remain separate development fixtures.
 
 ### 3. Start the complete stack
 
@@ -520,8 +433,8 @@ This starts:
 - API
 - Web application
 - committed database migrations
-- seeded judge accounts
-- publication-safe operational judge data
+- seeded role accounts
+- publication-safe starter reference records; no operational orders/history
 
 Open:
 
@@ -535,7 +448,7 @@ Health:
 http://localhost:5173/api/health
 ```
 
-### 4. Local judge credentials
+### 4. Local starter credentials
 
 The checked-in example development password is:
 
@@ -593,7 +506,7 @@ npm run import:reference -- --source official --dry-run
 npm run import:reference -- --source official
 ```
 
-The public judge environment instead uses independently authored data labelled **SYNTHETIC** so confidential competition records are not exposed.
+The public starter configuration uses independently authored reference records with **SYNTHETIC** provenance so confidential competition records are not exposed. Users create orders through ordinary application flows.
 
 No raw competition ZIP, official CSV, private `.env`, local database or original private prototype source is committed to this repository.
 
@@ -601,7 +514,7 @@ No raw competition ZIP, official CSV, private `.env`, local database or original
 
 ## Remote Docker verification
 
-The root Compose stack passed GitHub Actions on Ubuntu for the competition review preparation: [run 37296909199](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37296909199), commit `9cf3d129f3caae3eb7bb9d55fa0228b99728abed`.
+The previous prepared-review source passed Ubuntu Docker verification: [run 37296909199](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37296909199), commit `9cf3d129f3caae3eb7bb9d55fa0228b99728abed`. That is historical evidence. The normal starter source requires its own successful run, recorded in [production starter readiness](docs/production-starter-readiness.md).
 
 Local development can run without Docker using `npm run setup:local`, `npm run dev:db` and, in another terminal, `npm run dev`. Competition startup remains `docker compose up --build`; CI verifies that same container stack on Linux.
 
@@ -623,7 +536,7 @@ Workflow:
 
 [`.github/workflows/docker-compose-verification.yml`](.github/workflows/docker-compose-verification.yml)
 
-The workflow's Docker build, stack health, safe seeded authentication and always-run `docker compose down -v` cleanup all succeeded. It seeds only installation-safe accounts and requires no confidential competition dataset.
+The previous run's build, health, seeded authentication and always-run `docker compose down -v` cleanup succeeded. Current normal-starter verification remains pending; the workflow requires no confidential competition dataset and its normal installation check uses only safe accounts.
 
 ---
 
@@ -663,7 +576,7 @@ The previously deployed release was verified for:
 
 The prior media/maps release on `3f204e4` passed four-role HTTPS authentication, synthetic delivery, offline photo/signature reload and synchronization, authorized galleries, explicit receipt and reconciliation. Its [feature evidence](docs/media-maps-verification.md) is retained. The approved GPS test reached the sharing flow, but this laptop's provider was unavailable; real GPS reception and physical mobile acceptance remain unverified.
 
-The current review preparation deployed both services successfully on `9cf3d129f3caae3eb7bb9d55fa0228b99728abed`, with ten migrations, database-connected HTTPS health and a 43-request four-role smoke. March 12 has a released 192-unit loading example and an assigned ready 50-unit cold route; March 13 remains unplanned. All four role guides/entry points and actual completed proof/receipt passed browser review, including the 390 px Driver view. Fresh execution records remain untouched. Historical proof/receipt identities are preserved; the shared demo does not reset automatically. See [competition review readiness and screenshots](docs/competition-review-readiness.md).
+The prior prepared review scenario passed on `9cf3d129`; that evidence is historical. The current maintenance preparation clears testing history after a private backup/restore check, then enables normal operation with safe starter references, current Asia/Colombo dates and **zero orders**. The competition-demo panel is removed; users create all orders themselves. **Backup/reset, matching deployment and live starter-state acceptance are pending** in [production starter readiness](docs/production-starter-readiness.md). No normal startup or HTTP action resets the database.
 
 ---
 
@@ -679,7 +592,7 @@ npm run build
 npm run check:safety
 ```
 
-Current local automated suite:
+Last completed prepared-review suite (historical; normal-starter checks are pending):
 
 ```text
 357 / 357 tests passed across 15 files
@@ -689,7 +602,9 @@ Current local automated suite:
 
 See:
 
-[Competition review readiness — current preparation](docs/competition-review-readiness.md)
+[Production starter readiness — current setup](docs/production-starter-readiness.md)
+
+[Previous competition review readiness — historical evidence](docs/competition-review-readiness.md)
 
 [Media and maps verification — prior accepted feature release](docs/media-maps-verification.md)
 
@@ -707,7 +622,7 @@ Maps use explicitly recorded outlet coordinates and optional browser-reported Dr
 
 **Show route map** loads Leaflet and external OpenStreetMap tiles on demand with attribution. The [tile service policy](https://operations.osmfoundation.org/policies/tiles/) applies; tile availability and viewed-area browser requests are external. No offline tile prefetch is provided. Sequence lines are not driving directions, and GPS does not generate an ETA. Stop/proof workflows remain usable without tiles or GPS permission.
 
-The following table records the **prior accepted media/maps release**. Current preparation adds the review guide/demand and passes 357 tests; its exact CI/deployment/browser results are in [competition review readiness](docs/competition-review-readiness.md).
+The following table records the **prior accepted media/maps release**. The current preparation removes testing history and provides normal starter references with no seeded orders; its new source, backup/reset, CI and deployed-state evidence are tracked in [production starter readiness](docs/production-starter-readiness.md).
 
 | Prior media/maps release evidence | Status |
 | --- | --- |
@@ -784,7 +699,7 @@ Significant implementation clarifications/departures:
 - No reefer telemetry.
 - Media is stored in the existing PostgreSQL database; no external image bucket or public upload directory is used. Browser storage loss can lose unsynced attachments.
 - No Datathon prediction integration.
-- The authoritative future official competition calendar is unavailable; the public judge uses registered SYNTHETIC review days `2040-03-05`, `2040-03-12` and `2040-03-13`.
+- The confidential official competition calendar is not published. Starter calendar/availability records are independently authored around the current Asia/Colombo date; normal order eligibility and cutoff rules apply.
 - Clearing browser storage or losing the device can lose unsynchronized Driver work.
 - Failed/conflicted offline operations remain visible for review; there is no automatic conflict rebase/discard workflow.
 - Physical-device camera/signature/GPS/onscreen-keyboard acceptance remains pending; a controlled browser check is separate evidence.

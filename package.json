@@ -34,7 +34,8 @@
     "setup:local": "node scripts/setup-local.mjs",
     "dev:db": "node scripts/dev-db.mjs",
     "check:safety": "node scripts/check-safety.mjs",
-    "verify:docker": "docker compose exec -T api node scripts/verify-docker.mjs"
+    "verify:docker": "docker compose exec -T api node scripts/verify-docker.mjs",
+    "reset:public-demo": "tsx scripts/reset-public-judge.ts"
   },
   "dependencies": { "@prisma/client": "6.19.3" },
   "devDependencies": {

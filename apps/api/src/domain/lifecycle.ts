@@ -128,7 +128,7 @@ async function checkRelatedData(tx: Prisma.TransactionClient, input: TransitionI
 export async function transitionOrderInTransaction(tx: Prisma.TransactionClient, rawInput: TransitionInput, options: LifecycleOptions = {}) {
   const parsed = transitionSchema.safeParse(rawInput);
   if (!parsed.success) throw new DomainError('INVALID_DOMAIN', 'Invalid lifecycle request; roles and unrelated fields are not accepted.');
-  if (options.allowSyntheticReferences && !syntheticReferencesPermitted()) throw new DomainError('INVALID_DOMAIN', 'Synthetic eligibility requires an explicitly enabled public judge demo in production.');
+  if (options.allowSyntheticReferences && !syntheticReferencesPermitted()) throw new DomainError('INVALID_DOMAIN', 'Synthetic eligibility requires an explicitly enabled starter or public judge mode in production.');
   const input = parsed.data;
   if (input.next !== 'DEFERRED' && input.deferral) throw new DomainError('INVALID_DOMAIN', 'Deferral details are only valid for a deferral.');
   const actor = await resolveActor(tx, input.actorUserId);

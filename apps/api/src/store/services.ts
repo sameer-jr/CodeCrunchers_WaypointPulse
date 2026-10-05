@@ -114,7 +114,7 @@ export async function createStoreOrder(db: PrismaClient, userId: string, input: 
   const now = storeNow(options);
   return transaction(db, async tx => {
     const scope = await resolveStoreScope(tx, userId), request = parsed.data;
-    if (scope.outlet.source !== 'OFFICIAL' && !options.allowSyntheticReferences) throw new DomainError('INVALID_DOMAIN', 'Official outlet data is required. Synthetic judge references need explicit development opt-in.');
+    if (scope.outlet.source !== 'OFFICIAL' && !options.allowSyntheticReferences) throw new DomainError('INVALID_DOMAIN', 'Official outlet data is required unless starter reference data is explicitly enabled.');
     if (scope.outlet.brand !== 'FRESH' && request.temperatureRequirement !== 'AMBIENT') throw new DomainError('INVALID_DOMAIN', `${scope.outlet.brand === 'STYLE' ? 'Style' : 'Tech'} orders support ambient delivery only.`);
     const eligibleDeliveryDate = await determineStoreEligibility(tx, request.requestedDeliveryDate, now, options);
     const order = await tx.order.create({ data: { ...request, requestedDeliveryDate: dateOnly(request.requestedDeliveryDate), eligibleDeliveryDate,

@@ -19,7 +19,7 @@ const database = await localPostgres({ databaseDir: directory, user: 'waypoint_t
 const databaseUrl = `postgresql://waypoint_test:${password}@127.0.0.1:${port}/waypoint_test`;
 const env = { ...process.env, DATABASE_URL: databaseUrl, TEST_DATABASE_URL: databaseUrl, NODE_ENV: 'test',
   AUTH_SECRET: randomBytes(48).toString('hex'), WEB_ORIGIN: 'http://localhost:5173', STORE_ALLOW_SYNTHETIC: 'false', PLANNING_ALLOW_SYNTHETIC: 'false',
-  SEED_DEMO_PASSWORD: randomBytes(20).toString('hex'), PUBLIC_JUDGE_DEMO: 'false' };
+  SEED_DEMO_PASSWORD: randomBytes(20).toString('hex'), PUBLIC_JUDGE_DEMO: 'false', STARTER_REFERENCE_DATA: 'false' };
 let started = false;
 try {
   await database.initialise();

@@ -23,11 +23,14 @@ export const PUBLIC_JUDGE_REVIEW_ORDERS = [
   { orderRef: 'DEMO-PLAN-AMBIENT-100', serviceDate: PUBLIC_JUDGE_DATES.planningDate, temperatureRequirement: 'AMBIENT', orderedUnits: 100, orderedWeightKg: '30', orderedVolumeM3: '0.3' }
 ] as const;
 
-type JudgeFixture = { depot: { id: string }; storeOutlet: { id: string }; store: { id: string }; dispatcher: { id: string } };
+export type JudgeFixture = { depot: { id: string }; storeOutlet: { id: string }; store: { id: string }; dispatcher: { id: string } };
 
 export async function preparePublicJudgeReview(db: PrismaClient, fixture: JudgeFixture) {
   if (!syntheticReferencesPermitted()) throw new Error('Public judge preparation requires an explicitly enabled public judge demo in production.');
-  return db.$transaction(async tx => {
+  return db.$transaction(tx => preparePublicJudgeReviewInTransaction(tx, fixture), { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted, timeout: 30000 });
+}
+
+export async function preparePublicJudgeReviewInTransaction(tx: Prisma.TransactionClient, fixture: JudgeFixture) {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('waypoint-public-judge-review-v1'))`;
     await assertPublicJudgeDatabase(tx);
     const assignments = await tx.userOutlet.findMany({ where: { userId: fixture.store.id }, take: 2 });
@@ -75,5 +78,4 @@ export async function preparePublicJudgeReview(db: PrismaClient, fixture: JudgeF
       orders.push(await transitionOrderInTransaction(tx, { actorUserId: fixture.store.id, orderId: order.id, expectedVersion: 1, next: 'CONFIRMED' }, { allowSyntheticReferences: true }));
     }
     return orders.map(order => ({ id: order.id, orderRef: order.orderRef, serviceDate: order.requestedDeliveryDate.toISOString().slice(0, 10), orderedUnits: order.orderedUnits }));
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted, timeout: 30000 });
 }

@@ -69,7 +69,7 @@ async function ensureFixtureOrder(db: PrismaClient, dispatcherId: string, servic
 }
 
 // Explicit fixture preparation only. Repetition never resets orders, planning runs, receipts, audits or fuel use created by review.
-export async function installPlanningFixture(db: PrismaClient, options: FixtureOptions = {}) {
+export async function installPlanningReferences(db: PrismaClient, options: FixtureOptions = {}) {
   if (!syntheticReferencesPermitted()) throw new Error('Synthetic allocation fixtures require an explicitly enabled public judge demo in production.');
   const serviceDate = options.serviceDate ?? PLANNING_SYNTHETIC_DATE, key = options.key ?? 'JUDGE';
   if (!/^[A-Z0-9-]{1,24}$/.test(key)) throw new Error('Use a short uppercase synthetic fixture key.');
@@ -122,9 +122,21 @@ export async function installPlanningFixture(db: PrismaClient, options: FixtureO
       create: { vehicleId: vehicle.id, serviceDate: dateOnly(serviceDate), status: spec.available,
         availableFromMinute: spec.available === 'AVAILABLE' ? 300 : null, availableUntilMinute: spec.available === 'AVAILABLE' ? 1080 : null,
         source: 'SYNTHETIC', note: 'SYNTHETIC explicit day-specific planning status.', createdByUserId: dispatcher.id } });
-    const ledger = await db.fuelLedger.upsert({ where: { vehicleId_weekStart: { vehicleId: vehicle.id, weekStart: weekStart(serviceDate) } }, update: {},
+    await db.fuelLedger.upsert({ where: { vehicleId_weekStart: { vehicleId: vehicle.id, weekStart: weekStart(serviceDate) } }, update: {},
       create: { vehicleId: vehicle.id, weekStart: weekStart(serviceDate), openingConsumedLitres: spec.opening,
         openingSource: spec.opening == null ? null : 'SYNTHETIC' } });
+  }
+  return { key, serviceDate, depot, foreignDepot, storeOutlet: outlets.FRESH, store, dispatcher, loader, driver, outlets, foreignOutlet, vehicles,
+    fuelBaselines: vehicleSpecs.map(({ key: vehicleKey, consumed, reserved }) => ({ vehicleKey, consumed, reserved })) };
+}
+
+export async function installPlanningFixture(db: PrismaClient, options: FixtureOptions = {}) {
+  const references = await installPlanningReferences(db, options);
+  const { key, serviceDate, depot, foreignDepot, store, dispatcher, loader, driver, outlets, foreignOutlet, vehicles } = references;
+  const prefix = `SYN-PLAN-${key}`;
+  for (const spec of references.fuelBaselines) {
+    const vehicle = vehicles[spec.vehicleKey];
+    const ledger = await db.fuelLedger.findUniqueOrThrow({ where: { vehicleId_weekStart: { vehicleId: vehicle.id, weekStart: weekStart(serviceDate) } } });
     if (!(await db.fuelUsage.count({ where: { ledgerId: ledger.id } }))) {
       for (const [kind, litres] of [['CONSUMED', spec.consumed], ['RESERVED', spec.reserved]] as const) if (Number(litres) > 0) {
         await db.fuelUsage.create({ data: { ledgerId: ledger.id, kind, litres, source: 'SYNTHETIC', occurredAt: new Date(`${serviceDate}T00:00:00Z`), recordedByUserId: dispatcher.id } });

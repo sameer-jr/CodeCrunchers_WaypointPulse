@@ -2,6 +2,8 @@
 
 Prepared 2026-10-05, Asia/Colombo, for the user-confirmed **clean demo with fresh workflow and a completed example**. This is an additive preparation of the public SYNTHETIC judge environment. Historical verification reports remain unchanged.
 
+**Superseded historical preparation:** the user's definitive correction requests normal production operation, safe starter references, no seeded orders and removal of the competition-demo panel. The following facts record the previous approach; they are not current reset instructions or a promise that example IDs remain live. Current backup/cleanup and acceptance are tracked in [production starter readiness](production-starter-readiness.md), currently pending. The intervening four-confirmed-order proposal was also superseded before live cleanup acceptance.
+
 Application: [Waypoint Pulse](https://web-production-87afe.up.railway.app). Four judge accounts use the intentionally public password `WaypointJudge!2026`: `dispatcher@waypoint.local`, `loader@waypoint.local`, `driver@waypoint.local`, `store@waypoint.local`.
 
 ## Reviewer entry points

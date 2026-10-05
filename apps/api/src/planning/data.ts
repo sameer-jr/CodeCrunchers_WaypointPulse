@@ -10,7 +10,7 @@ import { syntheticReferencesPermitted } from '../domain/synthetic-mode.js';
 
 export type PlanningServiceOptions = { allowSyntheticReferences?: boolean; now?: () => Date };
 export function checkPlanningOptions(options: PlanningServiceOptions) {
-  if (options.allowSyntheticReferences && !syntheticReferencesPermitted()) throw new DomainError('INVALID_DOMAIN', 'Synthetic planning references require an explicitly enabled public judge demo in production.');
+  if (options.allowSyntheticReferences && !syntheticReferencesPermitted()) throw new DomainError('INVALID_DOMAIN', 'Synthetic planning references require an explicitly enabled starter or public judge mode in production.');
 }
 export function instantForMinute(serviceDate: string, minute: number) { return new Date(new Date(`${serviceDate}T00:00:00+05:30`).getTime() + Math.round(minute * 60000)); }
 export function minuteForInstant(serviceDate: string, instant: Date | null) { return instant ? (instant.getTime() - instantForMinute(serviceDate, 0).getTime()) / 60000 : null; }

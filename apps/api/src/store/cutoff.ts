@@ -7,7 +7,7 @@ import { syntheticReferencesPermitted } from '../domain/synthetic-mode.js';
 
 export type StoreServiceOptions = { now?: () => Date; allowSyntheticReferences?: boolean };
 export function storeNow(options: StoreServiceOptions): Date {
-  if (options.allowSyntheticReferences && !syntheticReferencesPermitted()) throw new DomainError('INVALID_DOMAIN', 'Synthetic Store references require an explicitly enabled public judge demo in production.');
+  if (options.allowSyntheticReferences && !syntheticReferencesPermitted()) throw new DomainError('INVALID_DOMAIN', 'Synthetic Store references require an explicitly enabled starter or public judge mode in production.');
   const now = options.now?.() ?? new Date();
   if (!Number.isFinite(now.getTime())) throw new DomainError('INVALID_DOMAIN', 'A valid server clock is required.');
   return now;

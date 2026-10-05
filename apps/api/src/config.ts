@@ -15,6 +15,7 @@ const configSchema = z.object({
   PLANNING_ALLOW_SYNTHETIC: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
   DISPATCHER_DEMO_DATE: dateSchema.optional(),
   PUBLIC_JUDGE_DEMO: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
+  STARTER_REFERENCE_DATA: z.enum(['true', 'false']).default('false').transform(value => value === 'true'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development')
 });
 export type Config = z.infer<typeof configSchema>;
@@ -34,9 +35,11 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): Config {
     if (!result.data.SEED_DEMO_PASSWORD || /^(WaypointDemo!2026|WaypointCIOnly!2026|replace-.*)$/.test(result.data.SEED_DEMO_PASSWORD)) {
       throw new Error('Production SEED_DEMO_PASSWORD requires a newly configured judge password.');
     }
-    if (result.data.STORE_ALLOW_SYNTHETIC && !result.data.PUBLIC_JUDGE_DEMO) throw new Error('Synthetic Store eligibility is not allowed in production without explicit PUBLIC_JUDGE_DEMO.');
-    if (result.data.PLANNING_ALLOW_SYNTHETIC && !result.data.PUBLIC_JUDGE_DEMO) throw new Error('Synthetic planning references are not allowed in production without explicit PUBLIC_JUDGE_DEMO.');
+    if (result.data.STORE_ALLOW_SYNTHETIC && !result.data.PUBLIC_JUDGE_DEMO && !result.data.STARTER_REFERENCE_DATA) throw new Error('Synthetic Store eligibility is not allowed in production without explicit PUBLIC_JUDGE_DEMO or STARTER_REFERENCE_DATA.');
+    if (result.data.PLANNING_ALLOW_SYNTHETIC && !result.data.PUBLIC_JUDGE_DEMO && !result.data.STARTER_REFERENCE_DATA) throw new Error('Synthetic planning references are not allowed in production without explicit PUBLIC_JUDGE_DEMO or STARTER_REFERENCE_DATA.');
   }
+  if (result.data.STARTER_REFERENCE_DATA && result.data.PUBLIC_JUDGE_DEMO) throw new Error('Choose starter reference data or the public judge demo, not both.');
+  if (result.data.STARTER_REFERENCE_DATA && result.data.DISPATCHER_DEMO_DATE) throw new Error('Starter reference data uses the current business date; remove DISPATCHER_DEMO_DATE.');
   if (result.data.PUBLIC_JUDGE_DEMO) {
     if (result.data.DISPATCHER_DEMO_DATE && !Object.values(PUBLIC_JUDGE_DATES).some(date => date === result.data.DISPATCHER_DEMO_DATE)) {
       throw new Error('Public judge demo operational day must be a registered execution, planning or history date.');
