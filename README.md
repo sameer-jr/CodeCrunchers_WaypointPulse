@@ -36,9 +36,26 @@ The public Railway deployment uses the following seeded accounts.
 | Driver | `driver@waypoint.local` | `/driver/today` |
 | Store Manager | `store@waypoint.local` | `/store/home` |
 
-**Judge operational day:** `2040-03-05`
+**Default review day:** `2040-03-12`. Use `2040-03-13` for fresh planning and `2040-03-05` for completed examples.
 
 > The public deployment contains an independently authored **SYNTHETIC** judge scenario so the competition dataset is not redistributed through the public repository.
+
+---
+
+## Live competition quickstart
+
+Open [Waypoint Pulse](https://web-production-87afe.up.railway.app) and sign in with any judge account above. The role home includes a review guide. These are deliberately registered synthetic days; they do not represent the laptop's current date or an imported competition calendar.
+
+| Review goal | Day | Where to start |
+| --- | --- | --- |
+| Load an untouched order | **2040-03-12** | Loader → Today's Loads → **SYN-PLAN-DRIVER-AMBIENT** → **DEMO-REVIEW-AMBIENT-192** |
+| Start a ready delivery | **2040-03-12** | Driver → Today → **SYN-PLAN-DRIVER-REEFER**; the prepared route has CHILLED/FROZEN orders of **25 units each** |
+| Generate a new plan | **2040-03-13** | Dispatcher → Planning Studio → **DEMO-PLAN-AMBIENT-100**; Generate → Explain → Validate → Release |
+| Inspect completed proof and receipt | **2040-03-05** | Store Manager → Track Delivery → **SYN-PLAN-DRIVER-ORDER-CHILLED**; photo, signature and explicit **25 / 25 / 25 / 25** receipt example |
+
+Store can inspect the three fresh March 12 orders before delivery. Driver completion and Store receipt remain separate actions; a new delivery will show received quantity as unrecorded until Store confirms it. The ambient order is intended for the loading/shortfall demonstration; the ready cold trip provides a quicker Driver entry point. Finish synchronizing Driver operations before changing accounts.
+
+The [competition review readiness report](docs/competition-review-readiness.md) records the actual preparation/verification status and preserved history. Preparation never resets completed deliveries or redistributes private competition data. Reviewers' actions change the shared public demo, so a previously used example can appear completed on a later visit.
 
 ---
 
@@ -107,7 +124,7 @@ All roles work on the same persisted orders, trips, quantities, exceptions and a
 
 # Final Judge Walkthrough
 
-The live environment has already been used for final verification, so some records may show completed history. For a fully repeatable mutation walkthrough, use a fresh judge installation as described under **Fresh Competition Judge Installation**.
+This is the original **2040-03-05** walkthrough, preserved for historical evidence and the separate `npm run demo:driver-judge` local fixture. Its live delivery/receipt examples are already completed. For the current public entry points use [Live competition quickstart](#live-competition-quickstart); for a new local recording use an untouched local fixture rather than resetting live history.
 
 Use **2040-03-05** throughout the walkthrough.
 
@@ -411,6 +428,7 @@ Detailed documentation:
 - [AI disclosure](docs/AI_DISCLOSURE.md)
 - [Final Hackathon verification — historical release](docs/final-hackathon-verification.md)
 - [Photo/signature/maps verification — current update](docs/media-maps-verification.md)
+- [Competition review readiness — prepared public demo](docs/competition-review-readiness.md)
 
 ---
 
@@ -488,7 +506,7 @@ NODE_ENV=development
 PUBLIC_JUDGE_DEMO=true
 ```
 
-`PUBLIC_JUDGE_DEMO=true` enables the independently authored publication-safe judge scenario for **2040-03-05**.
+`PUBLIC_JUDGE_DEMO=true` enables independently authored publication-safe judge references and demand for **2040-03-05**, **2040-03-12** and **2040-03-13**. March 12 is the public review default; March 13 has fresh planning demand. A fresh installation seeds accounts/references/orders, then Dispatcher must Generate, Validate and Release through the application. The prepared live loading/readiness states are separately verified in the [readiness report](docs/competition-review-readiness.md); installation does not invent deliveries or proof. The separate local `demo:driver-judge` helper still uses March 5.
 
 ### 3. Start the complete stack
 
@@ -760,7 +778,7 @@ Significant implementation clarifications/departures:
 - No reefer telemetry.
 - Media is stored in the existing PostgreSQL database; no external image bucket or public upload directory is used. Browser storage loss can lose unsynced attachments.
 - No Datathon prediction integration.
-- The authoritative future official competition calendar is unavailable; the reproducible public judge uses SYNTHETIC day `2040-03-05`.
+- The authoritative future official competition calendar is unavailable; the public judge uses registered SYNTHETIC review days `2040-03-05`, `2040-03-12` and `2040-03-13`.
 - Clearing browser storage or losing the device can lose unsynchronized Driver work.
 - Failed/conflicted offline operations remain visible for review; there is no automatic conflict rebase/discard workflow.
 - Physical-device camera/signature/GPS/onscreen-keyboard acceptance remains pending; a controlled browser check is separate evidence.

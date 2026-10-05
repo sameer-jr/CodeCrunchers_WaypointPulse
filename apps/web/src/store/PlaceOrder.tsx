@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, Clock3, Plus } from 'lucide-react';
 import { storeOrderInputSchema, type StoreContext, type StoreOrderInput } from '@waypoint/shared';
 import { createStoreOrder, STORE_KEYS } from './api';
@@ -9,11 +9,14 @@ import { dateLabel, orderLink, OutletIdentity, Panel, sentenceCase } from './com
 
 export function PlaceOrderPage({ context }: { context: StoreContext }) {
   const queryClient = useQueryClient();
+  const [params] = useSearchParams();
+  const requestedDate = params.get('date');
+  const initialDate = requestedDate && context.operatingDates.includes(requestedDate) ? requestedDate : context.nextEligibleDate || '';
   const schema = storeOrderInputSchema.superRefine((input, ctx) => {
     if (!context.operatingDates.includes(input.requestedDeliveryDate)) ctx.addIssue({ code: 'custom', path: ['requestedDeliveryDate'], message: 'Choose an available operating date.' });
     if (!context.temperatureRequirements.includes(input.temperatureRequirement)) ctx.addIssue({ code: 'custom', path: ['temperatureRequirement'], message: 'Choose a temperature supported by your outlet brand.' });
   });
-  const form = useForm<StoreOrderInput>({ resolver: zodResolver(schema), mode: 'onTouched', defaultValues: { requestedDeliveryDate: context.nextEligibleDate || '', temperatureRequirement: context.temperatureRequirements[0] } });
+  const form = useForm<StoreOrderInput>({ resolver: zodResolver(schema), mode: 'onTouched', defaultValues: { requestedDeliveryDate: initialDate, temperatureRequirement: context.temperatureRequirements[0] } });
   const mutation = useMutation({ mutationFn: createStoreOrder, onSuccess: async order => {
     queryClient.setQueryData(STORE_KEYS.order(order.id), order);
     await Promise.all([queryClient.invalidateQueries({ queryKey: STORE_KEYS.home }), queryClient.invalidateQueries({ queryKey: STORE_KEYS.orders })]);

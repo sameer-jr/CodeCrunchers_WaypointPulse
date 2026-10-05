@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { dateSchema } from './domain/dates.js';
+import { PUBLIC_JUDGE_DATES } from './domain/public-judge-dates.js';
 
 const configSchema = z.object({
   DATABASE_URL: z.string().url().startsWith('postgresql://'),
@@ -37,8 +38,10 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): Config {
     if (result.data.PLANNING_ALLOW_SYNTHETIC && !result.data.PUBLIC_JUDGE_DEMO) throw new Error('Synthetic planning references are not allowed in production without explicit PUBLIC_JUDGE_DEMO.');
   }
   if (result.data.PUBLIC_JUDGE_DEMO) {
-    if (result.data.DISPATCHER_DEMO_DATE && result.data.DISPATCHER_DEMO_DATE !== '2040-03-05') throw new Error('Public judge demo operational day must be 2040-03-05.');
-    result.data.DISPATCHER_DEMO_DATE = '2040-03-05';
+    if (result.data.DISPATCHER_DEMO_DATE && !Object.values(PUBLIC_JUDGE_DATES).some(date => date === result.data.DISPATCHER_DEMO_DATE)) {
+      throw new Error('Public judge demo operational day must be a registered execution, planning or history date.');
+    }
+    result.data.DISPATCHER_DEMO_DATE ??= PUBLIC_JUDGE_DATES.executionDate;
   }
   return result.data;
 }

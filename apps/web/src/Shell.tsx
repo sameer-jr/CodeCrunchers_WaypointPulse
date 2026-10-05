@@ -13,6 +13,7 @@ import { LoaderWorkspace } from './loader/LoaderWorkspace';
 import { DriverWorkspace } from './driver/DriverWorkspace';
 import { clearDriverSession, getUnsyncedDriverOperations } from './offline/storage';
 import { beginDriverSessionChange, captureDriverSession, commitDriverSession } from './offline/session';
+import { JudgeReviewGuide, type PublicJudgeGuide } from './JudgeReviewGuide';
 
 export function Shell({ role }: { role: Role }) {
   const identity = useIdentity();
@@ -25,7 +26,8 @@ export function Shell({ role }: { role: Role }) {
   const sidebar = useRef<HTMLElement>(null);
   const pages = NAVIGATION[role];
   const page = pages.find(item => location.pathname.endsWith(`/${item.slug}`)) || pages[0];
-  const workspace = useQuery({ queryKey: ['workspace', role], queryFn: () => apiRequest(`/workspaces/${ROLE_SLUG[role]}`), enabled: role !== 'DRIVER', retry: false });
+  const isHome = page.slug === pages[0].slug;
+  const workspace = useQuery({ queryKey: ['workspace', role], queryFn: () => apiRequest<{ publicJudge?: PublicJudgeGuide }>(`/workspaces/${ROLE_SLUG[role]}`), enabled: role !== 'DRIVER' || isHome, retry: false });
   const logout = useMutation({ mutationFn: async () => {
     const driverId = role === 'DRIVER' ? identity.data?.id : undefined;
     if (driverId && (await getUnsyncedDriverOperations(driverId)).length) throw new Error('Unsynced Driver work is saved on this device. Reconnect and use Sync now before signing out.');
@@ -80,6 +82,7 @@ export function Shell({ role }: { role: Role }) {
       <main id="workspace-content" className={`view-root ${role === 'DRIVER' ? 'driver-view' : ''}`} tabIndex={-1}>
         <div className="page-head"><div><span className="eyebrow">{ROLE_LABELS[role]}</span><h1>{page.title}</h1><p>{role === 'DISPATCHER' ? dispatcherDescriptions[page.slug] : page.description}</p></div><span className="workspace-state"><ShieldCheck size={15} /> Role access protected</span></div>
         {logout.isError && <div className="error-notice" role="alert">{logout.error.message} <button onClick={() => logout.mutate()}>Retry sign out</button></div>}
+        {isHome && workspace.data?.publicJudge && <JudgeReviewGuide role={role} guide={workspace.data.publicJudge} />}
         {role === 'DRIVER' ? <DriverWorkspace page={page.slug} /> : workspace.isPending ? <section className="empty-panel" role="status"><div className="loading-dot" /><h2>Connecting your workspace…</h2></section> : workspace.isError ? <section className="empty-panel"><h2>Workspace unavailable</h2><p role="alert">{workspace.error.message}</p><button className="btn primary" onClick={() => void workspace.refetch()}>Try again</button></section> : role === 'STORE_MANAGER' ? <StoreWorkspace page={page.slug} /> : role === 'DISPATCHER' ? <DispatcherWorkspace page={page.slug} /> : <LoaderWorkspace page={page.slug} />}
         <footer className="workspace-footer"><span>Waypoint Pulse</span><span>One system. Four perspectives.</span></footer>
       </main>

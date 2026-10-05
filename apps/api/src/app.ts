@@ -23,6 +23,7 @@ import type { DriverServiceOptions } from './driver/services.js';
 import { proofRouter } from './proof/routes.js';
 import { locationRouter } from './location/routes.js';
 import type { LocationServiceOptions } from './location/services.js';
+import { publicJudgeWorkspaceMetadata } from './domain/public-judge-workspace.js';
 
 const dummyHash = hashPassword('timing-only-invalid-account');
 
@@ -76,8 +77,10 @@ export function createApp(prisma: PrismaClient, config: Config, options: { store
   });
   for (const role of ROLES) {
     const slug = ROLE_HOME[role].split('/')[1];
-    app.get(`/api/workspaces/${slug}`, authenticate(prisma, config), authorize(role), (_request, response) => {
-      response.set('Cache-Control', 'no-store').json({ role, title: ROLE_LABELS[role], state: 'FOUNDATION' });
+    app.get(`/api/workspaces/${slug}`, authenticate(prisma, config), authorize(role), async (_request, response) => {
+      const user = response.locals.user as { id: string };
+      response.set('Cache-Control', 'no-store').json({ role, title: ROLE_LABELS[role], state: 'FOUNDATION',
+        ...(config.PUBLIC_JUDGE_DEMO ? { publicJudge: await publicJudgeWorkspaceMetadata(prisma, user.id, role) } : {}) });
     });
   }
   app.use('/api/domain', authenticate(prisma, config), domainReadRouter(prisma));

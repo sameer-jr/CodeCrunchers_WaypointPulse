@@ -4,6 +4,7 @@ import { createLocalOperation, orderedOperations, projectTrip, serverOperation, 
 import type { LocalDriverOperation } from './model';
 import { pendingProofAttachments } from '../proof/localAttachments';
 import { authorizedProofUrl } from '../proof/urls';
+import { selectAssignedTrip } from '../driver/selection';
 
 const userId = '10000000-0000-4000-8000-000000000001', tripId = '20000000-0000-4000-8000-000000000001';
 const stopId = '30000000-0000-4000-8000-000000000001', orderId = '40000000-0000-4000-8000-000000000001';
@@ -30,6 +31,17 @@ function completion(first = arrival()): LocalDriverOperation {
     new Date('2026-10-04T00:01:00.000Z'), '80000000-0000-4000-8000-000000000002');
 }
 describe('Driver offline domain', () => {
+  it('opens actionable trips before completed history without overriding an explicit selection', () => {
+    const completed = { ...route(), id: 'completed', status: 'COMPLETED' as const };
+    const ready = { ...route(), id: 'ready', status: 'READY_FOR_DISPATCH' as const };
+    const active = { ...route(), id: 'active' };
+    expect(selectAssignedTrip([completed, ready, active], null)).toBe(active);
+    expect(selectAssignedTrip([completed, ready], null)).toBe(ready);
+    expect(selectAssignedTrip([completed, ready, active], completed.id)).toBe(completed);
+    expect(selectAssignedTrip([completed, ready], 'foreign')).toBeUndefined();
+    expect(selectAssignedTrip([completed], null)).toBe(completed);
+    expect(selectAssignedTrip([], null)).toBeUndefined();
+  });
   it('only loads authorized attachment paths from the application origin', () => {
     const origin = 'https://waypoint.example.test', path = `/api/proof/attachments/${orderId}`;
     expect(authorizedProofUrl(path, origin)).toBe(`${origin}${path}`);
