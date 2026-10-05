@@ -601,7 +601,7 @@ No raw competition ZIP, official CSV, private `.env`, local database or original
 
 ## Remote Docker verification
 
-The root Compose stack passed GitHub Actions on Ubuntu for the photo/signature/maps update: [run 37266088689](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37266088689), commit `3f204e45559fd9a72e19586dbe9809afb73743a2`.
+The root Compose stack passed GitHub Actions on Ubuntu for the competition review preparation: [run 37296909199](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37296909199), commit `9cf3d129f3caae3eb7bb9d55fa0228b99728abed`.
 
 Local development can run without Docker using `npm run setup:local`, `npm run dev:db` and, in another terminal, `npm run dev`. Competition startup remains `docker compose up --build`; CI verifies that same container stack on Linux.
 
@@ -661,7 +661,9 @@ The previously deployed release was verified for:
 - Store receipt
 - final Dispatcher reconciliation
 
-Both Railway services successfully deployed `3f204e45559fd9a72e19586dbe9809afb73743a2`, including the tenth migration. The current update passed four-role HTTPS authentication, synthetic loading/delivery, offline photo/signature reload and synchronization, authorized galleries, explicit Store receipt and Dispatcher reconciliation. The original judge delivery/receipt remains preserved. The approved real-GPS test reached the sharing flow, but this laptop's provider was unavailable; a real received position and physical mobile acceptance remain unverified. See [current release evidence](docs/media-maps-verification.md).
+The prior media/maps release on `3f204e4` passed four-role HTTPS authentication, synthetic delivery, offline photo/signature reload and synchronization, authorized galleries, explicit receipt and reconciliation. Its [feature evidence](docs/media-maps-verification.md) is retained. The approved GPS test reached the sharing flow, but this laptop's provider was unavailable; real GPS reception and physical mobile acceptance remain unverified.
+
+The current review preparation deployed both services successfully on `9cf3d129f3caae3eb7bb9d55fa0228b99728abed`, with ten migrations, database-connected HTTPS health and a 43-request four-role smoke. March 12 has a released 192-unit loading example and an assigned ready 50-unit cold route; March 13 remains unplanned. All four role guides/entry points and actual completed proof/receipt passed browser review, including the 390 px Driver view. Fresh execution records remain untouched. Historical proof/receipt identities are preserved; the shared demo does not reset automatically. See [competition review readiness and screenshots](docs/competition-review-readiness.md).
 
 ---
 
@@ -680,14 +682,16 @@ npm run check:safety
 Current local automated suite:
 
 ```text
-351 / 351 tests passed across 15 files
+357 / 357 tests passed across 15 files
 10 additive migrations
 30 Prisma models
 ```
 
 See:
 
-[Media and maps verification — current update](docs/media-maps-verification.md)
+[Competition review readiness — current preparation](docs/competition-review-readiness.md)
+
+[Media and maps verification — prior accepted feature release](docs/media-maps-verification.md)
 
 [Final Hackathon verification — historical release](docs/final-hackathon-verification.md)
 
@@ -703,9 +707,11 @@ Maps use explicitly recorded outlet coordinates and optional browser-reported Dr
 
 **Show route map** loads Leaflet and external OpenStreetMap tiles on demand with attribution. The [tile service policy](https://operations.osmfoundation.org/policies/tiles/) applies; tile availability and viewed-area browser requests are external. No offline tile prefetch is provided. Sequence lines are not driving directions, and GPS does not generate an ETA. Stop/proof workflows remain usable without tiles or GPS permission.
 
-| Current-update evidence | Status |
+The following table records the **prior accepted media/maps release**. Current preparation adds the review guide/demand and passes 357 tests; its exact CI/deployment/browser results are in [competition review readiness](docs/competition-review-readiness.md).
+
+| Prior media/maps release evidence | Status |
 | --- | --- |
-| Local automated suite | **PASS — 351/351 across 15 files** |
+| Historical feature-release suite | **PASS — 351/351 across 15 files** |
 | Schema | **30 models / 10 additive migrations**; the prior nine migration files remain unchanged |
 | Browser/media/offline acceptance | **PASS** — pending media survived offline reload and synced to scoped Driver/Store/Dispatcher galleries locally and over production HTTPS |
 | Exact feature commit's Linux Docker CI | **PASS — [run 37266088689](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37266088689), `3f204e4`**, including native image processing and cleanup |
