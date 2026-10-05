@@ -65,7 +65,7 @@ export function Login() {
           {mutation.isError && <div className="error-notice" role="alert">{mutation.error.message}</div>}
           <button className="btn primary login-submit" type="submit" disabled={mutation.isPending}>{mutation.isPending ? 'Signing in…' : 'Sign in'}<ArrowRight size={18} /></button>
         </form>
-        <div className="demo-accounts"><h3>Competition demo accounts</h3><p>Select an account, then enter the configured demo password.</p><div className="demo-grid">{DEMO_ACCOUNTS.map(account => <button type="button" key={account.role} onClick={() => { form.setValue('email', account.email, { shouldValidate: true }); mutation.reset(); document.getElementById('password')?.focus(); }}><span>{ROLE_LABELS[account.role]}</span><small>{account.email}</small></button>)}</div></div>
+        <div className="demo-accounts"><h3>Starter accounts</h3><p>Select an account, then enter its configured password.</p><div className="demo-grid">{DEMO_ACCOUNTS.map(account => <button type="button" key={account.role} onClick={() => { form.setValue('email', account.email, { shouldValidate: true }); mutation.reset(); document.getElementById('password')?.focus(); }}><span>{ROLE_LABELS[account.role]}</span><small>{account.email}</small></button>)}</div></div>
         <div className="sign-in-note"><LockKeyhole size={15} /> Your account determines your workspace access.</div>
       </section>
     </div><p className="login-footer">Waypoint Pulse · Team Code Crunchers</p>

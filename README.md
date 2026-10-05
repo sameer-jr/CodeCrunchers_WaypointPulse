@@ -44,9 +44,9 @@ The Railway deployment uses these four seeded role accounts.
 
 ## Normal workflow quickstart
 
-The requested starting state contains **safe starter accounts and reference records only**. There are no seeded orders, plans, trips, load records, deliveries, proof or receipts. Users create all orders through the ordinary Store workflow. **The live backup/reset and starter-state verification are pending** in [production starter readiness](docs/production-starter-readiness.md).
+The live starting inventory has been reset to **safe starter accounts and reference records only**, with zero orders, plans, trips, loading, deliveries, proof or receipts. Private backup/restore, the 37-request HTTPS smoke and **all four role browser checks passed**, without creating business records. Users create all orders through the ordinary Store workflow. See the dated snapshot and final publication/access status in [production starter readiness](docs/production-starter-readiness.md).
 
-Once verified, open [Waypoint Pulse](https://web-production-87afe.up.railway.app), sign in with the appropriate role and use the ordinary navigation. There is no competition-demo panel or fixed demonstration date. Choose the operational/eligible date shown by the application.
+Open [Waypoint Pulse](https://web-production-87afe.up.railway.app), sign in with the appropriate role and use the ordinary navigation. There is no competition-demo panel or fixed demonstration date. Choose the operational/eligible date shown by the application.
 
 | Step | Role | Start here |
 | --- | --- | --- |
@@ -338,7 +338,7 @@ Detailed documentation:
 - [Data model](docs/data-model.md)
 - [AI disclosure](docs/AI_DISCLOSURE.md)
 - [Final Hackathon verification — historical release](docs/final-hackathon-verification.md)
-- [Photo/signature/maps verification — current update](docs/media-maps-verification.md)
+- [Photo/signature/maps verification — prior accepted feature release](docs/media-maps-verification.md)
 - [Production starter readiness — current setup and reset status](docs/production-starter-readiness.md)
 - [Previous prepared review scenario — historical evidence](docs/competition-review-readiness.md)
 
@@ -514,7 +514,7 @@ No raw competition ZIP, official CSV, private `.env`, local database or original
 
 ## Remote Docker verification
 
-The previous prepared-review source passed Ubuntu Docker verification: [run 37296909199](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37296909199), commit `9cf3d129f3caae3eb7bb9d55fa0228b99728abed`. That is historical evidence. The normal starter source requires its own successful run, recorded in [production starter readiness](docs/production-starter-readiness.md).
+The normal starter source passed Ubuntu Docker verification on exact commit `c2b19ca17c736ba780586aeaa7802facfde70f26`: [run 37330960034](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37330960034). Earlier prepared-review and media runs remain historical evidence. Current local/container, completed maintenance and live acceptance evidence are recorded in [production starter readiness](docs/production-starter-readiness.md).
 
 Local development can run without Docker using `npm run setup:local`, `npm run dev:db` and, in another terminal, `npm run dev`. Competition startup remains `docker compose up --build`; CI verifies that same container stack on Linux.
 
@@ -536,7 +536,7 @@ Workflow:
 
 [`.github/workflows/docker-compose-verification.yml`](.github/workflows/docker-compose-verification.yml)
 
-The previous run's build, health, seeded authentication and always-run `docker compose down -v` cleanup succeeded. Current normal-starter verification remains pending; the workflow requires no confidential competition dataset and its normal installation check uses only safe accounts.
+The current run's build, health, seeded authentication and always-run `docker compose down -v` cleanup succeeded. It requires no confidential competition dataset and checks a fresh safe-account installation; successful CI does not establish that the live database has been cleared.
 
 ---
 
@@ -576,7 +576,11 @@ The previously deployed release was verified for:
 
 The prior media/maps release on `3f204e4` passed four-role HTTPS authentication, synthetic delivery, offline photo/signature reload and synchronization, authorized galleries, explicit receipt and reconciliation. Its [feature evidence](docs/media-maps-verification.md) is retained. The approved GPS test reached the sharing flow, but this laptop's provider was unavailable; real GPS reception and physical mobile acceptance remain unverified.
 
-The prior prepared review scenario passed on `9cf3d129`; that evidence is historical. The current maintenance preparation clears testing history after a private backup/restore check, then enables normal operation with safe starter references, current Asia/Colombo dates and **zero orders**. The competition-demo panel is removed; users create all orders themselves. **Backup/reset, matching deployment and live starter-state acceptance are pending** in [production starter readiness](docs/production-starter-readiness.md). No normal startup or HTTP action resets the database.
+Normal starter source `c2b19ca` passes local checks and Docker CI. Following Railway's [delayed GitHub-build incident](https://status.railway.com/incident/8RELVRFI), a CLI release uploaded 344 public files verified byte-for-byte against that source. Both API and Web reached **SUCCESS**, and public HTTPS `/api/health` returned **200 with the database connected**, at October 5 15:38:46 UTC (21:08:46 Asia/Colombo). CLI commit metadata is `null`; the source SHA is established by the artifact comparison.
+
+**Testing history has been cleared.** A real isolated PostgreSQL restore matched the private backup's 30 table digests, including media bytes. The guarded reset returned zero rows in all 18 operational tables while preserving all 12 reference/account table counts and checksums. The live HTTP snapshot passed at October 5 **15:42:01 UTC / 21:12:01 Asia/Colombo**. All four roles then passed browser acceptance with no competition-demo panel or old operational history; test sessions were logged out and no business records were created. A final private read confirmed the same zero/retained inventory. Temporary restore/remote helper copies were removed; the private local backup remains. See the accepted snapshot and screenshots in [production starter readiness](docs/production-starter-readiness.md).
+
+The clean starting state uses safe starter references, current Asia/Colombo dates and ordinary navigation; users create all demand themselves. This is a verified starting snapshot, and subsequent user work persists. The prior prepared scenario is historical. No normal startup or HTTP action resets data.
 
 ---
 
@@ -592,10 +596,11 @@ npm run build
 npm run check:safety
 ```
 
-Last completed prepared-review suite (historical; normal-starter checks are pending):
+Current normal-starter source checks passed: typecheck, lint, build, publication safety and real PostgreSQL tests.
 
 ```text
-357 / 357 tests passed across 15 files
+365 / 365 tests passed across 15 files
+22 focused PostgreSQL starter/reset checks passed
 10 additive migrations
 30 Prisma models
 ```
@@ -740,7 +745,7 @@ No AI service is required by the running Waypoint Pulse application. The plannin
 - [Driver / Offline report](docs/milestone-7-8-driver-offline.md)
 - [Railway deployment](docs/deployment-railway.md)
 - [Final Hackathon verification — historical release](docs/final-hackathon-verification.md)
-- [Photo/signature/maps verification — current update](docs/media-maps-verification.md)
+- [Photo/signature/maps verification — prior accepted feature release](docs/media-maps-verification.md)
 - [Demo script](docs/demo-script.md)
 
 ---

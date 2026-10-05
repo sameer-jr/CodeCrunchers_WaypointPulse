@@ -4,7 +4,7 @@ Target 6:00; allowed length 5–8 minutes. No video has been recorded or linked.
 
 ## Prepare before recording
 
-Use a separate safe installation following [Installation](../README.md#installation), with `STARTER_REFERENCE_DATA=true` and `PUBLIC_JUDGE_DEMO=false`. This lets the public starting inventory remain untouched for reviewers. The example local password is `WaypointDemo!2026`; the [public Railway application](https://web-production-87afe.up.railway.app) uses `WaypointJudge!2026`. Live backup/cleanup and normal-starter acceptance remain pending until recorded in the readiness report.
+Use a separate safe installation following [Installation](../README.md#installation), with `STARTER_REFERENCE_DATA=true` and `PUBLIC_JUDGE_DEMO=false`. This preserves the public starting inventory for reviewers. The example local password is `WaypointDemo!2026`; the [public Railway application](https://web-production-87afe.up.railway.app) uses `WaypointJudge!2026`. Its private restore/reset and all-role empty-state acceptance passed, with the HTTP snapshot recorded at **2026-10-05T15:42:01Z** in the readiness report. Later users create their own persisted work; the remaining publication/access checklist is separate.
 
 | Role | Account |
 | --- | --- |
