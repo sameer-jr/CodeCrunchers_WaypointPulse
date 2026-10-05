@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { DriverTripDetail } from '@waypoint/shared';
+import { PROOF_LIMITS, type DriverTripDetail, type ProofAttachmentInput } from '@waypoint/shared';
 import { createLocalOperation, orderedOperations, projectTrip, serverOperation, syncOperations, withSyncResult } from './engine';
 import type { LocalDriverOperation } from './model';
+import { pendingProofAttachments } from '../proof/localAttachments';
+import { authorizedProofUrl } from '../proof/urls';
 
 const userId = '10000000-0000-4000-8000-000000000001', tripId = '20000000-0000-4000-8000-000000000001';
 const stopId = '30000000-0000-4000-8000-000000000001', orderId = '40000000-0000-4000-8000-000000000001';
@@ -28,6 +30,68 @@ function completion(first = arrival()): LocalDriverOperation {
     new Date('2026-10-04T00:01:00.000Z'), '80000000-0000-4000-8000-000000000002');
 }
 describe('Driver offline domain', () => {
+  it('only loads authorized attachment paths from the application origin', () => {
+    const origin = 'https://waypoint.example.test', path = `/api/proof/attachments/${orderId}`;
+    expect(authorizedProofUrl(path, origin)).toBe(`${origin}${path}`);
+    expect(authorizedProofUrl(`${origin}${path}`, origin)).toBe(`${origin}${path}`);
+    for (const url of [`https://foreign.example.test${path}`, `${path}?token=unsafe`, `${path}#image`, '/api/auth/me',
+      `/api/proof/attachments/${'-'.repeat(36)}`, `https://user:password@waypoint.example.test${path}`, `//foreign.example.test${path}`, 'data:image/jpeg;base64,/9j/']) {
+      expect(() => authorizedProofUrl(url, origin)).toThrow();
+    }
+  });
+  const photo: ProofAttachmentInput = { kind: 'PHOTO', contentType: 'image/jpeg', base64: '/9j/2Q==' };
+  const signature: ProofAttachmentInput = { kind: 'SIGNATURE', contentType: 'image/png', base64: 'iVBORw==' };
+  const withAttachments = (attachments: ProofAttachmentInput[]) => {
+    const first = arrival(), arrived = projectTrip(route(), [first]);
+    return createLocalOperation(userId, arrived, 'COMPLETE_DELIVERY', stopId, { expectedTripVersion: 8, ...completion(first).payload, attachments },
+      new Date('2026-10-04T00:01:00.000Z'), '80000000-0000-4000-8000-000000000002');
+  };
+  it('retains photo and signature payloads through a reload without claiming server binary availability', () => {
+    const first = arrival(), second = withAttachments([photo, signature]);
+    const restored = JSON.parse(JSON.stringify([first, second])) as LocalDriverOperation[];
+    const proof = projectTrip(route(), restored).stops[0].delivery?.proof;
+    expect(proof).toMatchObject({ hasPhoto: true, hasSignature: true, binaryAvailable: false });
+    expect(pendingProofAttachments(restored, tripId, stopId)).toEqual([photo, signature]);
+    expect(pendingProofAttachments(restored, orderId, stopId)).toEqual([]);
+    expect(pendingProofAttachments(restored, tripId, orderId)).toEqual([]);
+    expect(serverOperation(second).payload.attachments).toEqual([photo, signature]);
+    expect(route().stops[0].delivery).toBeNull();
+  });
+  it('uses acknowledged server attachment metadata and stops presenting local pending attachments', () => {
+    const first = arrival(), second = withAttachments([photo, signature]);
+    const serverTrip = projectTrip(route(), [first, second]);
+    serverTrip.stops[0].delivery!.proof = { recipientName: 'Synthetic recipient', recipientRole: 'Store Manager', hasPhoto: true, hasSignature: true,
+      binaryAvailable: true, attachments: [{ id: orderId, kind: 'PHOTO', contentType: 'image/jpeg', byteLength: 4, width: 1, height: 1, url: `/api/proof/attachments/${orderId}` }] };
+    const synced = withSyncResult(second, { operationId: second.operationId, status: 'SYNCED', trip: serverTrip });
+    expect(pendingProofAttachments([synced], tripId, stopId)).toEqual([]);
+    expect(projectTrip(route(), [{ ...first, syncStatus: 'SYNCED' }, synced]).stops[0].delivery?.proof).toEqual(serverTrip.stops[0].delivery?.proof);
+  });
+  it('retains the identical attachment bytes and operation UUID after a lost acknowledgement', async () => {
+    const operation = withAttachments([photo, signature]);
+    const failed = await syncOperations([operation], async () => { throw new Error('Response lost'); }, async () => undefined);
+    expect(pendingProofAttachments(failed, tripId, stopId)).toEqual([photo, signature]);
+    const retried: unknown[] = [];
+    await syncOperations(failed, async item => { retried.push(item); return { operationId: item.operationId, status: 'SYNCED' }; }, async () => undefined);
+    expect(retried).toEqual([serverOperation(operation)]);
+  });
+  it('preserves photo evidence for a failed attempt without inventing a recipient or delivered goods', () => {
+    const first = arrival(), arrived = projectTrip(route(), [first]);
+    const failed = createLocalOperation(userId, arrived, 'COMPLETE_DELIVERY', stopId, { expectedTripVersion: 8, expectedStopVersion: 3, expectedOrderVersion: 10,
+      outcome: 'FAILED', deliveredUnits: 0, reasonCode: 'OUTLET_CLOSED', attachments: [photo] }, new Date('2026-10-04T00:01:00.000Z'));
+    const local = projectTrip(route(), [first, failed]);
+    expect(local.stops[0]).toMatchObject({ order: { status: 'DELIVERY_FAILED' }, delivery: { deliveredUnits: 0, proof: { recipientName: null, hasPhoto: true, hasSignature: false } } });
+    expect(local.stops[0].order.orderedUnits).toBe(192); expect(local.stops[0].loadedUnits).toBe(188);
+  });
+  it('rejects attachment counts, malformed base64 and decoded file sizes before device persistence', () => {
+    for (const attachments of [[photo, photo, photo, photo], [signature, signature], [{ ...photo, base64: 'invalid image' }],
+      [{ ...signature, base64: 'A'.repeat(Math.ceil((PROOF_LIMITS.maxSignatureBytes + 3) / 3) * 4) }],
+      [{ ...photo, base64: 'A'.repeat(Math.ceil((PROOF_LIMITS.maxPhotoBytes + 3) / 3) * 4) }]]) {
+      expect(() => withAttachments(attachments)).toThrow();
+    }
+    expect(() => withAttachments([photo, photo, photo, signature])).not.toThrow();
+    const invalid = completion(); invalid.payload.attachments = [{ ...photo, base64: 'not-base64' }];
+    expect(pendingProofAttachments([invalid], tripId, stopId)).toEqual([]);
+  });
   it('requires a real UUID and retains safe operation facts', () => {
     expect(() => createLocalOperation(userId, route(), 'ARRIVAL', stopId, { expectedTripVersion: 7, expectedStopVersion: 2, expectedOrderVersion: 9 }, new Date(), 'not-a-uuid')).toThrow();
     expect(arrival()).toMatchObject({ userId, tripId, entityType: 'TRIP_STOP', action: 'ARRIVAL', baseVersion: 7, syncStatus: 'PENDING', attempts: 0 });

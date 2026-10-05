@@ -92,10 +92,12 @@ export function projectTrip(server: DriverTripDetail, operations: LocalDriverOpe
       stop.status = delivery.outcome === 'FAILED' ? 'FAILED' : 'COMPLETED'; stop.version += 1; stop.completedAt = operation.clientEventAt;
       stop.order.status = delivery.outcome === 'DELIVERED' ? 'AWAITING_RECEIPT' : delivery.outcome === 'FAILED' ? 'DELIVERY_FAILED' : 'PARTIALLY_DELIVERED';
       stop.order.version += delivery.outcome === 'DELIVERED' ? 2 : 1;
+      const attachments = delivery.attachments ?? [];
       stop.delivery = { id: operation.operationId, outcome: delivery.outcome, expectedLoadedUnits: stop.loadedUnits, deliveredUnits: delivery.deliveredUnits,
         reasonCode: delivery.reasonCode ?? null, driverNote: delivery.driverNote ?? null, arrivedAt: stop.actualArrival ?? operation.clientEventAt,
-        completedAt: operation.clientEventAt, proof: delivery.outcome === 'FAILED' ? null : { recipientName: delivery.recipientName ?? null,
-          recipientRole: delivery.recipientRole ?? null, hasPhoto: false, hasSignature: false, binaryAvailable: false } };
+        completedAt: operation.clientEventAt, proof: delivery.recipientName || attachments.length ? { recipientName: delivery.recipientName ?? null,
+          recipientRole: delivery.recipientRole ?? null, hasPhoto: attachments.some(item => item.kind === 'PHOTO'),
+          hasSignature: attachments.some(item => item.kind === 'SIGNATURE'), binaryAvailable: false } : null };
     } else if (operation.action === 'FINISH_TRIP') { trip.status = 'COMPLETED'; trip.completedAt = operation.clientEventAt; }
     trip.version += 1;
     updatePermissions(trip);

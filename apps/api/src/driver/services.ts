@@ -11,6 +11,7 @@ import { transitionOrderInTransaction } from '../domain/lifecycle.js';
 import { assertDepotScope, requireRole, resolveActor } from '../domain/scope.js';
 import { driverTripDetail, driverTripInclude, type DriverTripRecord } from './dto.js';
 import { DRIVER_VISIBLE_STATES, readyDriverSource, scopedDriverTrip } from './scope.js';
+import { prepareProofAttachments, proofAttachmentAudit, type PreparedProofAttachment } from '../proof/media.js';
 
 export type DriverServiceOptions = { demoDate?: string; now?: () => Date };
 type ExecutionTime = { eventAt: Date; operation?: DriverOperation };
@@ -94,7 +95,7 @@ async function arrive(tx: Prisma.TransactionClient, actor: DomainActor, trip: Dr
   await appendAudit(tx, { actor, eventType: 'STOP_ARRIVED', entityType: 'TRIP', entityId: trip.id,
     metadata: { version: trip.version + 1, driver: auditDriver(trip, time, stop.id) } });
 }
-async function complete(tx: Prisma.TransactionClient, actor: DomainActor, trip: DriverTripRecord, stopId: string, input: DriverDeliveryInput, time: ExecutionTime) {
+async function complete(tx: Prisma.TransactionClient, actor: DomainActor, trip: DriverTripRecord, stopId: string, input: DriverDeliveryInput, time: ExecutionTime, attachments: PreparedProofAttachment[]) {
   const stop = activeStop(trip, stopId, input), loaded = stop.load!.loadedUnits!;
   if (stop.status !== 'ARRIVED' || !stop.actualArrival || stop.delivery || stop.order.status !== 'ARRIVED') throw new DomainError('DOMAIN_CONFLICT', 'Record arrival before completing this stop.');
   if (input.deliveredUnits > loaded || input.outcome === 'DELIVERED' && input.deliveredUnits !== loaded ||
@@ -105,7 +106,8 @@ async function complete(tx: Prisma.TransactionClient, actor: DomainActor, trip: 
     deliveredUnits: input.deliveredUnits, outcome: input.outcome, driverNote: note, reasonCode: input.reasonCode ?? null,
     arrivedAt: stop.actualArrival, completedAt: time.eventAt, recordedByDriverId: actor.id,
     ...(time.operation ? { clientEventAt: new Date(time.operation.clientEventAt), operationCreatedAt: new Date(time.operation.createdAt) } : {}),
-    ...(input.recipientName ? { proof: { create: { recipientName: input.recipientName, recipientRole: input.recipientRole ?? null } } } : {}) } });
+    ...(input.recipientName || attachments.length ? { proof: { create: { recipientName: input.recipientName ?? null, recipientRole: input.recipientRole ?? null,
+      ...(attachments.length ? { attachments: { create: attachments } } : {}) } } } : {}) } });
   const changed = await tx.tripStop.updateMany({ where: { id: stop.id, version: stop.version, status: 'ARRIVED', active: true },
     data: { status: input.outcome === 'FAILED' ? 'FAILED' : 'COMPLETED', version: { increment: 1 },
       actualServiceMinutes: new Prisma.Decimal(Math.max(0, time.eventAt.getTime() - stop.actualArrival.getTime())).div(60000) } });
@@ -119,6 +121,7 @@ async function complete(tx: Prisma.TransactionClient, actor: DomainActor, trip: 
   await advanceTrip(tx, trip);
   await appendAudit(tx, { actor, eventType: 'STOP_COMPLETED', entityType: 'DELIVERY_RECORD', entityId: delivery.id,
     metadata: { driver: { ...auditDriver(trip, time, stop.id), outcome: input.outcome, reasonCode: input.reasonCode ?? null },
+      ...(attachments.length ? { proofAttachments: proofAttachmentAudit(attachments) } : {}),
       quantities: { orderedUnits: stop.order.orderedUnits, loadedUnits: loaded, deliveredUnits: input.deliveredUnits, receivedUnits: null } } });
 }
 async function finish(tx: Prisma.TransactionClient, actor: DomainActor, trip: DriverTripRecord, expectedVersion: number, time: ExecutionTime) {
@@ -150,8 +153,9 @@ export async function recordDriverArrival(db: PrismaClient, userId: string, stop
 }
 export async function completeDriverStop(db: PrismaClient, userId: string, stopId: string, raw: unknown, options: DriverServiceOptions = {}): Promise<DriverTripDetail> {
   id(stopId); const input = parse(driverDeliverySchema, raw);
+  const attachments = await prepareProofAttachments(input.attachments);
   return transaction(db, userId, async (tx, actor) => { const trip = await tripForEntity(tx, actor, 'TRIP_STOP', stopId);
-    await complete(tx, actor, trip, stopId, input, { eventAt: options.now?.() ?? new Date() });
+    await complete(tx, actor, trip, stopId, input, { eventAt: options.now?.() ?? new Date() }, attachments);
     return driverTripDetail(await scopedDriverTrip(tx, actor, trip.id)); }, true);
 }
 export async function finishDriverTrip(db: PrismaClient, userId: string, tripId: string, raw: unknown, options: DriverServiceOptions = {}): Promise<DriverTripDetail> {
@@ -183,6 +187,7 @@ async function persistOperation(tx: Prisma.TransactionClient, actor: DomainActor
 async function syncOne(db: PrismaClient, userId: string, operation: DriverOperation, options: DriverServiceOptions): Promise<DriverSyncResult> {
   const hash = operationHash(operation);
   try {
+    const attachments = operation.action === 'COMPLETE_DELIVERY' ? await prepareProofAttachments(parse(driverDeliveryPayloadSchema, operation.payload).attachments) : [];
     return await transaction(db, userId, async (tx, actor) => {
       const existing = await tx.offlineOperation.findUnique({ where: { operationId: operation.operationId } });
       if (existing && (existing.userId !== actor.id || existing.payloadHash !== hash)) return { operationId: operation.operationId, status: 'CONFLICT', reason: 'Operation UUID already belongs to a different action or account.' };
@@ -206,7 +211,7 @@ async function syncOne(db: PrismaClient, userId: string, operation: DriverOperat
           await arrive(tx, actor, trip, operation.entityId, { ...payload, expectedTripVersion: operation.baseVersion }, time);
         } else {
           const payload = parse(driverDeliveryPayloadSchema, operation.payload);
-          await complete(tx, actor, trip, operation.entityId, { ...payload, expectedTripVersion: operation.baseVersion }, time);
+          await complete(tx, actor, trip, operation.entityId, { ...payload, expectedTripVersion: operation.baseVersion }, time, attachments);
         }
       }
       const result: DriverSyncResult = { operationId: operation.operationId, status: 'SYNCED', trip: driverTripDetail(await scopedDriverTrip(tx, actor, trip.id)) };

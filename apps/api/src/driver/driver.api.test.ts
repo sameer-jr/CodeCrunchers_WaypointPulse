@@ -1,8 +1,9 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { PrismaClient } from '@prisma/client';
-import type { DriverOperation, DriverStop, DriverTripDetail, LoaderTripDetail, PlanningRunDetail } from '@waypoint/shared';
+import { PROOF_LIMITS, type DriverOperation, type DriverStop, type DriverTripDetail, type LoaderTripDetail, type PlanningRunDetail, type ProofAttachmentInput } from '@waypoint/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
+import sharp from 'sharp';
 import { createApp } from '../app.js';
 import { readConfig } from '../config.js';
 import { installLoaderFixture, LOADER_SYNTHETIC_DATE, type LoaderFixture } from '../loader/testing/synthetic.js';
@@ -369,5 +370,195 @@ describe('Sequential durable Driver synchronization and retained conflicts', () 
     const committed = await db.offlineOperation.findFirstOrThrow({ where: { status: 'SYNCED' } });
     await expect(db.offlineOperation.update({ where: { operationId: committed.operationId }, data: { result: { overwritten: true } } })).rejects.toThrow();
     expect((await db.offlineOperation.findUniqueOrThrow({ where: { operationId: committed.operationId } })).result).toEqual(committed.result);
+  });
+});
+
+describe('Durable scoped delivery pictures and recipient signatures', () => {
+  const foreignStore = request.agent(app), foreignDispatcher = request.agent(app);
+  let route: DriverTripDetail, fixture: LoaderFixture, photo: ProofAttachmentInput, signature: ProofAttachmentInput;
+  let completion: DriverOperation, committedResult: Awaited<ReturnType<typeof sync>>;
+  let oversizedDimension: ProofAttachmentInput;
+  const attachmentPath = () => route.stops[0].delivery!.proof!.attachments![0].url;
+  async function mediaCounts() {
+    return { ...await counts(), proof: await db.deliveryProof.count(), attachments: await db.deliveryAttachment.count() };
+  }
+  async function arriveAt(index: number) {
+    const stop = route.stops[index], response = await driver.post(`/api/driver/stops/${stop.id}/arrival`).send(versions(route, stop));
+    expect(response.status, JSON.stringify(response.body)).toBe(200); route = response.body;
+  }
+  beforeAll(async () => {
+    const prepared = await readyFixture('DRIVER-MEDIA'); fixture = prepared.fixture; route = prepared.trip;
+    await db.userOutlet.deleteMany({ where: { userId: base.store.id } });
+    await db.userOutlet.create({ data: { userId: base.store.id, outletId: fixture.storeOutlet.id } });
+    for (const [agent, role, suffix] of [[foreignStore, 'STORE_MANAGER', 'store'], [foreignDispatcher, 'DISPATCHER', 'dispatcher']] as const) {
+      const user = await db.user.create({ data: { email: `media-foreign-${suffix}@waypoint.local`, displayName: `Synthetic foreign ${suffix}`,
+        role, passwordHash: fixture.driver.passwordHash } });
+      if (role === 'STORE_MANAGER') await db.userOutlet.create({ data: { userId: user.id, outletId: fixture.foreignOutlet.id } });
+      else await db.userDepot.create({ data: { userId: user.id, depotId: fixture.foreignDepot.id } });
+      expect((await agent.post('/api/auth/login').send({ email: user.email, password })).status).toBe(200);
+    }
+    const photoBytes = await sharp(randomBytes(256 * 256 * 3), { raw: { width: 256, height: 256, channels: 3 } })
+      .jpeg({ quality: 85 }).withMetadata({ exif: { IFD0: { ImageDescription: 'SYNTHETIC metadata must not survive normalization' } } }).toBuffer();
+    photo = { kind: 'PHOTO', contentType: 'image/jpeg', base64: photoBytes.toString('base64') };
+    const signatureBytes = await sharp({ create: { width: 2000, height: 1000, channels: 4, background: '#ffffff' } })
+      .composite([{ input: Buffer.from('<svg width="2000" height="1000"><path d="M100 700 Q400 100 600 700 T1100 600 T1800 700" stroke="black" stroke-width="20" fill="none"/></svg>') }]).png().toBuffer();
+    signature = { kind: 'SIGNATURE', contentType: 'image/png', base64: signatureBytes.toString('base64') };
+    oversizedDimension = { kind: 'PHOTO', contentType: 'image/png', base64: (await sharp({ create: { width: 4097, height: 1, channels: 3, background: '#ffffff' } }).png().toBuffer()).toString('base64') };
+    const started = await driver.post(`/api/driver/trips/${route.id}/start`).send({ expectedTripVersion: route.version });
+    expect(started.status).toBe(200); route = started.body; await arriveAt(0);
+  }, 60000);
+
+  it('rejects malformed, disguised, truncated and mismatched image bytes before delivery or proof writes', async () => {
+    const before = await mediaCounts(), stop = route.stops[0];
+    const invalid = [
+      { ...photo, base64: 'not-base64' },
+      { ...photo, base64: Buffer.from('this is not an image').toString('base64') },
+      { ...photo, base64: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>').toString('base64') },
+      { ...photo, base64: Buffer.from(photo.base64, 'base64').subarray(0, 16).toString('base64') },
+      { ...photo, contentType: 'image/png' },
+      { ...photo, contentType: 'image/svg+xml' }, oversizedDimension
+    ];
+    for (const attachment of invalid) {
+      const response = await driver.post(`/api/driver/stops/${stop.id}/complete`).send(deliveryBody(route, stop, { attachments: [attachment] }));
+      expect(response.status, JSON.stringify(response.body)).toBe(400);
+    }
+    expect(await mediaCounts()).toEqual(before);
+    expect((await driverDetail(route.id)).version).toBe(route.version);
+  });
+  it('enforces three-photo, one-signature and separate decoded byte limits', async () => {
+    const before = await mediaCounts(), stop = route.stops[0];
+    for (const attachments of [[photo, photo, photo, photo], [signature, signature],
+      [{ ...photo, base64: Buffer.alloc(PROOF_LIMITS.maxPhotoBytes + 1).toString('base64') }],
+      [{ ...signature, base64: Buffer.alloc(PROOF_LIMITS.maxSignatureBytes + 1).toString('base64') }]]) {
+      const response = await driver.post(`/api/driver/stops/${stop.id}/complete`).send(deliveryBody(route, stop, { attachments }));
+      expect(response.status, JSON.stringify(response.body)).toBe(400);
+    }
+    expect(await mediaCounts()).toEqual(before);
+  });
+  it('authenticates large proof bodies before parsing and keeps ordinary requests at the existing limit', async () => {
+    const stop = route.stops[0], body = deliveryBody(route, stop, { attachments: [photo] }), before = await mediaCounts();
+    const oversized = { padding: 'x'.repeat(5 * 1024 * 1024) };
+    expect(JSON.stringify(body).length).toBeGreaterThan(16384);
+    expect((await request(app).post(`/api/driver/stops/${stop.id}/complete`).send(body)).status).toBe(401);
+    expect((await loader.post(`/api/driver/stops/${stop.id}/complete`).send(body)).status).toBe(403);
+    const oversizedLength = String(JSON.stringify(oversized).length);
+    expect((await request(app).post('/api/driver/sync').set('Content-Type', 'application/json').set('Content-Length', oversizedLength)).status).toBe(401);
+    expect((await loader.post('/api/driver/sync').set('Content-Type', 'application/json').set('Content-Length', oversizedLength)).status).toBe(403);
+    expect((await driver.post('/api/driver/sync').send(oversized)).status).toBe(413);
+    expect((await driver.post(`/api/driver/trips/${route.id}/start`).send({ padding: 'x'.repeat(17000) })).status).toBe(413);
+    expect(await mediaCounts()).toEqual(before);
+  });
+  it('stores bounded normalized pictures and signature atomically with one delivery and a metadata-only response', async () => {
+    const stop = route.stops[0];
+    completion = operation('COMPLETE_DELIVERY', route, stop, { expectedStopVersion: stop.version, expectedOrderVersion: stop.order.version,
+      outcome: 'DELIVERED', deliveredUnits: stop.loadedUnits, recipientName: 'Synthetic Media Recipient', recipientRole: 'Store supervisor',
+      attachments: [photo, signature, photo, photo] });
+    committedResult = await sync([completion]); expect(committedResult.results[0].status).toBe('SYNCED'); route = committedResult.results[0].trip;
+    const proof = route.stops[0].delivery!.proof!;
+    expect(proof).toMatchObject({ hasPhoto: true, hasSignature: true, binaryAvailable: true, recipientName: 'Synthetic Media Recipient' });
+    expect(proof.attachments!.map(item => item.kind)).toEqual(['PHOTO', 'PHOTO', 'PHOTO', 'SIGNATURE']);
+    expect(proof.attachments!.every(item => item.url === `/api/proof/attachments/${item.id}`)).toBe(true);
+    const rows = await db.deliveryAttachment.findMany({ where: { proof: { deliveryRecordId: route.stops[0].delivery!.id } }, orderBy: { ordinal: 'asc' } });
+    expect(rows.map(row => row.ordinal)).toEqual([0, 1, 2, 3]);
+    for (const row of rows) {
+      expect(row.byteLength).toBe(row.bytes.byteLength);
+      expect(row.sha256).toBe(createHash('sha256').update(row.bytes).digest('hex'));
+      const metadata = await sharp(Buffer.from(row.bytes)).metadata();
+      expect(metadata.format).toBe(row.kind === 'PHOTO' ? 'jpeg' : 'png'); expect(metadata.exif).toBeUndefined();
+      expect(metadata.width).toBe(row.width); expect(metadata.height).toBe(row.height);
+    }
+    expect(rows[3]).toMatchObject({ width: 1600, height: 800, contentType: 'image/png' });
+    expect(JSON.stringify(committedResult)).not.toContain(photo.base64);
+    expect(JSON.stringify(committedResult)).not.toContain('"bytes"');
+    expect(await db.receipt.count({ where: { deliveryRecordId: route.stops[0].delivery!.id } })).toBe(0);
+  });
+  it('replays unchanged offline proof UUIDs with identical results and no duplicate attachments or audits', async () => {
+    const before = await mediaCounts(), replay = await sync([completion]);
+    expect(replay).toEqual(committedResult); expect(await mediaCounts()).toEqual(before);
+    expect(await db.deliveryAttachment.count({ where: { proof: { deliveryRecordId: route.stops[0].delivery!.id } } })).toBe(4);
+    expect(await db.auditEvent.count({ where: { eventType: 'STOP_COMPLETED', entityId: route.stops[0].delivery!.id } })).toBe(1);
+    expect(await db.auditEvent.count({ where: { eventType: 'OFFLINE_ACTION_SYNCED', metadata: { path: ['driver', 'operationId'], equals: completion.operationId } } })).toBe(1);
+  });
+  it('rejects changed attachment bytes on a reused UUID while preserving committed proof and results', async () => {
+    const before = await mediaCounts();
+    const changed = { ...photo, base64: (await sharp({ create: { width: 8, height: 8, channels: 3, background: '#448855' } }).jpeg().toBuffer()).toString('base64') };
+    const response = await sync([{ ...completion, payload: { ...completion.payload, attachments: [changed, signature] } }]);
+    expect(response.results[0].status).toBe('CONFLICT'); expect(response.results[0].trip).toBeUndefined();
+    expect(await mediaCounts()).toEqual(before); expect(await sync([completion])).toEqual(committedResult);
+  });
+  it('returns matching actual binary proof to the assigned Driver, outlet Store and depot Dispatcher with private response headers', async () => {
+    const path = attachmentPath(), row = await db.deliveryAttachment.findUniqueOrThrow({ where: { id: route.stops[0].delivery!.proof!.attachments![0].id } });
+    for (const agent of [driver, store, dispatcher]) {
+      const response = await agent.get(path);
+      expect(response.status).toBe(200); expect(response.headers['cache-control']).toBe('private, no-store');
+      expect(response.headers['x-content-type-options']).toBe('nosniff'); expect(response.headers['content-type']).toMatch(/^image\/jpeg/);
+      expect(Number(response.headers['content-length'])).toBe(row.byteLength);
+      expect(Buffer.from(response.body)).toEqual(Buffer.from(row.bytes));
+    }
+    const signatureResponse = await store.get(route.stops[0].delivery!.proof!.attachments![3].url);
+    expect(signatureResponse.status).toBe(200); expect(signatureResponse.headers['content-type']).toMatch(/^image\/png/);
+  });
+  it('denies anonymous, Loader and foreign Driver, outlet and depot access to actual proof bytes', async () => {
+    const path = attachmentPath(), before = await mediaCounts();
+    expect((await request(app).get(path)).status).toBe(401);
+    for (const agent of [loader, foreignDriver, foreignDispatcher]) {
+      const response = await agent.get(path); expect(response.status).toBe(403); expect(response.body.error).toBeTruthy();
+    }
+    expect((await foreignStore.get(path)).status).toBe(404);
+    expect((await driver.get('/api/proof/attachments/not-a-uuid')).status).toBe(400);
+    expect((await dispatcher.get(`/api/proof/attachments/${randomUUID()}`)).status).toBe(404);
+    expect(await mediaCounts()).toEqual(before);
+  });
+  it('shows the same metadata in Store and Dispatcher details without disclosing encoded evidence in audit metadata', async () => {
+    const stop = route.stops[0], expected = stop.delivery!.proof;
+    const tracked = await store.get(`/api/store/orders/${stop.order.id}`), observed = await dispatcher.get(`/api/dispatcher/orders/${stop.order.id}`);
+    expect(tracked.status).toBe(200); expect(observed.status).toBe(200);
+    expect(tracked.body.delivery.proof).toEqual(expected); expect(observed.body.delivery.proof).toEqual(expected);
+    expect(tracked.body.trip.id).toBe(route.id); expect(tracked.body.receipt).toBeNull();
+    const audit = await db.auditEvent.findFirstOrThrow({ where: { entityId: stop.delivery!.id, eventType: 'STOP_COMPLETED' } });
+    const metadata = audit.metadata as { proofAttachments: { id: string; sha256: string }[] };
+    expect(metadata.proofAttachments).toHaveLength(4);
+    expect(metadata.proofAttachments.every(item => /^[a-f0-9]{64}$/.test(item.sha256))).toBe(true);
+    expect(JSON.stringify(metadata)).not.toContain(photo.base64); expect(JSON.stringify(metadata)).not.toContain('"bytes"');
+    expect(JSON.stringify(metadata)).not.toContain('"base64"');
+  });
+  it('enforces append-only binary evidence at the PostgreSQL boundary', async () => {
+    const id = route.stops[0].delivery!.proof!.attachments![0].id, before = await db.deliveryAttachment.findUniqueOrThrow({ where: { id } });
+    await expect(db.deliveryAttachment.update({ where: { id }, data: { bytes: Uint8Array.from([1, 2, 3]) } })).rejects.toThrow();
+    await expect(db.deliveryAttachment.delete({ where: { id } })).rejects.toThrow();
+    expect(await db.deliveryAttachment.findUniqueOrThrow({ where: { id } })).toEqual(before);
+  });
+  it('rolls back media, delivery, lifecycle and UUID together when the audit write fails, then retries once', async () => {
+    await arriveAt(1); const stop = route.stops[1], before = await mediaCounts();
+    const op = operation('COMPLETE_DELIVERY', route, stop, { expectedStopVersion: stop.version, expectedOrderVersion: stop.order.version,
+      outcome: 'DELIVERED', deliveredUnits: stop.loadedUnits, recipientName: 'Synthetic Atomic Recipient', recipientRole: 'Supervisor', attachments: [photo, signature] });
+    await db.$executeRawUnsafe(`CREATE FUNCTION media_test_reject_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW."eventType" = 'STOP_COMPLETED' THEN RAISE EXCEPTION 'synthetic media audit rejection'; END IF; RETURN NEW; END $$`);
+    await db.$executeRawUnsafe(`CREATE TRIGGER "Media_test_reject_audit" BEFORE INSERT ON "AuditEvent" FOR EACH ROW EXECUTE FUNCTION media_test_reject_audit()`);
+    try {
+      expect((await driver.post('/api/driver/sync').send({ operations: [op] })).status).toBe(500);
+      expect(await mediaCounts()).toEqual(before); expect((await db.tripStop.findUniqueOrThrow({ where: { id: stop.id } })).status).toBe('ARRIVED');
+      expect(await db.offlineOperation.findUnique({ where: { operationId: op.operationId } })).toBeNull();
+      expect((await driverDetail(route.id)).version).toBe(route.version);
+    } finally {
+      await db.$executeRawUnsafe(`DROP TRIGGER "Media_test_reject_audit" ON "AuditEvent"`); await db.$executeRawUnsafe('DROP FUNCTION media_test_reject_audit()');
+    }
+    const [first, second] = await Promise.all([sync([op]), sync([op])]);
+    expect(second).toEqual(first); expect(first.results[0].status).toBe('SYNCED'); route = first.results[0].trip;
+    expect(await db.deliveryAttachment.count({ where: { proof: { deliveryRecordId: route.stops[1].delivery!.id } } })).toBe(2);
+    expect(await db.deliveryRecord.count({ where: { tripStopId: stop.id } })).toBe(1);
+    expect(await db.auditEvent.count({ where: { eventType: 'STOP_COMPLETED', entityId: route.stops[1].delivery!.id } })).toBe(1);
+  });
+  it('preserves a failed-stop picture without inventing a recipient, delivery quantity or Store receipt', async () => {
+    await arriveAt(2); const stop = route.stops[2];
+    const response = await driver.post(`/api/driver/stops/${stop.id}/complete`).send({ ...versions(route, stop), outcome: 'FAILED', deliveredUnits: 0,
+      reasonCode: 'OUTLET_CLOSED', driverNote: 'Synthetic closed entrance recorded.', attachments: [photo] });
+    expect(response.status, JSON.stringify(response.body)).toBe(200); route = response.body;
+    const delivery = route.stops[2].delivery!;
+    expect(delivery.proof).toMatchObject({ recipientName: null, recipientRole: null, hasPhoto: true, hasSignature: false, binaryAvailable: true });
+    expect(delivery.deliveredUnits).toBe(0); expect(route.stops[2].order.status).toBe('DELIVERY_FAILED');
+    expect(await db.receipt.count({ where: { deliveryRecordId: delivery.id } })).toBe(0);
+    const exception = await db.exception.findFirstOrThrow({ where: { deliveryRecordId: delivery.id } });
+    const detail = await dispatcher.get(`/api/dispatcher/exceptions/${exception.id}`);
+    expect(detail.status).toBe(200); expect(detail.body.delivery.proof).toEqual(delivery.proof);
   });
 });

@@ -64,9 +64,26 @@ async function verifyInstallation() {
   } finally { await db.$disconnect(); }
 }
 
+async function verifyMediaRuntime() {
+  const { default: sharp } = await import('sharp');
+  const { prepareProofAttachments } = await import('../apps/api/dist/proof/media.js');
+  const input = await sharp({ create: { width: 12, height: 8, channels: 3, background: '#b9df42' } }).png().toBuffer();
+  const attachments = await prepareProofAttachments(['PHOTO', 'SIGNATURE'].map(kind => ({ kind, contentType: 'image/png', base64: input.toString('base64') })));
+  assert.equal(attachments.length, 2);
+  for (const attachment of attachments) {
+    const metadata = await sharp(attachment.bytes).metadata();
+    assert.equal(metadata.format, attachment.kind === 'PHOTO' ? 'jpeg' : 'png');
+    assert.equal(metadata.width, 12);
+    assert.equal(metadata.height, 8);
+    assert.equal(attachment.byteLength, attachment.bytes.length);
+  }
+  console.log('PASS: Image processing runtime decodes and normalizes synthetic photo/signature bytes; no application records written.');
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     if (process.argv.includes('--installation')) await verifyInstallation();
+    await verifyMediaRuntime();
     await verifyDockerHttp({ baseUrl: process.env.DOCKER_VERIFY_URL ?? 'http://web', origin: process.env.WEB_ORIGIN,
       password: process.env.SEED_DEMO_PASSWORD });
   } catch (error) {

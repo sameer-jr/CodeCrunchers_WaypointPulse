@@ -1,6 +1,6 @@
 # Application architecture
 
-Milestones 1–6 implement authentication, shared operational persistence, Store/Dispatcher workflows, deterministic planning/validation/release and Loader shortfall/review/readiness. Combined Milestones 7+8 passed local automated/browser acceptance for scoped Driver execution and durable offline recovery on those same generated records; [the Driver/offline report](milestone-7-8-driver-offline.md) records evidence and limits. Final integration/packaging/deployment verifies this frozen product, including the existing explicit Store receipt and final Dispatcher reads. No new feature or Datathon work is included; [final Hackathon verification](final-hackathon-verification.md) owns current release evidence.
+Milestones 1–6 implement authentication, shared operational persistence, Store/Dispatcher workflows, deterministic planning/validation/release and Loader shortfall/review/readiness. Combined Milestones 7+8 added scoped Driver execution and offline recovery; [the Driver/offline report](milestone-7-8-driver-offline.md) records historical acceptance. The authorized follow-up adds persisted delivery media, recorded outlet locations and optional foreground Driver positioning while preserving the operational lifecycle and explicit Store receipt. [Media and maps verification](media-maps-verification.md) tracks current-source acceptance separately from [the earlier final release](final-hackathon-verification.md). No Datathon functionality is included.
 
 ```mermaid
 flowchart LR
@@ -16,6 +16,12 @@ flowchart LR
   Planning --> Validator[Independent persisted-plan validator]
   Auth --> Loader[Loader quantities and readiness]
   Auth --> Driver[Assigned Driver execution and UUID sync]
+  Auth --> Proof[Scoped delivery attachment reads]
+  Auth --> Location[Recorded coordinates and latest trip position]
+  Proof --> Scope
+  Proof --> Prisma
+  Location --> Scope
+  Location --> Transaction
   Loader --> Scope
   Loader --> Lifecycle
   Driver --> Scope
@@ -41,7 +47,7 @@ flowchart LR
   Import --> Transaction
   Scope --> Prisma[Prisma client]
   Transaction --> Prisma
-  Prisma --> Database[(PostgreSQL: 27 normalized models)]
+  Prisma --> Database[(PostgreSQL: 30 normalized models)]
   Browser --> Shared[Shared roles and Zod request contracts]
   Browser --> ShellCache[Service worker static shell cache]
   Browser --> Device[Per-user IndexedDB route and operation queue]
@@ -71,7 +77,7 @@ All roles share authentication schemas/constants and shell components. Store, Di
 | `POST /api/store/orders` | Atomic DRAFT creation, ORDER_CREATED audit and centralized CONFIRMED transition |
 | `POST /api/store/orders/:id/receipt` | Versioned receipt and issue transaction with centralized receipt transition |
 
-Store query responses use `Cache-Control: no-store`. Reads use repeatable-read transactions so counts and related DTOs share a database snapshot. Home limits its recent list to 20 and attention list to 10; counts cover all matching records. Detail timeline events come from AuditEvent, ordered by timestamp and persisted version when transaction timestamps tie. Planned and actual arrival/departure/completion remain distinct nullable facts. An unplanned order has no invented vehicle or ETA. Deferral reasons/dates come from DeferralRecord. Proof responses expose persisted recipient metadata and presence flags, with `binaryAvailable: false`; they do not expose storage keys or fake image URLs.
+Store query responses use `Cache-Control: no-store`. Reads use repeatable-read transactions so counts and related DTOs share a database snapshot. Home limits its recent list to 20 and attention list to 10; counts cover all matching records. Detail timeline events come from AuditEvent, ordered by timestamp and persisted version when transaction timestamps tie. Planned and actual arrival/departure/completion remain distinct nullable facts. An unplanned order has no invented vehicle or ETA. Deferral reasons/dates come from DeferralRecord. Proof responses expose persisted recipient metadata, presence flags and scoped attachment metadata/URLs when actual image bytes exist. Legacy metadata-only proof remains explicitly unavailable; storage keys and binary payloads are absent from order DTOs.
 
 The cutoff is evaluated on the server at **16:00 Asia/Colombo**, including exactly 16:00. Today/past dates, absent calendar rows and non-operating requested dates are rejected. Only a tomorrow request submitted at or after cutoff shifts eligibility to the first later imported operating date, strictly after tomorrow. The original requestedDeliveryDate and createdAt remain intact; eligibleDeliveryDate records the consequence and the DTO explains it. If no later operating date exists, creation fails. Fresh supports ambient/chilled/frozen with daily context; Style and Tech support ambient with weekly/as-needed context respectively. No product catalog or assumed weekday schedule is introduced.
 
@@ -107,7 +113,7 @@ Pulse totals aggregate all scoped records for the selected operational date. Awa
 
 Planning foundation includes unassigned CONFIRMED/CLOSED_FOR_PLANNING orders whose initial eligible/requested date is on or before the selected imported operating date. Unknown/non-operating selected calendars yield no established eligible demand and explicitly report UNKNOWN/NON_OPERATING. Unassigned DEFERRED backlog appears separately for review; it is not claimed eligible or automatically scheduled, and the latest recorded nextEligibleDate remains visible. Totals aggregate all matching confirmed demand, while previews are capped at 100 orders, 100 deferred orders, 200 vehicles and 50 existing trips with explicit limits. Master vehicle counts/capacities describe reference records, including their active flags; `operationalAvailability: UNKNOWN` prevents treating absence of trips as verified availability. Trips report ordered units/weight/volume, not unmeasured actual loaded weight/volume.
 
-Deferral warnings use retained record count and latest persisted reason/time/date, without a fairness score or an unproven consecutive-deferral claim. Exception origin uses an audit actor-role snapshot when the creation transaction matches; otherwise it explicitly reports CURRENT_ACCOUNT or UNKNOWN rather than inventing historical identity. Proof display remains metadata only. Routes show lists and stored times, with no GPS simulation, invented coordinates or fake map tiles. Planning and loading-shortfall review mutations are described separately; general exception resolution remains deferred and Future Capacity has no predictions. None of these GET endpoints creates Allocation, Trip, state changes or operational audit events.
+Deferral warnings use retained record count and latest persisted reason/time/date, without a fairness score or an unproven consecutive-deferral claim. Exception origin uses an audit actor-role snapshot when the creation transaction matches; otherwise it explicitly reports CURRENT_ACCOUNT or UNKNOWN rather than inventing historical identity. The order inspector displays authorized stored photos/signatures. Routes retain lists and stored times alongside recorded coordinates and optional Driver positions. Planning and loading-shortfall review mutations are described separately; general exception resolution remains deferred and Future Capacity has no predictions. Operational GET endpoints do not create Allocation, Trip, state changes or audit events.
 
 `npm run demo:assign-dispatcher` explicitly assigns one or more local development depots through UserDepot; changing existing scope requires `--replace`. The M4 judge scenario uses independently authored SYNTHETIC data and prepared historical trips. They remain explicitly distinct from generated trips through persisted planning provenance. Auth seeding still grants no assignments and imports no fixture data.
 
@@ -143,7 +149,25 @@ Normal loading completes LoadRecord separately from immutable ordered units. A s
 
 Start stores actualDeparture, centrally advances orders to IN_TRANSIT and audits the trip. Current-stop arrival requires expected trip/stop/order versions, records actualArrival and advances ARRIVED. Completion requires arrival, correct current sequence and a loaded-consistent outcome: full equals loaded, partial is lower and positive, failed is zero. Partial/failed require controlled reasons; selected reasons require a useful note. Successful/partial proof requires recipient name and role. DeliveryRecord, metadata DeliveryProof, stop status/version, central order lifecycle and audit commit atomically. Full delivery advances to AWAITING_RECEIPT; partial/failed retain their outcome and an operational Exception. Ordered/loaded facts are never overwritten and no receipt is created.
 
-Finish requires terminal outcomes for all active stops, records Trip.completedAt and COMPLETED, and leaves actualReturn null. Completion means all delivery stops finished, not verified depot arrival. Proof contains recipient metadata, quantity/outcome/note/time only; photo/signature storage is unavailable and no illustration is used as evidence. Existing Store/Dispatcher queries expose the same delivery quantities, proof and progress.
+Finish requires terminal outcomes for all active stops, records Trip.completedAt and COMPLETED, and leaves actualReturn null. Completion means all delivery stops finished, not verified depot arrival. Optional image attachments supplement recipient metadata, quantity/outcome/note/time. Existing Store/Dispatcher queries expose the same delivery quantities, proof and progress; receipt remains a separate Store action.
+
+## Delivery media boundary
+
+`apps/api/src/proof/` validates canonical base64, MIME/file signatures, decoded pixel dimensions and attachment limits, then uses Sharp to decode and re-encode images without input metadata. Each delivery accepts up to three 1 MiB photos and one 256 KiB signature. Photos become JPEG within 1600 × 1600; signatures become PNG within 1600 × 800. DeliveryAttachment bytes, dimensions, length and SHA-256 are persisted with DeliveryProof in the same serializable delivery transaction. SQL constrains count through ordinals and uniqueness, enforces file bounds, and prevents attachment UPDATE/DELETE. Audits contain safe attachment descriptors and digests, without image bytes.
+
+`GET /api/proof/attachments/:id` re-resolves the current actor and scope before selecting bytes: Driver needs its assigned active stop, Store its assigned outlet, Dispatcher both order and trip scope. Loader has no media access. Responses are `private, no-store` with a fixed image MIME type and `nosniff`. Order/trip DTOs contain only attachment metadata and same-origin scoped URLs. The gallery fetches those URLs with credentials and `no-store`, checks response MIME/size, and revokes object URLs on identity change/unmount. Nothing is exposed through a public upload directory or image-host URL.
+
+The browser prepares camera/upload images and a touch signature before submission. Uncommitted signature strokes and preparation block completion. Local pending previews come from the same bounded IndexedDB operation payload that synchronization sends, preserving its UUID and attachment bytes across reload/retry. A failed initial device write keeps the form visible and reports that the action was not saved. Server attachment reads are intentionally excluded from the service-worker cache.
+
+## Maps and position boundary
+
+`apps/api/src/location/` separates audited outlet-coordinate edits from latest-trip-position writes. Dispatcher location edits require outlet scope, expected location version, latitude/longitude bounds and a useful reason. Coordinates are explicitly supplied; the importer, auth seed and safe judge seed invent none. The location table changes independently of immutable operational source references.
+
+Only the assigned Driver can post a position for its in-transit, departed, incomplete trip. The server rejects out-of-range coordinates/accuracy, readings more than two minutes old or 30 seconds ahead, pre-departure readings and non-increasing timestamps. TripPosition retains the latest reading plus accuracy, client event and server receipt time; it is not a movement history. Dispatcher location reads enforce trip/depot scope. Store reads require its own active stop and return only that outlet's stop/coordinates, plus the vehicle position; Driver uses assigned-trip scope. Loader is denied. These routes use `Cache-Control: no-store`.
+
+Driver location sharing starts only after Share location, uses browser permission and HTTPS/localhost, and sends at most once per ten seconds while connected and visible. It pauses with network loss or a hidden page, ends on unmount, and requires a new opt-in after reload. Delivery remains independent of location permission. Maps poll scoped positions every 15 seconds online and label offline, completed or older-than-two-minute positions historical.
+
+`apps/web/src/location/` lazy-loads Leaflet after Show route map. Markers use recorded outlet coordinates; dashed segments connect stop sequence rather than a road network. Optional GPS positions include the reported accuracy circle. External OpenStreetMap raster tiles retain visible attribution and normal browser caching/referrer behavior; the service worker excludes cross-origin requests. No offline tile download, routing engine, reverse geocoder or position-derived ETA is provided. Tile failures retain the coordinate/stop list. See the [OSM tile policy](https://operations.osmfoundation.org/policies/tiles/) and [current acceptance report](media-maps-verification.md).
 
 ## Driver offline and synchronization boundary
 
@@ -155,9 +179,9 @@ The production Vite build emits a versioned service worker that precaches index,
 
 Fresh connected queued operations use server event time; offline or delayed operations retain clientEventAt, with raw client/creation timestamps persisted separately. The server rejects implausible future/old/device-clock timestamps and event ordering before departure/arrival. Reconnect and a 30-second retry interval attempt sync; manual Sync now is available. Driver online route reads poll every 15 seconds. Vite development mode does not register the service worker; offline reload acceptance uses the built judge preview.
 
-## Frozen submission and deployment boundary
+## Installation and deployment boundary
 
-The accepted combined baseline contains 299 tests and nine committed migrations. Final verification re-runs typecheck, lint, real PostgreSQL tests, build, private-data safety and diff checks without rewriting applied migrations. The four-role judge demonstrates one generated plan through approved 192 → 188 loading, offline 188 delivery, explicit 188 Store receipt and final Dispatcher reads. Receipt confirmation remains its existing Store transaction; Driver synchronization never creates it or invents actualReturn.
+The accepted historical combined baseline contains 299 tests and nine migrations; the earlier final release passed 308 tests. Current source adds the tenth migration without changing those prior files. Final verification re-runs typecheck, lint, real PostgreSQL tests, build, private-data safety and diff checks. The four-role judge demonstrates one generated plan through approved 192 → 188 loading, offline 188 delivery, explicit 188 Store receipt and final Dispatcher reads. Receipt confirmation remains its existing Store transaction; Driver synchronization never creates it or invents actualReturn. Current photo/signature/map browser and deployed acceptance are tracked separately.
 
 Fresh root Compose installation needs only committed application/configuration files and newly configured secrets. Nginx serves the production React bundle, forwards same-origin `/api`, and supports SPA navigation; PostgreSQL persists in a named volume. Startup applies migrations and the idempotent auth-only seed before health becomes ready. Private reference ZIPs/CSVs, local databases and the original prototype are excluded from both repository and image contexts. Independent judge data is an explicit separate initialization concern, not a hidden installation dependency.
 

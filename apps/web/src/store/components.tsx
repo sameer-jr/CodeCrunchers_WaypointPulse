@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, ChevronRight, Clock3, FileCheck2, Package, TriangleAlert } from 'lucide-react';
 import type { StoreOrderDetail, StoreOrderStatus, StoreOrderSummary, StoreOutlet } from '@waypoint/shared';
+import { ProofGallery } from '../proof/ProofGallery';
 
 export const STATUS_LABELS: Record<StoreOrderStatus, string> = {
   DRAFT: 'Draft', CONFIRMED: 'Awaiting planning', CLOSED_FOR_PLANNING: 'Awaiting planning', PLANNED: 'Planned', DEFERRED: 'Deferred',
@@ -50,5 +51,14 @@ export function Quantities({ order }: { order: StoreOrderSummary }) {
 }
 export function DeliveryEvidence({ order }: { order: StoreOrderDetail }) {
   const proof = order.delivery?.proof;
-  return <Panel kicker="DELIVERY EVIDENCE" title="Proof of delivery" action={<span className={`store-chip ${proof ? 'green' : 'gray'}`}>{proof ? 'Metadata available' : 'Not recorded'}</span>}><div className="store-panel-body">{proof ? <><div className="store-proof-icon"><FileCheck2 size={29} /></div><dl className="store-facts"><div><dt>Recipient</dt><dd>{proof.recipientName || 'Not recorded'}</dd></div><div><dt>Recipient role</dt><dd>{proof.recipientRole || 'Not recorded'}</dd></div><div><dt>Photo metadata</dt><dd>{proof.hasPhoto ? 'Recorded' : 'Not recorded'}</dd></div><div><dt>Signature metadata</dt><dd>{proof.hasSignature ? 'Recorded' : 'Not recorded'}</dd></div></dl><p className="store-note neutral">Image and signature content is unavailable. Only saved evidence metadata is shown.</p></> : <EmptyState title="No proof metadata available" message={order.delivery ? 'The delivery is recorded, but no supporting proof metadata was saved.' : 'Delivery evidence will appear when a driver records it.'} />}{order.delivery?.driverNote && <div className="store-driver-note"><span className="eyebrow">DRIVER NOTE</span><p>{order.delivery.driverNote}</p></div>}</div></Panel>;
+  return <Panel kicker="DELIVERY EVIDENCE" title="Proof of delivery" action={<span className={`store-chip ${proof ? 'green' : 'gray'}`}>{proof ? 'Recorded proof' : 'Not recorded'}</span>}>
+    <div className="store-panel-body">{proof ? <>
+      <div className="store-proof-icon"><FileCheck2 size={29} /></div>
+      <dl className="store-facts"><div><dt>Recipient</dt><dd>{proof.recipientName || 'Not recorded'}</dd></div><div><dt>Recipient role</dt><dd>{proof.recipientRole || 'Not recorded'}</dd></div><div><dt>Photos</dt><dd>{proof.hasPhoto ? 'Captured' : 'Not captured'}</dd></div><div><dt>Signature</dt><dd>{proof.hasSignature ? 'Captured' : 'Not captured'}</dd></div></dl>
+      <ProofGallery key={order.id} attachments={proof.attachments} hasUnavailableMedia={(proof.hasPhoto || proof.hasSignature) && !proof.binaryAvailable} />
+      <p className="store-note neutral">Driver delivery proof and your Store receipt are separate records.</p>
+    </> : <EmptyState title="No proof available" message={order.delivery ? 'The delivery is recorded, but no supporting proof was saved.' : 'Delivery evidence will appear when a driver records it.'} />}
+      {order.delivery?.driverNote && <div className="store-driver-note"><span className="eyebrow">DRIVER NOTE</span><p>{order.delivery.driverNote}</p></div>}
+    </div>
+  </Panel>;
 }

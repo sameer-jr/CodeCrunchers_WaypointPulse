@@ -49,6 +49,10 @@ try {
   const driverDatabaseUrl = `postgresql://waypoint_test:${password}@127.0.0.1:${port}/waypoint_driver_test`;
   await initializeDatabase({ ...env, DATABASE_URL: driverDatabaseUrl });
   env.DRIVER_TEST_DATABASE_URL = driverDatabaseUrl;
+  await database.createDatabase('waypoint_location_test');
+  const locationDatabaseUrl = `postgresql://waypoint_test:${password}@127.0.0.1:${port}/waypoint_location_test`;
+  await initializeDatabase({ ...env, DATABASE_URL: locationDatabaseUrl });
+  env.LOCATION_TEST_DATABASE_URL = locationDatabaseUrl;
   await database.createDatabase('waypoint_public_judge_test');
   const publicJudgeDatabaseUrl = `postgresql://waypoint_test:${password}@127.0.0.1:${port}/waypoint_public_judge_test`;
   await initializeDatabase({ ...env, DATABASE_URL: publicJudgeDatabaseUrl });

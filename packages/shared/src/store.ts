@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { ProofMetadata } from './proof.js';
 
 export const ORDER_STATUSES = ['DRAFT', 'CONFIRMED', 'CLOSED_FOR_PLANNING', 'PLANNED', 'DEFERRED', 'RELEASED_TO_LOADING', 'LOADING', 'LOADING_EXCEPTION', 'READY_FOR_DISPATCH', 'IN_TRANSIT', 'ARRIVED', 'DELIVERED', 'PARTIALLY_DELIVERED', 'DELIVERY_FAILED', 'AWAITING_RECEIPT', 'RECEIPT_CONFIRMED', 'RECEIPT_ISSUE'] as const;
 export type StoreOrderStatus = typeof ORDER_STATUSES[number];
@@ -57,9 +58,9 @@ export interface StoreOrderDetail extends StoreOrderSummary {
   outlet: StoreOutlet; canReceive: boolean;
   timeline: { id: string; eventType: string; status: StoreOrderStatus | null; timestamp: string }[];
   deferrals: { id: string; reasonCode: string; reasonDetail: string; deferredAt: string; nextEligibleDate: string | null; resolvedAt: string | null }[];
-  trip: { tripRef: string; vehicleRef: string; tripNumber: number; plannedArrival: string | null; actualArrival: string | null; actualDeparture: string | null } | null;
+  trip: { id?: string; tripRef: string; vehicleRef: string; tripNumber: number; plannedArrival: string | null; actualArrival: string | null; actualDeparture: string | null } | null;
   delivery: { id: string; outcome: 'DELIVERED' | 'PARTIALLY_DELIVERED' | 'FAILED'; driverNote: string | null; arrivedAt: string; completedAt: string;
-    proof: { recipientName: string | null; recipientRole: string | null; hasPhoto: boolean; hasSignature: boolean; binaryAvailable: false } | null } | null;
+    proof: ProofMetadata | null } | null;
   receipt: { id: string; status: 'CONFIRMED' | 'ISSUE_REPORTED'; receivedUnits: number; issueType: Exclude<StoreReceiptIssue, 'NONE'> | null; issueNote: string | null; confirmedAt: string } | null;
   issues: { id: string; type: string; status: string; message: string; createdAt: string; resolvedAt: string | null }[];
 }

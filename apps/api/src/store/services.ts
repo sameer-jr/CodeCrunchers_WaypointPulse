@@ -8,10 +8,11 @@ import { DomainError } from '../domain/errors.js';
 import { transitionOrderInTransaction } from '../domain/lifecycle.js';
 import { determineStoreEligibility, storeContext, storeNow, type StoreServiceOptions } from './cutoff.js';
 import { outletDto, resolveStoreScope, type StoreScope } from './scope.js';
+import { deliveryProofDto, deliveryProofInclude } from '../proof/dto.js';
 
 export type { StoreServiceOptions } from './cutoff.js';
 const orderInclude = { stops: { where: { active: true }, take: 1,
-  include: { trip: { include: { vehicle: true } }, load: true, delivery: { include: { proof: true, receipt: true } } } } } satisfies Prisma.OrderInclude;
+  include: { trip: { include: { vehicle: true } }, load: true, delivery: { include: { proof: { include: deliveryProofInclude }, receipt: true } } } } } satisfies Prisma.OrderInclude;
 type StoreOrderRecord = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
 const receiptStates: OrderStatus[] = ['DELIVERED', 'PARTIALLY_DELIVERED', 'AWAITING_RECEIPT'];
 const activeStates: OrderStatus[] = ['DRAFT', 'CONFIRMED', 'CLOSED_FOR_PLANNING', 'PLANNED', 'RELEASED_TO_LOADING', 'LOADING', 'LOADING_EXCEPTION', 'READY_FOR_DISPATCH', 'IN_TRANSIT', 'ARRIVED'];
@@ -53,10 +54,10 @@ async function orderDetail(db: Prisma.TransactionClient, scope: StoreScope, orde
       return { id: event.id, eventType: event.eventType, status, timestamp: event.timestamp.toISOString() };
     }),
     deferrals: deferrals.map(row => ({ id: row.id, reasonCode: row.reasonCode, reasonDetail: row.reasonDetail, deferredAt: row.deferredAt.toISOString(), nextEligibleDate: row.nextEligibleDate?.toISOString().slice(0, 10) ?? null, resolvedAt: row.resolvedAt?.toISOString() ?? null })),
-    trip: stop ? { tripRef: stop.trip.tripRef, vehicleRef: stop.trip.vehicle.vehicleRef, tripNumber: stop.trip.tripNumber,
+    trip: stop ? { id: stop.trip.id, tripRef: stop.trip.tripRef, vehicleRef: stop.trip.vehicle.vehicleRef, tripNumber: stop.trip.tripNumber,
       plannedArrival: stop.plannedArrival?.toISOString() ?? null, actualArrival: stop.actualArrival?.toISOString() ?? null, actualDeparture: stop.trip.actualDeparture?.toISOString() ?? null } : null,
     delivery: delivery ? { id: delivery.id, outcome: delivery.outcome, driverNote: delivery.driverNote, arrivedAt: delivery.arrivedAt.toISOString(), completedAt: delivery.completedAt.toISOString(),
-      proof: delivery.proof ? { recipientName: delivery.proof.recipientName, recipientRole: delivery.proof.recipientRole, hasPhoto: !!delivery.proof.photoStorageKey, hasSignature: !!delivery.proof.signatureStorageKey, binaryAvailable: false } : null } : null,
+      proof: deliveryProofDto(delivery.proof) } : null,
     receipt: receipt ? { id: receipt.id, status: receipt.status, receivedUnits: receipt.receivedUnits, issueType: receipt.issueType, issueNote: receipt.issueNote, confirmedAt: receipt.confirmedAt.toISOString() } : null,
     issues: issues.map(row => ({ id: row.id, type: row.type, status: row.status, message: row.message, createdAt: row.createdAt.toISOString(), resolvedAt: row.resolvedAt?.toISOString() ?? null })) };
 }

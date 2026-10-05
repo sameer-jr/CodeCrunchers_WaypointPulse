@@ -1,6 +1,6 @@
 # Operational data model
 
-Milestone 2 introduced 25 models. Milestone 5 added VehicleAvailability; Milestone 6 reused those 26 models for Loader. Combined Milestones 7+8 add OfflineOperation, bringing the authoritative schema to **27 models and nine additive migrations**. Driver/offline local automated and browser acceptance passed, with a 299-test combined baseline. Final submission integration uses these existing models and Store receipt services; current-source container/public deployment evidence is recorded separately in [final Hackathon verification](final-hackathon-verification.md). `prisma/schema.prisma` and committed migrations define the actual constraints and relationships.
+Milestone 2 introduced 25 models; Milestone 5 added VehicleAvailability and combined Milestones 7+8 added OfflineOperation. The authorized photo/signature/maps follow-up adds DeliveryAttachment, OutletLocation and TripPosition, bringing the schema to **30 models and ten additive migrations**. Earlier Driver/offline and final-release evidence remains in its historical reports. Current-source acceptance is tracked in [media and maps verification](media-maps-verification.md). `prisma/schema.prisma` and committed migrations define the actual constraints and relationships.
 
 ```mermaid
 erDiagram
@@ -42,6 +42,11 @@ erDiagram
   LoadRecord ||--o| DeliveryRecord : same_stop
   User ||--o{ DeliveryRecord : assigned_driver
   DeliveryRecord ||--o| DeliveryProof : evidence_metadata
+  DeliveryProof ||--o{ DeliveryAttachment : immutable_image_evidence
+  Outlet ||--o| OutletLocation : recorded_coordinates
+  User ||--o{ OutletLocation : records
+  Trip ||--o| TripPosition : latest_position
+  User ||--o{ TripPosition : reports
   DeliveryRecord ||--o| Receipt : received_quantity
   User ||--o{ Receipt : confirms
   Order o|--o{ Exception : concerns
@@ -108,13 +113,27 @@ PlanningRun retains DRAFT/VALIDATED/RELEASED and adds SUPERSEDED for retained ol
 
 VehicleAvailability is an explicit unique vehicle/service-date record with AVAILABLE/UNAVAILABLE, reference source, recorder/note and optional local-minute availability bounds. AVAILABLE requires explicit increasing start/end bounds within the day; absence means UNKNOWN. Master active/type/capacity does not establish readiness. Synthetic records are fixture evidence requiring an explicit development/test planning opt-in or the separately authorized standalone PUBLIC_JUDGE_DEMO mode.
 
-LoadRecord preserves expected/actual units, reason, recorder, revision and review. Dispatch transitions require completed loading, approved revisions and resolved loading exceptions. DeliveryRecord preserves expected loaded snapshot, delivered/partial/failed outcome, actual quantity, controlled reason, notes, arrival/completion instants and assigned driver. Driver completion also retains raw clientEventAt and operationCreatedAt when synchronized. DeliveryProof stores recipient name/role; its existing optional storage-key fields remain unpopulated by Driver because binary capture/storage is unavailable. Browser blob/data URLs are rejected. Store/Dispatcher/Driver expose metadata only, omit keys and explicitly show unavailable photo/signature content.
+LoadRecord preserves expected/actual units, reason, recorder, revision and review. Dispatch transitions require completed loading, approved revisions and resolved loading exceptions. DeliveryRecord preserves expected loaded snapshot, delivered/partial/failed outcome, actual quantity, controlled reason, notes, arrival/completion instants and assigned driver. Driver completion also retains raw clientEventAt and operationCreatedAt when synchronized. DeliveryProof stores recipient name/role and optionally relates to real DeliveryAttachment rows. Existing legacy storage-key fields stay unpopulated by Driver; browser blob/data URLs are not accepted as evidence references. Store/Dispatcher/Driver DTOs expose safe attachment metadata and authorized API URLs rather than storage keys or binary bodies. Legacy metadata-only evidence explicitly remains unavailable.
 
 Exception has structured category/scope/review columns with category-appropriate, consistent relationships. Store issue details and attention queries include relevant order/load/delivery/receipt relationships, including records without a direct orderId. Shared trip-wide records are not exposed through that order detail. DeferralRecord appends each decision/reason/date; repeated DEFERRED transitions increment version and retain new history. Resolution can be recorded once without deleting earlier facts. AuditEvent has nullable system actor, server role, typed event/entity, timestamp and allowlisted state/version/reason/source/count/quantity metadata. Recipient details, credentials and tokens are excluded by the audit service. Its typed entity reference is not a polymorphic foreign key. Store creation writes ORDER_CREATED once and the centralized confirmation writes ORDER_CONFIRMED. Receipt transitions supply their own audit events. When PostgreSQL transaction timestamps tie, Store timelines use persisted versions to retain creation/transition order.
 
 Dispatcher Exception Centre reads the same Receipt-linked Exception IDs produced by Store services. Scope covers every non-null relationship path, including load/delivery/receipt-only exceptions without orderId. Origin role comes from a matching creation-transaction AuditEvent snapshot when available; CURRENT_ACCOUNT/UNKNOWN is explicit otherwise. Read-only status/type/date/depot/search filters do not resolve or delete records. Dispatcher order details report total deferral record count plus latest reason/time/date and retained history; no fairness or consecutive-deferral score is inferred. Their timelines use persisted audit timestamps and versions just as Store tracking does.
 
 FuelLedger is unique per vehicle/Monday date. Nullable openingConsumedLitres means unknown history, not zero. FuelUsage records CONSUMED/RESERVED litres independently of quota with source, trip and ACTIVE/VOIDED status. Established balances and history are retained. Availability returns known=false and remainingLitres=null without an opening balance; synthetic balances are never authoritative. No historical opening balance was supplied/imported.
+
+## Delivery media and location persistence
+
+Migration `20261004000900_delivery_media_location` adds three tables without rewriting the nine prior migrations or existing proof/order/trip history:
+
+| Model | Stored facts and constraints |
+| --- | --- |
+| DeliveryAttachment | UUID, restricted DeliveryProof foreign key, kind/ordinal, JPEG/PNG MIME, BYTEA bytes, SHA-256, byte length, dimensions and creation time. Unique proof/ordinal permits three photo slots (0–2) and one signature slot (3). SQL requires exact byte-length consistency, photo ≤ 1 MiB, signature ≤ 256 KiB, image width/height ≤ 1600 and PNG signature height ≤ 800. UPDATE and DELETE are rejected to preserve evidence. |
+| OutletLocation | One row per outlet with restricted foreign keys to outlet and recording user, bounded decimal latitude/longitude, optional label, recorded timestamp and positive version. Dispatcher edits use optimistic version checking and an append-only audit of coordinates, previous values and reason. |
+| TripPosition | One latest row per trip, assigned reporting Driver, bounded decimal coordinates/accuracy, client event time and server received time. Freshness/order validation occurs in the service; later accepted readings replace the latest row. It does not retain a travel history or alter trip/order versions. |
+
+Attachment bytes are normalized before the serializable delivery transaction. The attachment descriptors/digest are audited, while image bytes remain private database evidence. An offline completion payload carries bounded base64 attachments and its immutable operation UUID/hash; successful replay returns the existing delivery/attachment identities. The device projection marks photo/signature presence but never claims local data is server image content. Shared proof and Store receipt remain independent.
+
+No source latitude/longitude fields were provided in the private reference input. OutletLocation is populated only by explicit scoped Dispatcher edits; no coordinates, geocoded addresses or maps are generated from outlet/district identifiers. TripPosition exists only after an optional assigned-Driver browser report. Scope hides other Store outlets and rejects unassigned Driver, foreign Dispatcher and Loader location access.
 
 ## Central order lifecycle
 

@@ -20,10 +20,13 @@ import { loaderRouter } from './loader/routes.js';
 import type { LoaderServiceOptions } from './loader/services.js';
 import { driverRouter } from './driver/routes.js';
 import type { DriverServiceOptions } from './driver/services.js';
+import { proofRouter } from './proof/routes.js';
+import { locationRouter } from './location/routes.js';
+import type { LocationServiceOptions } from './location/services.js';
 
 const dummyHash = hashPassword('timing-only-invalid-account');
 
-export function createApp(prisma: PrismaClient, config: Config, options: { store?: StoreServiceOptions; dispatcher?: DispatcherServiceOptions; planning?: PlanningServiceOptions; loader?: LoaderServiceOptions; driver?: DriverServiceOptions } = {}) {
+export function createApp(prisma: PrismaClient, config: Config, options: { store?: StoreServiceOptions; dispatcher?: DispatcherServiceOptions; planning?: PlanningServiceOptions; loader?: LoaderServiceOptions; driver?: DriverServiceOptions; location?: LocationServiceOptions } = {}) {
   const storeOptions = { allowSyntheticReferences: config.PUBLIC_JUDGE_DEMO || config.STORE_ALLOW_SYNTHETIC, ...options.store };
   if (config.NODE_ENV === 'production' && storeOptions.allowSyntheticReferences && !config.PUBLIC_JUDGE_DEMO) throw new Error('Synthetic Store eligibility is not allowed in production.');
   const planningOptions = { allowSyntheticReferences: config.PUBLIC_JUDGE_DEMO || config.PLANNING_ALLOW_SYNTHETIC, ...options.planning };
@@ -33,9 +36,13 @@ export function createApp(prisma: PrismaClient, config: Config, options: { store
   if (config.API_TRUST_PROXY) app.set('trust proxy', 1);
   app.use(helmet());
   app.use(cors({ origin: config.WEB_ORIGIN, credentials: true }));
-  app.use(express.json({ limit: '16kb' }));
   app.use(cookieParser());
   app.use(protectOrigin(config));
+  const mediaRequest = (method: string, path: string) => method === 'POST' && (path === '/api/driver/sync' || /^\/api\/driver\/stops\/[^/]+\/complete$/.test(path));
+  const standardJson = express.json({ limit: '16kb' });
+  app.use((request, response, next) => mediaRequest(request.method, request.path) ? next() : standardJson(request, response, next));
+  app.use('/api/driver', authenticate(prisma, config), authorize('DRIVER'), (request, response, next) =>
+    mediaRequest(request.method, `/api/driver${request.path}`) ? express.json({ limit: '5mb' })(request, response, next) : next());
   app.use('/api/auth', (_request, response, next) => { response.set('Cache-Control', 'no-store'); next(); });
 
   app.get('/api/health', async (_request, response) => {
@@ -74,6 +81,8 @@ export function createApp(prisma: PrismaClient, config: Config, options: { store
     });
   }
   app.use('/api/domain', authenticate(prisma, config), domainReadRouter(prisma));
+  app.use('/api/proof', authenticate(prisma, config), proofRouter(prisma));
+  app.use('/api/location', authenticate(prisma, config), locationRouter(prisma, options.location));
   app.use('/api/store', authenticate(prisma, config), authorize('STORE_MANAGER'), storeRouter(prisma, storeOptions));
   app.use('/api/loader', authenticate(prisma, config), authorize('LOADER'), loaderRouter(prisma, { demoDate: config.DISPATCHER_DEMO_DATE, ...options.loader }));
   app.use('/api/driver', authenticate(prisma, config), authorize('DRIVER'), driverRouter(prisma, { demoDate: config.DISPATCHER_DEMO_DATE, ...options.driver }));

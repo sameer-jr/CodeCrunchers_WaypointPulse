@@ -41,6 +41,8 @@ model User {
   vehicleAvailability VehicleAvailability[]
   fuelUsage    FuelUsage[]
   offlineOperations OfflineOperation[]
+  outletLocations OutletLocation[]
+  tripPositions TripPosition[]
 
   @@index([role])
 }
@@ -249,6 +251,7 @@ enum AuditEventType {
   RECEIPT_CONFIRMED
   RECEIPT_ISSUE_REPORTED
   REFERENCE_DATA_IMPORTED
+  OUTLET_LOCATION_RECORDED
 }
 
 enum AuditEntityType {
@@ -260,6 +263,7 @@ enum AuditEntityType {
   IMPORT_BATCH
   FUEL_LEDGER
   PLANNING_RUN
+  OUTLET
 }
 
 enum FuelUsageKind {
@@ -317,6 +321,7 @@ model Outlet {
   import              ReferenceImport? @relation(fields: [importId], references: [id], onDelete: Restrict)
   orders              Order[]
   users               UserOutlet[]
+  location            OutletLocation?
 
   @@index([depotId, district])
 }
@@ -526,6 +531,7 @@ model Trip {
   stops               TripStop[]
   exceptions          Exception[]
   fuelUsage           FuelUsage[]
+  position            TripPosition?
 
   @@index([vehicleId, serviceDate, tripNumber])
   @@index([planningRunId])
@@ -638,6 +644,49 @@ model DeliveryProof {
   signatureStorageKey String?        @db.VarChar(500)
   createdAt           DateTime       @default(now()) @db.Timestamptz(3)
   deliveryRecord      DeliveryRecord @relation(fields: [deliveryRecordId], references: [id], onDelete: Restrict)
+  attachments         DeliveryAttachment[]
+}
+
+model DeliveryAttachment {
+  id          String        @id @default(uuid()) @db.Uuid
+  proofId     String        @db.Uuid
+  kind        String        @db.VarChar(12)
+  ordinal     Int
+  contentType String        @db.VarChar(24)
+  bytes       Bytes
+  sha256      String        @db.VarChar(64)
+  byteLength  Int
+  width       Int
+  height      Int
+  createdAt   DateTime      @default(now()) @db.Timestamptz(3)
+  proof       DeliveryProof @relation(fields: [proofId], references: [id], onDelete: Restrict)
+
+  @@unique([proofId, ordinal])
+  @@index([proofId])
+}
+
+model OutletLocation {
+  outletId         String   @id @db.Uuid
+  latitude         Decimal  @db.Decimal(10, 7)
+  longitude        Decimal  @db.Decimal(10, 7)
+  label            String?  @db.VarChar(120)
+  recordedByUserId String   @db.Uuid
+  recordedAt       DateTime @default(now()) @db.Timestamptz(3)
+  version          Int      @default(1)
+  outlet           Outlet   @relation(fields: [outletId], references: [id], onDelete: Restrict)
+  recordedBy       User     @relation(fields: [recordedByUserId], references: [id], onDelete: Restrict)
+}
+
+model TripPosition {
+  tripId         String   @id @db.Uuid
+  driverUserId   String   @db.Uuid
+  latitude       Decimal  @db.Decimal(10, 7)
+  longitude      Decimal  @db.Decimal(10, 7)
+  accuracyMetres Decimal  @db.Decimal(10, 3)
+  eventAt        DateTime @db.Timestamptz(3)
+  receivedAt     DateTime @default(now()) @db.Timestamptz(3)
+  trip           Trip     @relation(fields: [tripId], references: [id], onDelete: Restrict)
+  driver         User     @relation(fields: [driverUserId], references: [id], onDelete: Restrict)
 }
 
 model Receipt {

@@ -15,9 +15,15 @@ export const auditMetadataSchema = z.object({
   loading: z.object({ revision: z.number().int().positive(), previousLoadedUnits: z.number().int().nonnegative().nullable(),
     expectedUnits: z.number().int().positive(), loadedUnits: z.number().int().positive(), reasonCode: z.enum(['STOCK_UNAVAILABLE', 'DAMAGED_BEFORE_LOADING', 'COUNT_MISMATCH', 'OTHER']).nullable(),
     note: z.string().max(450).nullable(), reviewDecision: z.enum(['APPROVE', 'REJECT']).optional(), exceptionId: z.string().uuid().optional() }).strict().optional(),
+  location: z.object({ latitude: z.number().finite().min(-90).max(90), longitude: z.number().finite().min(-180).max(180),
+    label: z.string().max(120).nullable(), previousLatitude: z.number().finite().min(-90).max(90).nullable(),
+    previousLongitude: z.number().finite().min(-180).max(180).nullable(), previousLabel: z.string().max(120).nullable(), reason: z.string().min(5).max(450) }).strict().optional(),
   quantities: z.object({ orderedUnits: z.number().int().positive(), loadedUnits: z.number().int().nonnegative().nullable(),
     deliveredUnits: z.number().int().nonnegative().nullable(), receivedUnits: z.number().int().nonnegative().nullable() }).strict().optional(),
-  counts: z.record(z.enum(['outlets', 'vehicles', 'calendar', 'travel', 'allowances']), z.number().int().nonnegative()).optional()
+  counts: z.record(z.enum(['outlets', 'vehicles', 'calendar', 'travel', 'allowances']), z.number().int().nonnegative()).optional(),
+  proofAttachments: z.array(z.object({ id: z.string().uuid(), kind: z.enum(['PHOTO', 'SIGNATURE']), contentType: z.enum(['image/jpeg', 'image/png']),
+    byteLength: z.number().int().positive().max(1048576), width: z.number().int().positive().max(1600), height: z.number().int().positive().max(1600),
+    sha256: z.string().regex(/^[a-f0-9]{64}$/) }).strict()).max(4).optional()
 }).strict();
 export type DomainActor = { id: string; role: Role };
 export async function appendAudit(tx: Prisma.TransactionClient, input: {

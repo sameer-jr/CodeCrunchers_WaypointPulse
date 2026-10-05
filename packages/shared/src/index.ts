@@ -4,6 +4,8 @@ export * from './dispatcher.js';
 export * from './planning.js';
 export * from './loader.js';
 export * from './driver.js';
+export * from './proof.js';
+export * from './location.js';
 
 export const ROLES = ['DISPATCHER', 'LOADER', 'DRIVER', 'STORE_MANAGER'] as const;
 export const roleSchema = z.enum(ROLES);

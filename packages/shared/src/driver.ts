@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { DispatcherVehicle } from './dispatcher.js';
 import type { StoreOutlet, ORDER_STATUSES, TEMPERATURE_REQUIREMENTS } from './store.js';
+import { proofAttachmentsInputSchema, type ProofMetadata } from './proof.js';
 
 export const DELIVERY_REASONS = ['CUSTOMER_UNAVAILABLE', 'OUTLET_CLOSED', 'DAMAGED_IN_TRANSIT', 'QUANTITY_REJECTED', 'ACCESS_BLOCKED', 'OTHER'] as const;
 export const DRIVER_ACTIONS = ['START_TRIP', 'ARRIVAL', 'COMPLETE_DELIVERY', 'FINISH_TRIP'] as const;
@@ -10,7 +11,8 @@ const version = z.number().int().positive();
 const stopVersions = { expectedStopVersion: version, expectedOrderVersion: version };
 const deliveryFields = { outcome: z.enum(['DELIVERED', 'PARTIALLY_DELIVERED', 'FAILED']), deliveredUnits: z.number().int().nonnegative().max(2147483647),
   reasonCode: z.enum(DELIVERY_REASONS).optional(), driverNote: z.string().trim().max(1000).optional(),
-  recipientName: z.string().trim().min(1).max(120).optional(), recipientRole: z.string().trim().min(1).max(80).optional() };
+  recipientName: z.string().trim().min(1).max(120).optional(), recipientRole: z.string().trim().min(1).max(80).optional(),
+  attachments: proofAttachmentsInputSchema.optional() };
 export const driverTripMutationSchema = z.object({ expectedTripVersion: version }).strict();
 export const driverArrivalSchema = z.object({ expectedTripVersion: version, ...stopVersions }).strict();
 export const driverDeliveryPayloadSchema = z.object({ ...stopVersions, ...deliveryFields }).strict().superRefine((input, context) => {
@@ -38,7 +40,7 @@ export type DriverOperation = z.infer<typeof driverOperationSchema>;
 export interface DriverDelivery {
   id: string; outcome: 'DELIVERED' | 'PARTIALLY_DELIVERED' | 'FAILED'; expectedLoadedUnits: number; deliveredUnits: number;
   reasonCode: DeliveryReason | null; driverNote: string | null; arrivedAt: string; completedAt: string;
-  proof: { recipientName: string | null; recipientRole: string | null; hasPhoto: false; hasSignature: false; binaryAvailable: false } | null;
+  proof: ProofMetadata | null;
 }
 export interface DriverStop {
   id: string; sequence: number; version: number; status: string; plannedArrival: string | null; actualArrival: string | null; completedAt: string | null;

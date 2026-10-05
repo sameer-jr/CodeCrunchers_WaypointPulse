@@ -84,8 +84,14 @@ export function readDriverOperations(userId: string): Promise<LocalDriverOperati
     return records.sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.baseVersion - b.baseVersion || a.operationId.localeCompare(b.operationId));
   });
 }
-export function saveDriverOperation(operation: LocalDriverOperation): Promise<void> {
-  return stored(['operations'], 'readwrite', async tx => { await requestResult(tx.objectStore('operations').put(operation)); });
+export async function saveDriverOperation(operation: LocalDriverOperation): Promise<void> {
+  try { await stored(['operations'], 'readwrite', async tx => { await requestResult(tx.objectStore('operations').put(operation)); }); }
+  catch (error) {
+    if (error instanceof DOMException && error.name === 'QuotaExceededError') throw new Error(operation.syncStatus === 'PENDING'
+      ? 'Device storage is full. This action was not saved on this device. Keep this page open, remove a photo or free device space, then try again.'
+      : 'Device storage is full. Synchronization status could not be saved. Previously saved work was retained; free device space and sync again.', { cause: error });
+    throw error;
+  }
 }
 export async function getUnsyncedDriverOperations(userId: string): Promise<LocalDriverOperation[]> {
   return (await readDriverOperations(userId)).filter(operation => operation.syncStatus !== 'SYNCED');

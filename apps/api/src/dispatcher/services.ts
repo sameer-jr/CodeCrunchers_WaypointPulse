@@ -11,6 +11,7 @@ import { exceptionDateWhere, orderDateWhere } from './filters.js';
 import { exceptionScopeWhere, orderScopeWhere, resolveDispatcherScope, selectedDepotIds, tripScopeWhere, type DispatcherScope } from './scope.js';
 import { planningCapabilities } from '../planning/services.js';
 import { readShortfallReview } from '../loader/services.js';
+import { deliveryProofDto, deliveryProofInclude } from '../proof/dto.js';
 
 export type { DispatcherServiceOptions } from './context.js';
 function parse<T>(schema: ZodType<T>, input: unknown): T {
@@ -41,7 +42,7 @@ async function fleet(db: Prisma.TransactionClient, depotIds: string[]): Promise<
 function deliveryDto(delivery: OrderRecord['stops'][number]['delivery']): StoreOrderDetail['delivery'] {
   if (!delivery) return null;
   return { id: delivery.id, outcome: delivery.outcome, driverNote: delivery.driverNote, arrivedAt: delivery.arrivedAt.toISOString(), completedAt: delivery.completedAt.toISOString(),
-    proof: delivery.proof ? { recipientName: delivery.proof.recipientName, recipientRole: delivery.proof.recipientRole, hasPhoto: !!delivery.proof.photoStorageKey, hasSignature: !!delivery.proof.signatureStorageKey, binaryAvailable: false } : null };
+    proof: deliveryProofDto(delivery.proof) };
 }
 function receiptDto(receipt: NonNullable<OrderRecord['stops'][number]['delivery']>['receipt']): StoreOrderDetail['receipt'] {
   return receipt ? { id: receipt.id, status: receipt.status, receivedUnits: receipt.receivedUnits, issueType: receipt.issueType, issueNote: receipt.issueNote, confirmedAt: receipt.confirmedAt.toISOString() } : null;
@@ -131,7 +132,7 @@ export async function readDispatcherException(db: PrismaClient, userId: string, 
     if (!row) throw new DomainError('DOMAIN_NOT_FOUND', 'Exception not found.');
     const link = exceptionLinks(row), order = link.order ? await tx.order.findFirst({ where: { id: link.order.id, ...orderScopeWhere(scope.depotIds) }, include: orderInclude }) : null;
     const deliveryId = row.deliveryRecordId ?? row.receipt?.deliveryRecordId;
-    const delivery = deliveryId ? await tx.deliveryRecord.findUnique({ where: { id: deliveryId }, include: { proof: true, receipt: true } }) : null;
+    const delivery = deliveryId ? await tx.deliveryRecord.findUnique({ where: { id: deliveryId }, include: { proof: { include: deliveryProofInclude }, receipt: true } }) : null;
     return { ...(await exceptionDtos(tx, [row]))[0], orderDetail: order ? await orderDetail(tx, scope, order) : null, delivery: deliveryDto(delivery), receipt: receiptDto(delivery?.receipt ?? null), loadingShortfall: await readShortfallReview(tx, row.id) };
   });
 }

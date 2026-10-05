@@ -1,11 +1,12 @@
 import { Prisma } from '@prisma/client';
 import { DELIVERY_REASONS, type DriverStop, type DriverTripDetail } from '@waypoint/shared';
 import { vehicleDto } from '../dispatcher/dto.js';
+import { deliveryProofDto, deliveryProofInclude } from '../proof/dto.js';
 
 export const driverTripInclude = { vehicle: { include: { depot: true } }, planningRun: true, exceptions: true,
   stops: { where: { active: true }, orderBy: { sequence: 'asc' }, include: { allocations: true,
     order: { include: { outlet: { include: { depot: true } }, exceptions: true } }, load: { include: { exceptions: true } },
-    delivery: { include: { proof: true, receipt: true, exceptions: true } } } }
+    delivery: { include: { proof: { include: deliveryProofInclude }, receipt: true, exceptions: true } } } }
 } satisfies Prisma.TripInclude;
 export type DriverTripRecord = Prisma.TripGetPayload<{ include: typeof driverTripInclude }>;
 export function driverTripDetail(trip: DriverTripRecord): DriverTripDetail {
@@ -25,8 +26,7 @@ export function driverTripDetail(trip: DriverTripRecord): DriverTripDetail {
       delivery: delivery ? { id: delivery.id, outcome: delivery.outcome, expectedLoadedUnits: delivery.expectedLoadedUnits,
         deliveredUnits: delivery.deliveredUnits, reasonCode: DELIVERY_REASONS.find(code => code === delivery.reasonCode) ?? null,
         driverNote: delivery.driverNote, arrivedAt: delivery.arrivedAt.toISOString(), completedAt: delivery.completedAt.toISOString(),
-        proof: delivery.proof ? { recipientName: delivery.proof.recipientName, recipientRole: delivery.proof.recipientRole,
-          hasPhoto: false, hasSignature: false, binaryAvailable: false } : null } : null,
+        proof: deliveryProofDto(delivery.proof) } : null,
       canArrive: trip.status === 'IN_TRANSIT' && current?.id === stop.id && stop.status === 'PLANNED' && !delivery,
       canComplete: trip.status === 'IN_TRANSIT' && current?.id === stop.id && stop.status === 'ARRIVED' && !!stop.actualArrival && !delivery,
       exceptions: [...(stop.load?.exceptions ?? []), ...(delivery?.exceptions ?? [])].map(row => ({ id: row.id, type: row.type,

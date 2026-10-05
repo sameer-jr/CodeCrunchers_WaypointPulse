@@ -1,9 +1,10 @@
 import { Prisma } from '@prisma/client';
 import type { DispatcherDeferral, DispatcherExceptionSummary, DispatcherOrderSummary, DispatcherTripSummary, DispatcherVehicle } from '@waypoint/shared';
+import { deliveryProofInclude } from '../proof/dto.js';
 
 export const orderInclude = { outlet: { include: { depot: true } }, _count: { select: { deferrals: true } },
   deferrals: { orderBy: { deferredAt: 'desc' }, take: 1 }, stops: { where: { active: true }, take: 1,
-    include: { trip: { include: { vehicle: { include: { depot: true } } } }, load: true, delivery: { include: { proof: true, receipt: true } } } } } satisfies Prisma.OrderInclude;
+    include: { trip: { include: { vehicle: { include: { depot: true } } } }, load: true, delivery: { include: { proof: { include: deliveryProofInclude }, receipt: true } } } } } satisfies Prisma.OrderInclude;
 export type OrderRecord = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
 export const tripInclude = { vehicle: { include: { depot: true } }, driver: { select: { displayName: true } }, planningRun: true,
   stops: { orderBy: { sequence: 'asc' }, include: { order: { include: orderInclude }, allocations: { include: { planningRun: true } } } } } satisfies Prisma.TripInclude;
