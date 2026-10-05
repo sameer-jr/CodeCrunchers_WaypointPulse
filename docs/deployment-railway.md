@@ -38,7 +38,9 @@ Web's CSP permits image requests to `https://tile.openstreetmap.org`; its referr
 
 Driver positioning requires browser permission and the generated Web HTTPS origin. It is optional, foreground-only, connected-only and restricted to the assigned in-transit trip. Do not infer coordinates from reference names or initialize them in seed scripts. Missing coordinates, denied location permission and unavailable tiles must keep delivery/proof usable.
 
-The previous release's Railway and Docker PASS evidence does not verify this update. Current exact-commit CI, deployment and production media/offline/location acceptance are **pending** in [media and maps verification](media-maps-verification.md). Preserve existing production delivery/receipt history during rollout; use a separate safe synthetic review scenario for new write acceptance.
+The photo/signature/maps update passed [Linux Docker run 37266088689](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37266088689) on commit `3f204e45559fd9a72e19586dbe9809afb73743a2`, including the native image-normalization probe and always-run container/volume cleanup. Railway API deployment `af4965bb-3d7a-4c2a-b05d-4a7f8cae7ecd` and Web deployment `23845a8c-d42b-426f-af08-60447653b9d2` both succeeded on that same commit; ten migrations applied and database-connected health passed at [the public Web origin](https://web-production-87afe.up.railway.app).
+
+The current production smoke passed four-role HTTPS authentication/resource checks, a separate synthetic 50-unit trip, offline photo/signature reload and synchronization, scoped actual galleries and a separate explicit 25-unit Store receipt. Historical judge delivery/receipt identities and quantities remain preserved. The user-authorized real-location test showed an unavailable laptop GPS provider, so successful real GPS reception and physical mobile acceptance remain unverified. Detailed evidence and screenshots are recorded in [media and maps verification](media-maps-verification.md). Continue using separate safe synthetic scenarios for write acceptance without resetting production history.
 
 ## Deployment and acceptance
 

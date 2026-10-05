@@ -581,9 +581,9 @@ No raw competition ZIP, official CSV, private `.env`, local database or original
 
 ---
 
-## Docker verification
+## Remote Docker verification
 
-The root Compose stack is verified on GitHub Actions using Ubuntu. The previous release passed; the exact-commit Linux run for the photo/signature/maps update is pending.
+The root Compose stack passed GitHub Actions on Ubuntu for the photo/signature/maps update: [run 37266088689](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37266088689), commit `3f204e45559fd9a72e19586dbe9809afb73743a2`.
 
 Local development can run without Docker using `npm run setup:local`, `npm run dev:db` and, in another terminal, `npm run dev`. Competition startup remains `docker compose up --build`; CI verifies that same container stack on Linux.
 
@@ -594,6 +594,7 @@ The workflow checks:
 - PostgreSQL startup
 - API/Web/database health
 - all ten migrations
+- native Sharp photo/signature decoding and normalization with synthetic in-memory images
 - seeded authentication
 - protected access
 - session restore
@@ -604,7 +605,7 @@ Workflow:
 
 [`.github/workflows/docker-compose-verification.yml`](.github/workflows/docker-compose-verification.yml)
 
-The previous functional release passed Docker verification. A new PASS will be reported only after the current feature commit actually completes its Linux workflow successfully.
+The workflow's Docker build, stack health, safe seeded authentication and always-run `docker compose down -v` cleanup all succeeded. It seeds only installation-safe accounts and requires no confidential competition dataset.
 
 ---
 
@@ -642,7 +643,7 @@ The previously deployed release was verified for:
 - Store receipt
 - final Dispatcher reconciliation
 
-Railway deployment and four-role/offline media/map acceptance of the current feature commit are pending. The older deployed PASS does not establish acceptance of the photo/signature/maps update.
+Both Railway services successfully deployed `3f204e45559fd9a72e19586dbe9809afb73743a2`, including the tenth migration. The current update passed four-role HTTPS authentication, synthetic loading/delivery, offline photo/signature reload and synchronization, authorized galleries, explicit Store receipt and Dispatcher reconciliation. The original judge delivery/receipt remains preserved. The approved real-GPS test reached the sharing flow, but this laptop's provider was unavailable; a real received position and physical mobile acceptance remain unverified. See [current release evidence](docs/media-maps-verification.md).
 
 ---
 
@@ -688,9 +689,10 @@ Maps use explicitly recorded outlet coordinates and optional browser-reported Dr
 | --- | --- |
 | Local automated suite | **PASS — 351/351 across 15 files** |
 | Schema | **30 models / 10 additive migrations**; the prior nine migration files remain unchanged |
-| Browser/media/offline acceptance | Actual observations are recorded separately in [media and maps verification](docs/media-maps-verification.md) |
-| Exact feature commit's Linux Docker CI | **Pending** — previous-release Docker PASS does not verify this update |
-| Matching Railway deployment and production media/map smoke | **Pending** — previous-release production PASS does not verify this update |
+| Browser/media/offline acceptance | **PASS** — pending media survived offline reload and synced to scoped Driver/Store/Dispatcher galleries locally and over production HTTPS |
+| Exact feature commit's Linux Docker CI | **PASS — [run 37266088689](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37266088689), `3f204e4`**, including native image processing and cleanup |
+| Matching Railway deployment and production media/map smoke | **PASS — both services on `3f204e4`**, ten migrations, 43-request four-role HTTP smoke and separate synthetic browser/receipt reconciliation |
+| Real GPS reception | **Unverified** — approved test showed unavailable provider; sharing was stopped and no position was stored |
 | Physical mobile camera/signature/GPS/keyboard acceptance | **Pending** |
 
 The [update report](docs/media-maps-verification.md) contains endpoint/storage/scope limits and the full acceptance checklist. Existing milestone and [final-release evidence](docs/final-hackathon-verification.md) remains historical. No demo video has been recorded or linked yet.

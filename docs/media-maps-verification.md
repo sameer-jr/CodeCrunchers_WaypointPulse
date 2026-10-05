@@ -65,12 +65,13 @@ Migration `20261004000900_delivery_media_location` adds DeliveryAttachment, Outl
 | Focused media/Driver API checks | PASS — 44/44 across two files, using isolated PostgreSQL and ten migrations |
 | Focused location database checks | PASS — 18/18 with isolated PostgreSQL |
 | Focused offline/media projection checks | PASS — 22/22, including reload payloads, scoped previews, retry UUID/bytes, failed-attempt evidence, size/count bounds and URL restrictions |
-| Final integrated typecheck/lint/test/build/safety gate | **PENDING — root to record final results after the complete source is stable** |
-| Authenticated desktop and 360/390 px browser acceptance | **PENDING — root to record actual browser outcomes/screenshots** |
-| Actual offline media save/reload/reconnect browser journey | **PENDING — root to record observed pending and shared attachment results** |
-| Exact published commit and Linux Docker CI | **PENDING — no Docker PASS claimed for this update** |
-| Railway API/Web commit and migration/health | **PENDING — previous production release evidence does not establish this update** |
-| Four-role production photo/signature/map smoke | **PENDING — root to record actual HTTPS acceptance** |
+| Final integrated typecheck/lint/test/build/safety gate | **PASS — 351/351 tests across 15 files**, plus typecheck, lint, build and publication-safety checks |
+| Authenticated desktop and 360/390 px browser acceptance | **PASS — mouse signature, real image galleries, centered preview and no horizontal overflow observed**; physical touch remains separate |
+| Actual offline media save/reload/reconnect browser journey | **PASS — local and production pending media survived offline reload, then became scoped server proof after synchronization** |
+| Exact published commit and Linux Docker CI | **PASS — commit `3f204e45559fd9a72e19586dbe9809afb73743a2`, [run 37266088689](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37266088689)** |
+| Railway API/Web commit and migration/health | **PASS — both services deployed `3f204e4`, ten migrations applied and database-connected HTTPS health passed** |
+| Four-role production photo/signature/map smoke | **PASS — 43-request authentication/resource smoke plus actual four-role synthetic workflow and separate receipt reconciliation** |
+| Real Driver GPS reading | **UNVERIFIED — user approved the real-location test, but this laptop's provider returned unavailable; no position was stored** |
 | Physical mobile camera/signature/GPS/keyboard acceptance | **PENDING — browser simulation or source checks do not establish physical-device behavior** |
 
 ## Browser and deployment acceptance checklist
@@ -90,12 +91,41 @@ No offline map tiles, continuous background tracking, route-history log, turn-by
 
 ## Local browser evidence (2026-10-05)
 
-The fixture contains synthetic demand/reference data only; Dispatcher generated, independently validated and released it through the app. Loader recorded four full loads totaling 267 units and marked readiness. Driver started the assigned route and completed the 192-unit first delivery offline with a synthetic JPEG and a drawn synthetic signature. Empty-signature validation was observed. Both pending images survived offline reload (1000 � 700 photo, 1000 � 360 signature). Reconnection produced authorized server images for Driver, Store and Dispatcher; repeated read/refresh retained one delivery and two attachments. The normalized photo was 187,498 bytes; signature 14,938 bytes. Store receipt stayed absent until its own explicit 192-unit confirmation.
+The fixture contains synthetic demand/reference data only; Dispatcher generated, independently validated and released it through the app. Loader recorded four full loads totaling 267 units and marked readiness. Driver started the assigned route and completed the 192-unit first delivery offline with a synthetic JPEG and a drawn synthetic signature. Empty-signature validation was observed. Both pending images survived offline reload (1000 × 700 photo, 1000 × 360 signature). Reconnection produced authorized server images for Driver, Store and Dispatcher; repeated read/refresh retained one delivery and two attachments. The normalized photo was 187,498 bytes; signature 14,938 bytes. Store receipt stayed absent until its own explicit 192-unit confirmation.
 
 Dispatcher saved one explicitly labelled SYNTHETIC coordinate, placing three same-outlet stops on the map. The fourth stop remained unlocated. Actual OpenStreetMap tiles loaded at 256 pixels with attribution; Store received only its own three stops. No real outlet coordinates or physical GPS were used.
 
-Browser location emulation/permission commands were unsupported. Automatic approval review rejected clicking Share location because real device coordinates could be transmitted. GPS API freshness, scope and race checks passed; a real browser GPS report, permission-denial behavior, foreground pause/resume and physical mobile camera/touch remain unverified. No GPS permission was accepted and no Driver position was sent by this browser journey.
+Browser location emulation/permission commands were unsupported. The initial local Share location action was blocked by automatic approval review because real device coordinates could be transmitted. GPS API freshness, scope and race checks passed; the later explicitly authorized production test is recorded below. No Driver position was sent by this local browser journey. A received real GPS report, permission-denial behavior, foreground pause/resume and physical mobile camera/touch remain unverified.
 
 Screenshots: [route map](screenshots/media-maps-route.png), [offline signature](screenshots/media-offline-signature.png), [mobile signature](screenshots/media-mobile-signature.png), [Store proof](screenshots/media-store-proof.png), [Dispatcher proof](screenshots/media-dispatcher-proof.png). All pictured operational data and proof are synthetic.
 
-The Docker verification script now runs an actual in-memory synthetic PNG through the compiled photo/signature normalizer, checking output JPEG/PNG decoding, dimensions and byte lengths. This probes Sharp/libvips packaging on Linux when CI executes, without writing operational rows. The same probe and Web/database/authentication HTTP checks passed against the isolated Windows localhost stack; this is not Docker acceptance.
+The Docker verification script runs an actual in-memory synthetic PNG through the compiled photo/signature normalizer, checking output JPEG/PNG decoding, dimensions and byte lengths without writing operational rows. This probe and Web/database/authentication HTTP checks passed against the isolated Windows localhost stack. Linux container acceptance is recorded separately below.
+
+## Published container and Railway evidence (2026-10-05)
+
+The application source tested locally is commit `05ab09575dd74f33692219b98ebaae99b7d3cb49`. The published merge commit `3f204e45559fd9a72e19586dbe9809afb73743a2` preserves the upstream README and adds disclosure documentation; application source is unchanged from the tested commit.
+
+[GitHub Actions run 37266088689](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37266088689) completed successfully on that exact published commit using `ubuntu-latest`. It built and started the root Compose stack, verified container health, Web HTTP, database-backed API health, safe seeded Dispatcher authentication, session restoration, protected access and logout. It confirmed all ten committed migrations and four safe auth accounts, with no reference or operational data seeded. The native Sharp/libvips probe decoded and normalized synthetic photo/signature bytes successfully inside the Linux API container. The always-run `docker compose down -v` cleanup step also succeeded.
+
+| Railway service | Deployment | Commit | Result |
+| --- | --- | --- | --- |
+| API | `af4965bb-3d7a-4c2a-b05d-4a7f8cae7ecd` | `3f204e45559fd9a72e19586dbe9809afb73743a2` | SUCCESS; ten migrations, including the additive media/location migration |
+| Web | `23845a8c-d42b-426f-af08-60447653b9d2` | `3f204e45559fd9a72e19586dbe9809afb73743a2` | SUCCESS; public HTTPS and proxied database-connected health |
+
+Public application: [Waypoint Pulse](https://web-production-87afe.up.railway.app). Web remains the only public service; API and managed PostgreSQL use Railway private networking.
+
+The 43-request HTTPS smoke passed all four seeded account logins, Secure/HttpOnly/SameSite=Strict `/api` cookies, restored identity, correct workspace access, wrong-role denial, logout revocation and origin protection. All four role SPA paths returned the app shell. The service worker and ten application-shell resources responded, with authenticated API and cross-origin resources excluded from precaching. These HTTP checks are separate from the browser journey below.
+
+## Production browser and reconciliation evidence (2026-10-05)
+
+A separate existing SYNTHETIC Reefer trip (`76ca6012-0f16-4ad1-8e89-4ece823b9b9e`) was assigned, fully loaded by Loader and executed by Driver: two stops of 25 units each, 50 ordered / 50 loaded / 50 delivered, both stops completed. Dispatcher explicitly recorded a labelled synthetic outlet coordinate and inspected the route map; both stops had recorded coordinates. These coordinates describe the test fixture, not verified competition outlet locations.
+
+The first CHILLED order (`7720d2e1-31bc-4420-90fe-c4372f6b391b`) completed offline with 25 delivered units, a synthetic photo and a mouse-drawn synthetic signature. Arrival had already synchronized; **one completion operation** was pending during the production offline test. Offline reload retained both decoded local images. Reconnection synchronized the same operation and produced the authorized server photo (1000 × 700, 187,498 bytes) and signature (1000 × 360, 10,785 bytes). Driver, Store and Dispatcher read the same two attachment identities and SHA-256 hashes with the correct JPEG/PNG MIME and `private, no-store` responses. Anonymous reads returned 401 and Loader reads returned 403. Unfinished signature ink blocked completion; Clear removed the draft. The second 25-unit delivery completed without attachments, confirming they remain optional.
+
+A 26-request read-only reconciliation before Store confirmation verified 25 ordered / 25 loaded / 25 delivered and **no receipt**. Store then explicitly confirmed 25 received units through its own UI. A separate 26-request reconciliation verified the same delivery/attachment IDs and hashes, the persisted receipt, 25 / 25 / 25 / 25 quantities, the completed 50-unit trip and unchanged access denials. Dispatcher inspected the resulting quantity chain, actual gallery and signature preview. Unsynchronized Driver work correctly blocked sign-out until synchronization finished.
+
+The earlier judge order (`69fe8c92-e4e2-4aff-bf8b-fe903c9d4ed3`, version 13) and completed trip (`f87a6b94-d823-42c9-b05b-8a51804e830f`, version 20) remained unchanged: 192 ordered / 188 loaded / 188 delivered / 188 received, with the original receipt identity preserved. No reset or replacement of historical production delivery/receipt data was used.
+
+The user explicitly authorized this laptop's real-location test. Share location entered the opt-in flow, but the browser's location provider returned **GPS is unavailable**. Delivery remained usable and sharing was stopped. Subsequent Driver, Store and Dispatcher location reads confirmed no stored position. This verifies the unavailable-GPS fallback, not successful receipt of a real location. Location emulation and touch-event simulation were unsupported; mouse drawing was verified. Physical mobile camera, finger/pen signature, onscreen keyboard, actual GPS reception and foreground permission/pause behavior remain pending.
+
+Publication-safe production screenshots: [offline signature preview](screenshots/media-production-offline-signature.png), [synced Driver proof](screenshots/media-production-synced-proof.png), [Store proof before receipt](screenshots/media-production-store-proof.png), [Store after explicit receipt](screenshots/media-production-store-receipt.png), [Dispatcher proof](screenshots/media-production-dispatcher-proof.png), [signature preview](screenshots/media-production-signature-preview.png). All proof and operational data pictured are synthetic; no real device coordinates or confidential dataset records are included.
