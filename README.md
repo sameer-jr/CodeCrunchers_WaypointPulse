@@ -1,350 +1,656 @@
 # Waypoint Pulse
 
-Team Code Crunchers · Tech-Triathlon 2026
+**Team Code Crunchers · Tech-Triathlon 2026 Hackathon**
 
-| Submission resource | Current state |
-| --- | --- |
-| Repository | [CodeCrunchers Waypoint Pulse](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse) |
-| Live Application | [Waypoint Pulse on Railway](https://web-production-87afe.up.railway.app) — the previously verified release. Deployment and production acceptance of the photo/signature/maps update are **pending**. |
-| Demo Video | **Not recorded yet.** The [six-minute recording script](docs/demo-script.md) is ready for team use; no video URL is available. |
-| Docker Verification | [Docker Compose verification — latest main runs](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/workflows/docker-compose-verification.yml). The previous release passed; an exact-commit run for the photo/signature/maps update is **pending**. |
+[![Docker Compose Verification](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/workflows/docker-compose-verification.yml/badge.svg)](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/workflows/docker-compose-verification.yml)
 
-Waypoint Pulse is a responsive delivery-operations platform for the fictional **Waypoint Group**, connecting **Store Manager → Dispatcher → Loader → Driver → Store Manager** through shared persisted operational state.
+Waypoint Pulse is a responsive delivery-operations platform for the fictional **Waypoint Group**. It connects the complete delivery workflow across four roles through one shared operational state:
+
+**Store Manager → Dispatcher → Loader → Driver → Store Manager**
 
 > **One order. One system. Four perspectives.**
 
-## Competition and problem context
+---
 
-- **Event:** Tech-Triathlon 2026
-- **Team:** Code Crunchers
-- **Phase:** Hackathon
-- **Repository:** CodeCrunchers_WaypointPulse
+## Submission links
 
-The competition scenario describes a shared distribution network with 120 outlets, two depots and a mixed vehicle fleet serving three brands:
-
-| Brand | Goods |
+| Resource | Link |
 | --- | --- |
-| Waypoint Fresh | Groceries, chilled and frozen goods |
-| Waypoint Style | Garments and cartons |
-| Waypoint Tech | Appliances and consumer electronics |
+| **Live application** | https://web-production-87afe.up.railway.app |
+| **Source repository** | https://github.com/sameer-jr/CodeCrunchers_WaypointPulse |
+| **Docker verification** | https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/workflows/docker-compose-verification.yml |
+| **Demo video** | **Not recorded yet.** The [recording script](docs/demo-script.md) is available. |
 
-Waypoint Pulse is designed to replace fragmented spreadsheet, phone-call and paper coordination with constraint-aware planning, explainable decisions, loading feedback, delivery records and explicit receipt confirmation. Capacity, transport temperature, outlet access, receiving windows, Fresh morning deadlines, weekly fuel, the two-trip limit, shortages and unreliable field connectivity form one connected workflow. These describe the competition problem; the reproducible judge uses separately authored SYNTHETIC data.
+---
 
-## Current scope
+## Judge credentials
 
-The implemented workflow connects Store orders, Dispatcher Generate / independent Validate / Release, Loader quantities and shortfall review, Ready for Dispatch, assigned Driver execution, offline delivery/reconnect sync, Store receipt and Dispatcher operational reads. The authorized follow-up adds delivery photos, touch signatures, recorded outlet maps and optional Driver location sharing while retaining those operational records and quantity boundaries. The schema now contains **30 Prisma models and ten additive migrations**. The earlier 308-test release, its Docker run and deployed four-role/offline journey remain historical evidence in [final Hackathon verification](docs/final-hackathon-verification.md). Current source checks and pending browser, full-suite, Docker and deployment acceptance for the update are tracked separately in [media and maps verification](docs/media-maps-verification.md). No Datathon functionality is included.
+The public Railway deployment uses the following seeded accounts.
 
-The original Designathon prototype remains unchanged under `input resources/prototype/` following the workspace's reference-file reorganization. It is a private local reference and is excluded from Git and Docker. The root application copies only the two brand PNGs. The supplied dataset ZIP is private and is not imported by the auth seed or bundled into the web app.
+**Password for all four accounts:** `WaypointJudge!2026`
 
-## Architecture and technology
+| Role | Email | Main screen |
+| --- | --- | --- |
+| Dispatcher | `dispatcher@waypoint.local` | `/dispatcher/pulse` |
+| Loader | `loader@waypoint.local` | `/loader/loads` |
+| Driver | `driver@waypoint.local` | `/driver/today` |
+| Store Manager | `store@waypoint.local` | `/store/home` |
 
-- npm workspaces; TypeScript; React/Vite; React Router; TanStack Query; Zod; React Hook Form; Tailwind CSS.
-- Express API, Zod request validation, centralized authentication/authorization/error handling.
-- PostgreSQL with Prisma: 30 normalized models, including User/Session, explicit daily VehicleAvailability, OfflineOperation, DeliveryAttachment, OutletLocation and TripPosition; transactional services and SQL integrity guards.
-- Driver offline: production service worker for the application shell, per-user IndexedDB route cache and durable UUID operation queue.
-- Delivery media: bounded JPEG photos/PNG signatures, immutable PostgreSQL evidence, scoped image reads and offline attachment payloads. Leaflet maps use recorded coordinates and optional fresh Driver positions.
-- Passwords use salted Node scrypt. Random opaque session tokens are issued as HTTP-only, SameSite=Strict cookies. Only an HMAC digest of each token is stored in PostgreSQL. User role and active status are checked on every protected API request.
-- Role routes are protected in the client and server; failed cross-role client navigation shows an access-denied page. There is no authenticated role-switch control.
-- [Architecture](docs/architecture.md), [data model](docs/data-model.md), [AI disclosure](docs/AI_DISCLOSURE.md).
-- [Design reference and implementation checklist](docs/design-and-implementation-plan.md).
-- [Six-minute demo script](docs/demo-script.md), [final Hackathon verification](docs/final-hackathon-verification.md).
-- [Photo, signature and map behavior and verification](docs/media-maps-verification.md).
-- [Milestone 1 verification report](docs/milestone-1-foundation.md), including browser evidence and the unverified Docker runtime limitation.
-- [Milestone 2 verification report](docs/milestone-2-domain.md), including real database upgrades, private import and 46 automated tests.
-- [Milestone 3 Store report](docs/milestone-3-store.md), including scoped creation, cutoff, tracking, receipts, 102 automated tests and browser evidence.
-- [Milestone 4 Dispatcher report](docs/milestone-4-dispatcher.md), including date context, depot scope, read-only planning and cross-role verification.
-- [Milestone 5 allocation report](docs/milestone-5-allocation.md), including heuristic, constraints, timing/fuel assumptions, independent validation and release verification status.
-- [Milestone 6 Loader report](docs/milestone-6-loader.md), including the persisted 192 → 188 approval/readiness cascade.
-- [Milestone 7+8 Driver/offline report](docs/milestone-7-8-driver-offline.md), including 192 → 188 → 188, offline reload/reconnect and retained conflict evidence.
+**Judge operational day:** `2040-03-05`
+
+> The public deployment contains an independently authored **SYNTHETIC** judge scenario so the competition dataset is not redistributed through the public repository.
+
+---
+
+## What Waypoint Pulse solves
+
+Waypoint Group operates a shared distribution network serving:
+
+- **Waypoint Fresh** — groceries, chilled and frozen goods
+- **Waypoint Style** — garments and cartons
+- **Waypoint Tech** — appliances and consumer electronics
+
+The delivery operation must coordinate shared fleet capacity while respecting:
+
+- weight and volume limits
+- ambient vs refrigerated transport
+- van-only outlet access
+- delivery and mall receiving windows
+- Fresh morning deadlines
+- weekly fuel limits
+- a maximum of two trips per vehicle per day
+- loading shortages and delivery exceptions
+- unreliable field connectivity
+
+Waypoint Pulse replaces fragmented spreadsheet, phone-call and paper coordination with a connected, auditable workflow.
+
+---
+
+## End-to-end workflow
+
+```text
+Store Manager
+     │
+     │ creates order
+     ▼
+Dispatcher
+     │
+     │ Generate → Explain → Validate → Release
+     ▼
+Loader
+     │
+     │ load checklist → report shortfall
+     ▼
+Dispatcher
+     │
+     │ approve/reject revised manifest
+     ▼
+Loader
+     │
+     │ Ready for Dispatch
+     ▼
+Driver
+     │
+     │ route → delivery → offline queue → sync
+     ▼
+Store Manager
+     │
+     │ confirm receipt / report issue
+     ▼
+Dispatcher
+     └── final operational visibility
+```
+
+All roles work on the same persisted orders, trips, quantities, exceptions and audit history.
+
+---
+
+# Final Judge Walkthrough
+
+The live environment has already been used for final verification, so some records may show completed history. For a fully repeatable mutation walkthrough, use a fresh judge installation as described under **Fresh Competition Judge Installation**.
+
+Use **2040-03-05** throughout the walkthrough.
+
+### 1. Dispatcher — Generate, validate and release
+
+1. Sign in as `dispatcher@waypoint.local`.
+2. Open **Planning Studio**.
+3. Select **2040-03-05** and the assigned SYNTHETIC depot.
+4. Click **Generate Plan**.
+5. Inspect served and deferred orders.
+6. Open **Explain My Plan** for a served or deferred order.
+7. Review the actual constraint evidence.
+8. Click **Validate** and confirm the independent validator returns a valid plan.
+9. Click **Release** and confirm the release dialog.
+10. Note the actual released trip containing `SYN-LOADER-DRIVER-ORDER-192`.
+
+### 2. Loader — Load the released trip
+
+11. Sign out and sign in as `loader@waypoint.local`.
+12. Open **Today's Loads** for **2040-03-05**.
+13. Open the released ambient trip.
+14. Mark the normal stops as loaded.
+15. For the 192-unit order, choose **Report Shortfall**.
+16. Enter **188** actual loaded units.
+17. Select **Stock unavailable** and enter a useful shortage note.
+18. Submit the shortfall.
+19. Confirm the trip is blocked with **Awaiting Dispatcher approval**.
+
+### 3. Dispatcher — Review the shortfall
+
+20. Sign in again as Dispatcher.
+21. Open **Exception Centre**.
+22. Open the same loading-shortfall record.
+23. Verify **192 expected / 188 loaded**.
+24. Approve the revised manifest.
+
+### 4. Loader — Ready for Dispatch
+
+25. Return to Loader.
+26. Reopen the same trip.
+27. Confirm **Dispatcher approved this revision**.
+28. Complete any remaining normal loads.
+29. Click **Mark Ready for Dispatch**.
+
+### 5. Dispatcher — Assign Driver
+
+30. Sign in as Dispatcher.
+31. Open the same trip in **Routes / Trips**.
+32. Assign `driver@waypoint.local`.
+33. Sign out.
+
+### 6. Driver — Deliver with offline recovery
+
+34. Sign in as `driver@waypoint.local`.
+35. Select **2040-03-05** and open the assigned trip.
+36. Confirm the route is cached and **Offline reload ready**.
+37. Click **Start Trip** while online.
+38. Switch the browser network to **Offline**.
+39. Record arrival at the 192-unit stop.
+40. Open **Proof**.
+41. Select **Delivered**.
+42. Enter **188** delivered units.
+43. Enter recipient name, receiving role and a useful note.
+44. Save the delivery.
+45. Confirm the arrival and completion operations are shown as **Pending sync**.
+46. Reload the browser while still offline.
+47. Confirm the route, recipient, note and pending work remain available.
+48. Restore the network.
+49. Wait for automatic synchronization or click **Sync now**.
+50. Confirm pending operations become **SYNCED**.
+51. Reload online and confirm the server-side delivery proof.
+52. Complete the remaining stops in sequence.
+53. Click **Finish Trip** when every stop has a terminal outcome.
+
+### 7. Store Manager — Confirm receipt
+
+54. Sign in as `store@waypoint.local`.
+55. Open **Track Delivery**.
+56. Open `SYN-LOADER-DRIVER-ORDER-192`.
+57. Verify:
+   - **Ordered:** 192
+   - **Loaded:** 188
+   - **Delivered:** 188
+   - **Received:** Not recorded
+58. Open **Confirm Receipt**.
+59. Enter **188** as the quantity actually received.
+60. Select **Received in good condition**.
+61. Confirm the receipt.
+62. Reload and verify the receipt remains persisted.
+
+### 8. Dispatcher — Final verification
+
+63. Sign in as Dispatcher.
+64. Reopen the same day/order/trip.
+65. Verify the final quantity chain: **192 ordered / 188 loaded / 188 delivered / 188 received**.
+66. Confirm the trip is completed and the loading-review history remains visible.
+
+---
+
+## Key capabilities
+
+### Dispatcher
+
+- Today’s Delivery Pulse
+- scoped order queue
+- deterministic Planning Studio
+- real allocation to vehicles and trips
+- independent plan validation
+- served and deferred decisions
+- **Explain My Plan**
+- capacity, temperature, outlet-access, delivery-window and fuel checks
+- Routes / Trips
+- Exception Centre
+- Driver assignment
+- scoped outlet coordinates, trip maps and reported Driver position
+- authorized delivery photo/signature gallery
+
+### Loader
+
+- phone-responsive released-load workflow
+- actual planner stop sequence
+- quantity checklist
+- persisted loaded quantities
+- shortfall reporting
+- Dispatcher approval/rejection
+- guarded Ready for Dispatch
+
+### Driver
+
+- phone-first Today / Route / Proof / Offline-Sync experience
+- assigned ready trips only
+- persisted start, arrival and delivery outcomes
+- delivered quantity cannot exceed loaded quantity
+- recipient/outcome proof with optional photos and a touch signature
+- PWA application shell
+- per-user IndexedDB route cache
+- durable UUID offline operation queue
+- offline reload
+- ordered reconnect synchronization
+- idempotent replay
+- retained visible conflicts
+- offline media payloads and pending previews
+- optional foreground location sharing for an active trip
+
+### Store Manager
+
+- assigned-outlet Home
+- Place Order
+- server-side 16:00 Asia/Colombo cutoff handling
+- persisted tracking
+- deferral visibility
+- ordered / loaded / delivered / received quantities kept separate
+- explicit receipt confirmation
+- quantity, damage and other receipt issues
+- authorized delivery photos/signature and a map restricted to its own stop
+
+---
+
+## Explain My Plan
+
+The photo/signature/maps follow-up is described under [Current feature verification](#current-feature-verification). Its Linux CI and production acceptance are separate from the earlier verified release.
+
+Waypoint Pulse does not treat planning as a black box.
+
+The allocation engine stores real evidence for constraint checks such as:
+
+- depot match
+- vehicle availability
+- temperature compatibility
+- van-only access
+- weight capacity
+- volume capacity
+- maximum trips per day
+- receiving windows
+- mall windows
+- Fresh morning deadline
+- fuel quota
+- complete trip-time feasibility
+
+Served decisions retain the checks behind their assignment and limited rejected alternatives. Deferred decisions retain machine-readable blocking reasons.
+
+The planner is deterministic and explainable. It does **not** call an LLM, ML model or the supplied precomputed allocation as its planning result.
+
+---
+
+## Planning strategy
+
+Demand priority considers:
+
+1. previous deferrals
+2. scarcity of structurally compatible vehicles
+3. receiving-window tightness
+4. initial eligible date
+5. order creation time
+6. stable order reference
+
+Feasible candidates then prefer:
+
+1. preserving scarce reefer/van capability when unnecessary
+2. filling an existing draft trip before creating another
+3. lower incremental estimated fuel
+4. better remaining weight and volume fit
+5. earlier completion
+6. stable vehicle/trip tie-breakers
+
+A separate validator independently re-checks the persisted generated result before release.
+
+---
+
+## Technology stack
+
+### Frontend
+
+- React
+- TypeScript
+- Vite
+- React Router
+- TanStack Query
+- React Hook Form
+- Zod
+- Tailwind CSS
+- Service Worker
+- IndexedDB
+- Leaflet maps with on-demand OpenStreetMap tiles
+
+### Backend
+
+- Node.js
+- TypeScript
+- Express
+- Zod
+
+- Sharp image validation and re-encoding
+
+### Persistence
+
+- PostgreSQL
+- Prisma ORM
+- 30 normalized models
+- 10 versioned SQL migrations
+- transactional domain services
+- database integrity guards
+
+### Infrastructure
+
+- Docker
+- Docker Compose
+- Nginx
+- GitHub Actions
+- Railway
+- Railway-managed PostgreSQL
+
+### Testing
+
+- Vitest
+- Supertest
+- real PostgreSQL integration tests
+- browser acceptance checks
+- deployed offline/reconnect verification
+
+---
+
+## Architecture
+
+```text
+┌─────────────────────────────────────────────┐
+│              React / Vite Web               │
+│                                             │
+│ Store · Dispatcher · Loader · Driver        │
+│ Driver PWA + IndexedDB offline queue        │
+└────────────────────┬────────────────────────┘
+                     │ /api
+                     ▼
+┌─────────────────────────────────────────────┐
+│                Express API                  │
+│                                             │
+│ Auth / RBAC / Scope                         │
+│ Order Lifecycle                             │
+│ Planning Engine                             │
+│ Independent Validator                       │
+│ Loading / Delivery / Receipt                │
+│ Exceptions / Audit                          │
+│ Idempotent Offline Sync                     │
+└────────────────────┬────────────────────────┘
+                     │ Prisma
+                     ▼
+┌─────────────────────────────────────────────┐
+│                PostgreSQL                   │
+│                                             │
+│ Users · Orders · Vehicles · Trips · Stops   │
+│ Allocations · Loads · Deliveries · Receipts │
+│ Exceptions · Deferrals · OfflineOperations  │
+│ Audit Events                                │
+└─────────────────────────────────────────────┘
+```
+
+Detailed documentation:
+
+- [Architecture](docs/architecture.md)
+- [Data model](docs/data-model.md)
+- [AI disclosure](docs/AI_DISCLOSURE.md)
+- [Final Hackathon verification — historical release](docs/final-hackathon-verification.md)
+- [Photo/signature/maps verification — current update](docs/media-maps-verification.md)
+
+---
 
 ## Repository structure
 
 ```text
-apps/web/          React application, brand assets, Nginx configuration
-apps/api/          Express transport, domain services and PostgreSQL tests
-packages/shared/   Shared roles, auth schemas, safe API identity types
-prisma/            Normalized schema, versioned SQL migrations, auth-only seed
-scripts/           Local setup, embedded PostgreSQL, test and safety runners
-docs/              Audit, design plan, architecture and milestone report
-input resources/   Private original brief/prototype/dataset ZIP (not published)
-private-data/      Private reference CSV import sources (not published)
+CodeCrunchers_WaypointPulse/
+├── apps/
+│   ├── web/                 # React application and Driver PWA
+│   └── api/                 # Express API and domain services
+├── packages/
+│   └── shared/              # Shared schemas and DTOs
+├── prisma/                  # Schema, migrations and seed
+├── scripts/                 # Setup, verification and judge helpers
+├── docs/                    # Architecture, data model, disclosure and reports
+├── .github/
+│   └── workflows/
+│       └── docker-compose-verification.yml
+├── docker-compose.yml
+├── .env.example
+├── package.json
+└── README.md
 ```
 
-## Prerequisites
+Private competition resources are intentionally excluded from Git and Docker build contexts.
 
-The official container installation needs Git and Docker Engine/Desktop with Docker Compose. Local development additionally uses Node.js 24 LTS and npm. A PostgreSQL service or Docker is optional for that local path: `dev:db` uses a workspace-local PostgreSQL binary installed through the `embedded-postgres` npm dependency. It does not install a system service or create a system user.
+---
 
-If Windows PowerShell blocks `npm.ps1`, use `npm.cmd` for these commands; no execution-policy change is needed.
+# Fresh Competition Judge Installation
 
-On Windows, stop the API before installing dependencies or generating Prisma: the running API locks its native query-engine DLL. Local database start/stop uses PostgreSQL's `pg_ctl` so shutdown waits for its worker processes to finish.
+The repository can be run as a complete Docker stack.
 
-## Official fresh installation
+### Requirements
 
-1. Clone the application repository and enter its root:
+- Git
+- Docker Engine or Docker Desktop
+- Docker Compose
 
-   ```sh
-   git clone https://github.com/sameer-jr/CodeCrunchers_WaypointPulse.git
-   cd CodeCrunchers_WaypointPulse
-   ```
+### 1. Clone
 
-2. Copy the publication-safe example configuration to an ignored local environment file:
-
-   ```sh
-   cp .env.example .env
-   ```
-
-   In Windows PowerShell use `Copy-Item .env.example .env`.
-
-3. Edit `.env` before startup. Set a fresh private `POSTGRES_PASSWORD`, a fresh random `AUTH_SECRET` of at least 32 characters, and the intentionally public judging `SEED_DEMO_PASSWORD`. Local judging defaults to `WaypointDemo!2026`. Keep `POSTGRES_USER=waypoint`, `POSTGRES_DB=waypoint`, `WEB_PORT=5173`, `WEB_ORIGIN=http://localhost:5173`, `NODE_ENV=development` and `PUBLIC_JUDGE_DEMO=false` for this auth-only loopback HTTP installation. Compose constructs its own internal `DATABASE_URL`; the example's loopback URL belongs to the separate native-development path. Do not reuse CI or development infrastructure secrets for a public deployment.
-
-4. Build and start the root stack:
-
-   ```sh
-   docker compose up --build
-   ```
-
-5. In another terminal, wait for PostgreSQL, API and Web to report healthy. Check `docker compose ps`, then open `http://localhost:5173/api/health`: it must return `status: ok` and `database: connected`. Startup applies **all ten committed migrations** and seeds only the four auth accounts. `npm run verify:docker` can check the running installation when Node/npm are installed; it does not reset the database.
-6. Open **http://localhost:5173** and sign in with the four judge accounts below. A fresh installation has no operational assignments or private references; empty/denied operational views are expected until an explicit safe judge scenario is prepared. The reproducible local scenario is documented under [Final judge walkthrough](#final-judge-walkthrough).
-7. Stop with Ctrl+C or `docker compose down`; the named PostgreSQL volume retains data. Do not use `down -v` on a judge installation whose workflow history must be preserved.
-
-No private ZIP, CSVs, existing `.env`, local database files or prototype source is required to build or install. Synthetic judge preparation is separate from installation seeding.
-
-## Development setup
-
-```sh
-npm install
-npm run setup:local
-npm run dev:db
+```bash
+git clone https://github.com/sameer-jr/CodeCrunchers_WaypointPulse.git
+cd CodeCrunchers_WaypointPulse
 ```
 
-Leave that terminal running. In a second terminal:
+### 2. Create environment configuration
 
-```sh
-npm run dev
+Linux/macOS:
+
+```bash
+cp .env.example .env
 ```
 
-Open **http://localhost:5173**. The API listens privately on port 3001 and the Vite proxy serves `/api` at the same browser origin. Use `localhost` consistently with `WEB_ORIGIN`; a `127.0.0.1` browser origin is different. If you choose another browser origin, update `WEB_ORIGIN` accordingly.
+Windows PowerShell:
 
-`setup:local` creates ignored `.env` with random local database/session secrets and preserves an existing `.env`. `dev:db` initializes `.local/postgres`, applies migrations, and seeds users before reporting readiness. Ctrl+C stops the cluster but retains local data. Its managed database must be `/waypoint` on `127.0.0.1`; another DATABASE_URL requires your own database service.
-
-For an existing PostgreSQL service, configure `.env` from `.env.example`, create the empty database, then run:
-
-```sh
-npm run db:migrate
-npm run db:seed
-npm run dev
+```powershell
+Copy-Item .env.example .env
 ```
 
-Do not use development credentials for a shared deployment. Passwords with reserved URL characters must be encoded in DATABASE_URL; the generated local passwords are hexadecimal.
+Before startup, configure:
 
-## Judge accounts
+```env
+POSTGRES_USER=waypoint
+POSTGRES_PASSWORD=<fresh-local-database-password>
+POSTGRES_DB=waypoint
 
-All four intentionally public local judge accounts use **`WaypointDemo!2026`** when initialized with the checked-in example configuration. `SEED_DEMO_PASSWORD` is the configured judging password and must be 12–128 characters; if an operator chooses a different public judging password, provide that value to judges separately. Infrastructure passwords and session secrets are never judging credentials. The seed creates missing accounts and preserves existing users, passwords, roles and active status on repeated startup. Changing the seed environment does not rotate existing accounts.
+AUTH_SECRET=<fresh-random-secret-at-least-32-characters>
 
-All four Railway judge accounts are seeded and verified using the separate intentionally public password **`WaypointJudge!2026`**. Deployed login/session restore, own protected workspace, wrong-role 403, logout and revoked-session replay 401 passed for each account. Database/session infrastructure secrets are not published.
+SEED_DEMO_PASSWORD=WaypointDemo!2026
 
-| Email | Role | Home |
-| --- | --- | --- |
-| dispatcher@waypoint.local | DISPATCHER | `/dispatcher/pulse` |
-| loader@waypoint.local | LOADER | `/loader/loads` |
-| driver@waypoint.local | DRIVER | `/driver/today` |
-| store@waypoint.local | STORE_MANAGER | `/store/home` |
+WEB_PORT=5173
+WEB_ORIGIN=http://localhost:5173
+NODE_ENV=development
 
-The login demo selector fills the email only. The password is verified by the server. The normal auth-only seed imports no competition data and grants no domain assignments. Without explicit UserOutlet/UserDepot or driver-trip assignments, domain object access defaults to denial. Separately enabled public judge preparation supplies independent SYNTHETIC demand and scope mappings; it never seeds a trip assignment or delivery.
+PUBLIC_JUDGE_DEMO=true
+```
 
-## Private reference import
+`PUBLIC_JUDGE_DEMO=true` enables the independently authored publication-safe judge scenario for **2040-03-05**.
 
-Place the five official files in ignored `private-data/reference/`: `outlets.csv`, `vehicles.csv`, `calendar.csv`, `district_travel.csv`, `service_allowance.csv`. With the configured database running:
+### 3. Start the complete stack
 
-```sh
+```bash
+docker compose up --build
+```
+
+This starts:
+
+- PostgreSQL
+- API
+- Web application
+- committed database migrations
+- seeded judge accounts
+- publication-safe operational judge data
+
+Open:
+
+```text
+http://localhost:5173
+```
+
+Health:
+
+```text
+http://localhost:5173/api/health
+```
+
+### 4. Local judge credentials
+
+The checked-in example development password is:
+
+```text
+WaypointDemo!2026
+```
+
+Accounts:
+
+```text
+dispatcher@waypoint.local
+loader@waypoint.local
+driver@waypoint.local
+store@waypoint.local
+```
+
+### 5. Stop
+
+```bash
+docker compose down
+```
+
+To also remove the local database volume:
+
+```bash
+docker compose down -v
+```
+
+---
+
+## Shared competition dataset
+
+The organizer-provided shared dataset is **not redistributed through this public repository**.
+
+The application includes a validated importer for the five shared reference files:
+
+```text
+outlets.csv
+vehicles.csv
+calendar.csv
+district_travel.csv
+service_allowance.csv
+```
+
+Private files can be placed under:
+
+```text
+private-data/reference/
+```
+
+and imported with:
+
+```bash
 npm run import:reference -- --source official --dry-run
 npm run import:reference -- --source official
 ```
 
-`--directory` can select another directory within ignored `private-data/` or `input resources/`. Provenance must be explicit; all files are required. The importer validates exact headers, explicit numeric/enum/time/date conversions, positive capacities, duplicate keys and references before an atomic database import. Content digests make repeated imports a no-op. Changed sources that collide with existing keys fail without partial changes; reconciliation is not silently performed. Synthetic imports require explicit labelling and are forbidden in production. Imports do not grant user assignments or create orders, trips or allocations.
+The public judge environment instead uses independently authored data labelled **SYNTHETIC** so confidential competition records are not exposed.
 
-The supplied private ZIP contains all five expected reference files. The local import has 120 outlets, 60 vehicles, 910 calendar days, 12 travel rows and 9 service allowances, marked OFFICIAL. These counts describe the private import, not installation seed data. The official calendar ends on **2026-06-28**, so it cannot authorize future orders on the current review date, 2026-10-04. A fresh official calendar is required for current official operation. The Store API blocks dates absent from its eligible calendar. Raw files remain excluded from Git, Docker and web bundles. No source GPS/address fields or verified opening fuel history were supplied. Fuel remaining is unknown until an opening balance is established; quota alone does not imply zero consumption. Business dates/weeks use Asia/Colombo; the fuel week begins Monday.
+No raw competition ZIP, official CSV, private `.env`, local database or original private prototype source is committed to this repository.
 
-Deploy the committed migrations rather than `prisma db push`; custom SQL checks, partial indexes and integrity/history triggers are required. Driver delivery proof persists recipient name/role alongside outcome, quantity, note and completion time. Optional photos and signatures are stored with that delivery in PostgreSQL; only attachments actually captured and accepted by the server become shared evidence.
+---
 
-## Store assignment and local review
+## Docker verification
 
-The auth seed does not assign outlets. Store access requires exactly one active user's `UserOutlet` mapping; missing or multiple mappings deny access. With the local database running, an explicit operator command assigns a known outlet. Add `--replace` only to deliberately change an existing assignment:
+The root Compose stack is verified on GitHub Actions using Ubuntu. The previous release passed; the exact-commit Linux run for the photo/signature/maps update is pending.
 
-```sh
-npm run demo:assign-store -- --outlet-id <outlet-uuid>
+Local development can run without Docker using `npm run setup:local`, `npm run dev:db` and, in another terminal, `npm run dev`. Competition startup remains `docker compose up --build`; CI verifies that same container stack on Linux.
+
+The workflow checks:
+
+- API image build
+- Web image build
+- PostgreSQL startup
+- API/Web/database health
+- all ten migrations
+- seeded authentication
+- protected access
+- session restore
+- logout
+- container and volume cleanup
+
+Workflow:
+
+[`.github/workflows/docker-compose-verification.yml`](.github/workflows/docker-compose-verification.yml)
+
+The previous functional release passed Docker verification. A new PASS will be reported only after the current feature commit actually completes its Linux workflow successfully.
+
+---
+
+## Public deployment
+
+The production system is deployed on **Railway**.
+
+**Live URL:**\
+https://web-production-87afe.up.railway.app
+
+Topology:
+
+```text
+Public HTTPS Web
+      │
+      │ same-origin /api
+      ▼
+Private API
+      │
+      ▼
+Private Railway PostgreSQL
 ```
 
-`--outlet-ref` is also supported for private local references; `--email` defaults to `store@waypoint.local`. The script rejects production and non-loopback databases. Identity never comes from the frontend.
+The previously deployed release was verified for:
 
-For current-date review when the official calendar has no future rows:
+- HTTPS
+- secure cookies
+- all four seeded accounts
+- protected role access
+- Dispatcher planning
+- Loader shortfall handling
+- Driver delivery
+- real browser offline reload
+- reconnect synchronization
+- Store receipt
+- final Dispatcher reconciliation
 
-```sh
-npm run demo:store-synthetic
-```
+Railway deployment and four-role/offline media/map acceptance of the current feature commit are pending. The older deployed PASS does not establish acceptance of the photo/signature/maps update.
 
-This explicit local-only command adds an independently authored **SYNTHETIC** Fresh outlet, assigns the Store demo account, and inserts up to 60 future synthetic calendar days without replacing existing official days. Its Monday–Saturday pattern belongs only to this fixture. Set `STORE_ALLOW_SYNTHETIC=true` in ignored local `.env` and restart the API to permit those labelled dates. The flag defaults to false; ordinary production rejects it without the separate explicit public judge mode. The current local preview uses this opt-in. No orders, plans or deliveries are created by this setup command.
+---
 
-For prepared receipt, planned-arrival and deferral review, `npm run demo:store-judge` creates a separate loopback database named `waypoint_store_judge` and five labelled scenarios. Stop the normal API/web app, keep PostgreSQL running, and temporarily change only the database name in private `DATABASE_URL` from `/waypoint` to `/waypoint_store_judge`. Keep `STORE_ALLOW_SYNTHETIC=true` and run `npm run dev` using the usual localhost origin/ports. Sign in as Store Manager and select a `SYN-JUDGE-*` order. After review, stop that app and restore `/waypoint` before restarting. The setup helper itself does not change `.env`, official references or the main development assignment. See the Store report for scenario references and outcomes; these prepared records do not demonstrate Dispatcher, Loader or Driver workflows. If running separate previews on different ports, cookies on the same hostname are shared: keep only one active Store browser preview.
+## Verification
 
-## Store workflow and API
+Run before making a submission release:
 
-| Method | Endpoint | Behavior |
-| --- | --- | --- |
-| GET | `/api/store/context` | Assigned outlet, server time/cutoff, brand rules, imported operating dates |
-| GET | `/api/store/home` | Persisted counts, recent orders and attention items |
-| GET | `/api/store/orders?status=&date=` | Scoped list, newest 100; date filters originally requested delivery date |
-| GET | `/api/store/orders/:id` | Scoped quantities, recorded timeline, deferrals, trip and proof metadata |
-| POST | `/api/store/orders` | Atomic validated order creation and confirmation |
-| POST | `/api/store/orders/:id/receipt` | Versioned atomic receipt and any actionable exception |
-
-Fresh supports ambient/chilled/frozen requests; Style and Tech support ambient. Daily, weekly and as-needed descriptions are operational context, not a product catalog or automatic schedule. The server derives outlet, brand, depot and creator. References use `WP-YYYYMMDD-` followed by a UUID without separators; counts are never used for uniqueness.
-
-The server applies the **16:00 Asia/Colombo** cutoff, including exactly 16:00. A tomorrow request at/after cutoff keeps its original requested date and creation timestamp, and receives the next later operating `CalendarDay` as `eligibleDeliveryDate`. Today/past, malformed, missing or non-operating dates are rejected; lack of a later eligible run rejects the late request. The UI explains any shift and the response is authoritative.
-
-Tracking displays actual persisted audit events, deferrals and planned/actual stop timestamps. Unplanned orders remain confirmed/awaiting planning without vehicle or ETA. Proof displays saved recipient details and authorized photo/signature content where captured. Older metadata-only records explicitly report unavailable image content. Store maps expose its own delivery stop and reported vehicle position without exposing other outlets on the trip.
-
-Receipts retain ordered, loaded, delivered and received quantities independently. Matching good-condition receipts become `CONFIRMED` / `RECEIPT_CONFIRMED`. A quantity difference, damage or other reported issue requires a useful note and creates `ISSUE_REPORTED`, an unresolved exception and `RECEIPT_ISSUE`; it does not cleanly close the order. Duplicate/stale receipts conflict, and Store Managers cannot read or mutate foreign outlet orders.
-
-## Dispatcher assignment and local review
-
-Dispatcher access requires an active Dispatcher account with one or more explicit `UserDepot` assignments. Missing scope denies every Dispatcher data endpoint. The auth seed never grants these mappings. Assign only the depots needed for local review:
-
-```sh
-npm run demo:assign-dispatcher -- --depot-name "SYNTHETIC Store Demo Depot"
-```
-
-`--depot-id` is also supported. Repeat the same option for multiple depots, use `--email` for another active Dispatcher, and add `--replace` only to deliberately replace an existing local assignment. The command rejects production and non-loopback databases. The UI cannot grant or enlarge scope.
-
-For reproducible Dispatcher review, keep `npm run dev:db` running and use:
-
-```sh
-npm run demo:dispatcher-judge
-npm run dev:dispatcher-judge
-```
-
-Open **http://localhost:5175**. This separate `/waypoint_dispatcher_judge` database uses independently authored **SYNTHETIC** references and a fixed default operational day, **2040-02-06**. The helper preserves `.env`, main development records and official references. It installs confirmed demand across Fresh/Style/Tech, all three Fresh temperature requirements, a van-only outlet, two persisted deferrals, explicitly prepared trips and receipt scenarios. Prepared trips demonstrate reading persisted facts; they are not generated plans. The Store account is assigned to `SYN-STORE-FRESH`, and Dispatcher has the minimum own-depot scope. Rerunning setup preserves orders and receipts already entered during review.
-
-The judge preview uses API port 3002 and Vite port 5175; Ctrl+C stops both preview processes and retains its data. Session cookies share a hostname across ports: keep only one active localhost application tab during role handoffs. The optional `DISPATCHER_DEMO_DATE` environment value selects a default day and creates no calendar rows. Otherwise the server chooses meaningful scoped persisted demand/trip dates before falling back to the current Sri Lanka date. Date selection survives navigation and refresh in the URL.
-
-| Method | Endpoint | Behavior |
-| --- | --- | --- |
-| GET | `/api/dispatcher/context` | Assigned depots, selected day and actual calendar provenance |
-| GET | `/api/dispatcher/pulse` | Complete scoped counts, fleet master totals and open attention |
-| GET | `/api/dispatcher/orders` | Date-basis, status, brand, depot, district, temperature, deferral and reference filters |
-| GET | `/api/dispatcher/orders/:id` | Four quantity facts, dates, access/windows, history, trips and issues |
-| GET | `/api/dispatcher/planning-context` | Eligible unassigned demand, fleet, trips and reference constraints |
-| GET | `/api/dispatcher/trips` and `/api/dispatcher/trips/:id` | Persisted trip facts and recorded stop sequence |
-| GET | `/api/dispatcher/exceptions` and `/api/dispatcher/exceptions/:id` | Scoped issue facts, safe notes, provenance and related quantities |
-
-Lists default to 25 records and cap page size at 100. Pulse totals and Planning demand totals aggregate all matching records; their previews are bounded and labelled. Planning context previews cap orders/deferred review at 100 each, vehicles at 200 and trips at 50; generation reads the full authoritative eligible backlog. Operational order date means the active trip's service day, otherwise the initial eligible delivery date (requested date fallback). Orders can explicitly filter originally requested dates instead. Planning requires an actual operating calendar row. Deferred records appear separately in the read context; the M5 engine uses retained deferral history in its documented prioritization policy.
-
-The Milestone 4 judge retains its independently prepared read scenarios. Fleet capacities describe master records; planning requires explicit daily availability and known weekly fuel rather than inferring readiness from those capacities. Routes show recorded stop sequence and planned/actual timestamps without simulated tracking or invented coordinates. Exception Centre supports the minimal loading-shortfall approval/rejection flow; general issue resolution remains deferred. Proof exposes metadata and saved-evidence flags only; binary storage and access are deferred. Future Capacity has no connected forecast or prediction model.
-
-## Allocation engine and independent judge
-
-Planning Studio generates one depot/day run from persisted eligible demand. Served orders receive real draft trip/stop/allocation records; excess or infeasible demand receives retained deferral evidence. The independent Validate action recomputes complete plan constraints and transitions valid served orders to PLANNED. Release requires the current valid, non-stale version and a confirmation dialog, then commits the run/trips and RELEASED_TO_LOADING order states atomically. Drafts are inspectable by Dispatcher and remain inaccessible to Loader/Driver until release. Loader records actual quantities against the same released stops; Driver access additionally requires assignment and satisfactory ready loading.
-
-The documented heuristic prioritizes prior deferrals and scarce/tight demand, applies blocking constraints, then selects feasible candidates using explicit lexicographic tie-breakers. Decimal weight and volume limits stay separate. Temperature, access, depot, delivery/mall windows, Fresh before 08:00, two-trip limit, daily availability and weekly fuel are enforced. Depot/district references estimate travel without invented GPS; waits/service/return and a conservative 15-minute turnaround are recorded. The strategy is deterministic, not globally optimal.
-
-| Method | Endpoint | Behavior |
-| --- | --- | --- |
-| GET | `/api/dispatcher/plans?date=&depotId=` | Bounded generated-run history and current active run |
-| POST | `/api/dispatcher/plans` | Generate or version-bound supersede/regenerate an unreleased draft |
-| GET | `/api/dispatcher/plans/:id` | Scoped decisions, trips, timing, capacities and constraint evidence |
-| POST | `/api/dispatcher/plans/:id/validate` | Independent persisted-result checks with optimistic run version |
-| POST | `/api/dispatcher/plans/:id/release` | Fresh checks and atomic release of a validated current run |
-
-For a deterministic independently authored excess-demand scenario, keep local PostgreSQL running and use:
-
-```sh
-npm run demo:allocation-judge
-npm run dev:allocation-judge
-```
-
-Open **http://localhost:5176** and choose **2040-03-05**. This separate `/waypoint_allocation_judge` database supplies synthetic demand, explicit availability, known opening/usage fuel, calendar and travel/service facts. It creates no precomputed planning result. Click Generate → inspect served/deferred decisions and Explain My Plan → Validate → Release and confirm. Reload reads the same persisted run. Repeated setup preserves actual orders, generated/released histories and deferrals. Fresh isolated integration databases provide repeatable clean scenarios; setup does not reset the main database or M4 judge.
-
-The preview enables `PLANNING_ALLOW_SYNTHETIC=true` only in its process environment. That flag defaults to false; ordinary production rejects it without the separate explicit public judge mode, independently of `STORE_ALLOW_SYNTHETIC`. Existing imported fleet records with unknown daily availability or opening fuel remain blocked. No availability/zero fuel history is inferred, and no old allocation CSV or AI/ML service is used. API port 3003 and Vite port 5176 are separate from the main preview; `.env` is preserved. Stop the preview with Ctrl+C; its data remains.
-
-## Docker runtime and production configuration
-
-After `npm run setup:local`, review `.env` and run:
-
-```sh
-docker compose up --build
-```
-
-Compose defines PostgreSQL → API → Web health dependencies. API startup automatically applies the committed migration and runs the idempotent user seed. Web is exposed at http://localhost:5173; API and PostgreSQL have no host port mappings. PostgreSQL 18 data is mounted at `/var/lib/postgresql` in a named volume. Do not run Compose and local Vite on the same web port simultaneously.
-
-This local Compose configuration defaults to `NODE_ENV=development` so cookies work over local HTTP. A shared deployment must terminate HTTPS and set `NODE_ENV=production`, `WEB_ORIGIN=https://your-host`, and fresh secrets. Production startup requires HTTPS origin and issues Secure cookies. `API_TRUST_PROXY=true` trusts exactly one proxy hop within the private Compose network; standalone development defaults to false.
-
-**Previous-release container acceptance passed** in [run 37203993474](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37203993474) for exact commit `fb83ddd42b6a3d7aa03770ccda46eb3a9d25950e`. It verified API/Web image builds, PostgreSQL/API/Web health, all nine migrations, safe auth-only seeding, database-backed login/protected access/logout and container/volume cleanup. This establishes that release's root Compose installation; Railway deployment remains a separate check. Historical results in the [earlier remote verification report](docs/remote-docker-verification.md) apply only to its pre-Driver commit.
-
-The **CodeCrunchers-WaypointPulse Railway project** is live at [https://web-production-87afe.up.railway.app](https://web-production-87afe.up.railway.app). Earlier verification recorded API and Web deployment SUCCESS for frozen application source `fb83ddd42b6a3d7aa03770ccda46eb3a9d25950e`. Only Web has a public domain; API/PostgreSQL have no public domain or TCP proxy. Managed PostgreSQL is online with a persistent volume. [API health](https://web-production-87afe.up.railway.app/api/health) returned 200/database connected. Startup applied all nine migrations, seeded four accounts and prepared the independent SYNTHETIC DRIVER day 2040-03-05. An independent 41-request HTTP smoke passed all four secure logins/restored sessions/own protected workspaces/wrong-role denial/logout/replay denial, four SPA paths and PWA resources. See [Railway deployment instructions](docs/deployment-railway.md) and [final verification](docs/final-hackathon-verification.md) for the earlier release evidence. Current media/maps acceptance is recorded separately in [the update report](docs/media-maps-verification.md).
-
-Fresh AUTH_SECRET was set through the CLI without printing its value, DATABASE_URL uses a private service reference, and API configuration sets NODE_ENV=production, PUBLIC_JUDGE_DEMO=true and WEB_ORIGIN to the exact HTTPS origin. Same-origin proxying and Secure session cookies are active. Production rejects missing or known CI/template infrastructure credentials, old development/CI judging passwords and a non-HTTPS origin. Root Compose Web binds to loopback and needs a TLS proxy when publicly hosted outside Railway. Actual production browser network-offline arrival, 188-unit proof, offline reload, reconnect acknowledgment, explicit Store receipt and final Dispatcher reconciliation all passed.
-
-For the standalone publication-safe demonstration, set **`PUBLIC_JUDGE_DEMO=true`** in the API service's Railway variables, or in `.env` for a dedicated Compose demo, before startup. It defaults to false and is the only production authorization for SYNTHETIC eligibility; the local Driver setup helper remains development-only. Keep the production HTTPS origin and fresh private infrastructure credentials, and configure the new intentionally public judging password before its first auth seed. Startup preflights configuration, applies all ten migrations, seeds the four auth accounts, then runs `seed:public-judge`. Before fixture writes, that installer rejects a database containing any OFFICIAL reference/import/calendar/availability/fuel data. It prepares the independent DRIVER scenario, demand and role mappings for **2040-03-05**, with `SYN-LOADER-DRIVER-ORDER-192`; a different configured judge day is rejected. It creates no plan, trip, Driver trip assignment, delivery or receipt. Repeat startup preserves operational history and existing passwords. Use a separate demo database and perform the entire workflow through the UI. With this flag false, fresh installation remains auth-only and the CI installation verifier expects empty reference/operational tables.
-
-## Remote Docker verification
-
-Local development can run without Docker using `npm run dev:db` and `npm run dev` as described above. Competition startup remains:
-
-```sh
-docker compose up --build
-```
-
-The [Docker Compose verification workflow](.github/workflows/docker-compose-verification.yml) verifies the same root Compose stack on GitHub Actions `ubuntu-latest`. It runs on pushes, pull requests and manual **Run workflow** requests after the repository is published. It builds the API/Web images, starts PostgreSQL/API/Web and uses [Compose's health wait](https://docs.docker.com/reference/cli/docker/compose/up/) before checking the published Web page and API health over HTTP.
-
-The workflow creates a disposable `.env` from these documented, public CI-only values; no GitHub secrets or competition dataset are required:
-
-| Variable | Non-secret CI value |
-| --- | --- |
-| `POSTGRES_USER` | `waypoint_ci` |
-| `POSTGRES_PASSWORD` | `waypoint-ci-only-db-password` |
-| `POSTGRES_DB` | `waypoint_ci` |
-| `AUTH_SECRET` | `waypoint-ci-only-auth-secret-not-for-deployment-2026` |
-| `SEED_DEMO_PASSWORD` | `WaypointCIOnly!2026` |
-| `WEB_ORIGIN` | `http://localhost:5173` |
-| `WEB_PORT` | `5173` |
-| `SESSION_HOURS` | `1` |
-| `NODE_ENV` | `development` |
-
-These credentials belong only to the runner's temporary, loopback-exposed stack. Use fresh private secrets for a shared deployment. Each run uses a unique Compose project name and a fresh database volume. API startup applies all committed migrations and the idempotent auth-only seed. The verifier checks every migration, exactly the four safe demo identities and empty reference, assignment and operational tables. It then signs in as `dispatcher@waypoint.local`, restores the database-backed session with `/api/auth/me`, checks the protected Dispatcher workspace and logs out. An unauthenticated workspace request must return 401.
-
-Private `input resources/`, `private-data/`, prototype files, the local prototype audit containing private identifiers, raw CSVs, dataset ZIPs and local `.env` remain excluded from Git and Docker build contexts. Installation uses only application files, committed migrations and publication-safe auth accounts; private imports and judge fixtures are not run. The workflow collects Compose logs on failure and always runs `docker compose down -v --remove-orphans` to remove its containers and volume.
-
-For an already running Docker stack, an optional smoke check is available:
-
-```sh
-npm run verify:docker
-```
-
-This command checks HTTP, seeded authentication and session/logout behavior without resetting data. CI additionally uses `--installation` to verify a fresh database. This script is not required for normal local development. An existing volume retains its original seeded passwords, so the configured `SEED_DEMO_PASSWORD` must match that installation.
-
-**Previous-release Docker verification: PASS.** [Run 37203993474](https://github.com/sameer-jr/CodeCrunchers_WaypointPulse/actions/runs/37203993474) completed successfully for `fb83ddd42b6a3d7aa03770ccda46eb3a9d25950e`, including all nine migrations, health, seeded authentication/protected route/logout and cleanup. Exact evidence is recorded in [final Hackathon verification](docs/final-hackathon-verification.md). The result applies to that tested release; future source changes require a new current-source run, and public-host acceptance remains separate.
-
-## API foundation
-
-| Method | Endpoint | Access |
-| --- | --- | --- |
-| GET | `/api/health` | Public database readiness; 503 if unavailable |
-| POST | `/api/auth/login` | Validated credentials; rate limited |
-| POST | `/api/auth/logout` | Revokes current session; idempotent |
-| GET | `/api/auth/me` | Authenticated user, safe fields only |
-| GET | `/api/workspaces/dispatcher` | Dispatcher only |
-| GET | `/api/workspaces/loader` | Loader only |
-| GET | `/api/workspaces/driver` | Driver only |
-| GET | `/api/workspaces/store` | Store Manager only |
-| GET | `/api/domain/outlets/:id` | Store outlet or Dispatcher/Loader depot scope |
-| GET | `/api/domain/orders/:id` | Assigned outlet/depot or Driver's assigned ready generated trip scope |
-| GET | `/api/domain/trips/:id` | Dispatcher depot; Loader released depot trip; Driver assigned ready/in-transit/completed generated trip |
-
-All mutations reject unapproved browser origins. Sessions expire after `SESSION_HOURS` (default 8), active users are rechecked, logout invalidates server state, and authentication/domain responses disable caching. No bearer credential is stored in localStorage. API errors omit stack traces, password hashes and session tokens. Domain GETs return safe DTOs; Store mutations added in Milestone 3 use the same authentication, origin and lifecycle guards.
-
-## Verification commands
-
-```sh
+```bash
 npm run typecheck
 npm run lint
 npm run test
@@ -352,142 +658,161 @@ npm run build
 npm run check:safety
 ```
 
-`npm run test` initializes a fresh isolated loopback PostgreSQL cluster, migrates/seeds twice, and runs Vitest/Supertest against real Prisma. Separate databases verify Milestone 1 auth preservation, Milestone 2 quantity/date preservation during upgrade, Store scenarios and Dispatcher scenarios independently of the original domain suite. The runner disables synthetic eligibility unless a test explicitly opts in, irrespective of local demo settings. Tests do not reset the development database; clusters stop and temporary files are removed. No database-dependent tests are silently skipped.
+Current local automated suite:
 
-Tests cover all seeded logins, bad/unknown credentials, unauthenticated requests, the complete role/resource access matrix, role injection, invalid JSON, origin checks, logout replay, expiration, deactivated users, and hash storage. Test TypeScript is included in typecheck.
+```text
+351 / 351 tests passed across 15 files
+10 additive migrations
+30 Prisma models
+```
 
-The 30 domain tests additionally cover atomic reference imports, constraints, valid/invalid/unauthorized lifecycle transitions, concurrent versions, audit rollback/history, four independent quantities, actionable discrepancies, depot/trip/outlet scope, trip limits, repeated deferrals and unknown fuel history. Synthetic fixtures are independently authored and used only in isolated tests. Prepared related records in tests do not imply an implemented operational workflow or allocator. Safety checks scan private exclusions, dataset markers and 180 locally available official identifiers against frontend/shared/seed/build content.
+See:
 
-`deepmerge-ts` is overridden to patched 8.x for Prisma's CLI dependency tree; migration/generation and integration checks must remain part of future dependency upgrades. See the [dependency advisory](https://github.com/advisories/GHSA-ggr8-5vv4-36mx).
+[Media and maps verification — current update](docs/media-maps-verification.md)
 
-## Foundation review walkthrough
+[Final Hackathon verification — historical release](docs/final-hackathon-verification.md)
 
-1. Open the login page and choose a demo email.
-2. Enter the configured password; verify the assigned role home.
-3. Open every item in that role's menu. Store and Dispatcher show their scoped persisted workflows after explicit assignment; Loader shows its dock/checklist/shortfall/readiness workflow; Driver shows its assigned ready route, arrival/delivery/proof and synchronization state.
-4. Refresh a protected URL; the server session restores the same identity.
-5. Try a different role's URL; verify access denied and return to the assigned workspace.
-6. Sign out; revisiting a protected URL must return to login. Driver sign-out requires connection and no unsynced work, and clears only that user's safe local route/operation cache after successful logout.
-7. Repeat with all four accounts. Review Dispatcher at 1440px, Loader at 390/768px, Driver at 360/390px, and Store at 390/768px.
-8. At phone widths, open the menu to reach all role screens, use the bottom navigation, and test Escape/Tab/focus behavior.
+---
+
+## Current feature verification
+
+The authorized update enables Driver camera/JPEG-PNG upload, preview/removal and a touch signature with **Use signature / Clear signature**. Each delivery accepts up to three photos of 1 MiB each and one signature of 256 KiB. Images are resized, validated and re-encoded before private immutable PostgreSQL storage. Driver, its Store and permitted Dispatcher can view the actual attachments through authenticated `no-store` image reads; an absent attachment is explicitly shown as not captured. Store receipt remains a separate action.
+
+**Complete Delivery** first saves its media and UUID operation in the scoped IndexedDB queue. Offline reload retains pending local previews; reconnect/retry uses the identical operation and attachment bytes. A failed device write reports that the action was not saved and keeps the form available. Keep the device/session until synchronization succeeds; clearing/exhausting storage can lose unsynced work.
+
+Maps use explicitly recorded outlet coordinates and optional browser-reported Driver positions. Dispatcher coordinate edits require scope, expected version and a reason; no coordinates are invented or seeded from outlet/district names. Driver **Share location** requires an assigned in-transit trip, permission and HTTPS/localhost. It reports at most once per ten seconds while connected and visible, pauses offline/hidden and requires a new opt-in after reload. Accuracy and freshness are shown; offline, completed or older-than-two-minute positions are historical. Store map reads include only its own stop.
+
+**Show route map** loads Leaflet and external OpenStreetMap tiles on demand with attribution. The [tile service policy](https://operations.osmfoundation.org/policies/tiles/) applies; tile availability and viewed-area browser requests are external. No offline tile prefetch is provided. Sequence lines are not driving directions, and GPS does not generate an ETA. Stop/proof workflows remain usable without tiles or GPS permission.
+
+| Current-update evidence | Status |
+| --- | --- |
+| Local automated suite | **PASS — 351/351 across 15 files** |
+| Schema | **30 models / 10 additive migrations**; the prior nine migration files remain unchanged |
+| Browser/media/offline acceptance | Actual observations are recorded separately in [media and maps verification](docs/media-maps-verification.md) |
+| Exact feature commit's Linux Docker CI | **Pending** — previous-release Docker PASS does not verify this update |
+| Matching Railway deployment and production media/map smoke | **Pending** — previous-release production PASS does not verify this update |
+| Physical mobile camera/signature/GPS/keyboard acceptance | **Pending** |
+
+The [update report](docs/media-maps-verification.md) contains endpoint/storage/scope limits and the full acceptance checklist. Existing milestone and [final-release evidence](docs/final-hackathon-verification.md) remains historical. No demo video has been recorded or linked yet.
+
+---
+
+## Security and authorization
+
+Waypoint Pulse uses:
+
+- salted Node `scrypt` password hashes
+- opaque HTTP-only session cookies
+- server-owned roles
+- server-side resource authorization
+- outlet/depot/trip object scope
+- request-origin checks for mutations
+- safe DTOs
+- optimistic version guards
+- transactional operational writes
+- UUID idempotency keys for Driver sync
+
+No bearer authentication token is stored in browser `localStorage`.
+
+Driver IndexedDB stores scoped operational data only; passwords, session tokens and raw competition data are not stored there.
+
+---
 
 ## Designathon fidelity and significant departures
 
-The shell keeps the logo, light canvas, charcoal sidebar, lime accents, system typography, rounded cards, compact role navigation, and phone bottom-navigation concept. Text sizing and focus/touch targets are made readable. Credential login replaces the prototype's experience selector with server-owned role identity. Maps use only explicitly recorded outlet coordinates and optional browser-reported Driver positions; routes without coordinates retain their stop lists. Driver proof now accepts bounded photos and a touch signature alongside recipient/outcome/quantity/note/time. Turn-by-turn navigation, barcode hardware integration, reefer telemetry and Datathon predictions remain unavailable.
+The Hackathon implementation follows the submitted Waypoint Pulse Designathon specification.
 
-Store has real persisted counts, forms, tracking and receipt actions. Dispatcher preserves the card hierarchy, compact table/inspector, three-area Planning Studio and issue/trip compositions while showing real scoped facts. Loader retains dock cards, actual stop sequence, quantity checklist, shortfall dialog and dispatch readiness. Driver retains phone-first Today, Route, Proof and Offline / Sync with a vehicle hero, current-stop card, recipient/outcome proof and actual persisted device queue. Location sharing is a visible opt-in for an active trip; reported accuracy and freshness are shown. No prepared allocation fixture is treated as generated output.
+Preserved concepts include:
 
-Milestone 5 — Allocation Engine passed local acceptance: 224 tests, required typecheck/lint/build/safety checks, the synthetic Generate → Validate → Release browser journey and responsive review. Exact evidence and remaining limits are recorded in the allocation report. Milestone 6 — Loader passed local acceptance: 246 tests including all 224 earlier cases, required checks and the browser 192 → 188 approval/readiness journey at 360/390/768px. See [the Loader report](docs/milestone-6-loader.md). Deployment and container runtime acceptance remain separate from local acceptance. A physical mobile onscreen keyboard has not been tested.
+- one connected system for four roles
+- Today’s Delivery Pulse
+- Planning Studio
+- Explain My Plan
+- Loader loading workflow
+- Loading Shortfall Cascade
+- Driver mobile-first workflow
+- Driver Offline / Sync experience
+- Store tracking and receipt
+- light workspace
+- charcoal navigation
+- lime accent
+- role-focused information architecture
 
-## Loader workflow and local judge
+Significant implementation clarifications/departures:
 
-Loader reads UserDepot scope from the session and shows only released generated plans for the selected day. Normal counts persist; lower counts require a reason and Dispatcher approval. Original ordered quantities remain intact. Ready for Dispatch checks every stop and blocking exception transactionally; departure belongs to Milestone 7.
+- real credential login replaces the prototype experience selector
+- outlet maps use explicitly recorded coordinates; no locations are invented from outlet or district identifiers
+- optional browser-reported Driver positions show accuracy and freshness; stop sequence lines do not calculate driving directions
+- no barcode-scanner hardware integration is claimed
+- no reefer telemetry integration is claimed
+- delivery proof stores recipient/outcome/quantity/note/time and optional bounded photos/signature as private PostgreSQL evidence
+- Future Capacity deliberately does not fabricate Datathon predictions
+- the allocation engine is a deterministic explainable heuristic with an independent validator rather than a claimed global optimizer
 
-| Method | Endpoint | Behavior |
-| --- | --- | --- |
-| GET | `/api/loader/loads?date=` | Released generated trips in assigned depots/day |
-| GET | `/api/loader/trips/:id` | Actual sequence and quantities/readiness |
-| POST | `/api/loader/stops/:id/load` | Versioned normal count or shortfall |
-| POST | `/api/loader/trips/:id/ready` | Guarded persistent readiness |
-| POST | `/api/dispatcher/exceptions/:id/review-load` | Scoped approve/reject decision |
+---
 
-Keep local PostgreSQL running, stop other app previews, then run `npm run demo:loader-judge` and `npm run dev:loader-judge`. Open **http://localhost:5177**; API port 3004. The separate `waypoint_loader_judge` leaves .env and main/M4/M5 data intact. Setup installs independent SYNTHETIC demand/references and controlled Loader/Dispatcher UserDepot assignments, with no precomputed Loader trip. Repeat setup preserves history.
+## Known limitations
 
-Dispatcher selects **2040-03-05**, Generates, Validates and Releases. Loader opens **SYN-PLAN-LOADER-AMBIENT · Trip 1**, records normal stops and reports **SYN-LOADER-LOADER-ORDER-192: 192 expected → 188 actual / STOCK_UNAVAILABLE**. Dispatcher approves in Exception Centre; Loader completes the other stops and marks Ready. Use one active localhost preview because cookies share the hostname.
+- No continuous background tracking, location-history log, turn-by-turn directions or GPS-derived ETA. Location sharing is optional, foreground-only and permission-dependent.
+- No barcode-scanner hardware integration.
+- No reefer telemetry.
+- Media is stored in the existing PostgreSQL database; no external image bucket or public upload directory is used. Browser storage loss can lose unsynced attachments.
+- No Datathon prediction integration.
+- The authoritative future official competition calendar is unavailable; the reproducible public judge uses SYNTHETIC day `2040-03-05`.
+- Clearing browser storage or losing the device can lose unsynchronized Driver work.
+- Failed/conflicted offline operations remain visible for review; there is no automatic conflict rebase/discard workflow.
+- Physical-device camera/signature/GPS/onscreen-keyboard acceptance remains pending; a controlled browser check is separate evidence.
+- `actualReturn` is not fabricated; trip completion records the completed stop workflow.
 
-## Driver and offline workflow
+---
 
-Driver access resolves the current session and `Trip.driverUserId`; the frontend cannot choose an actor or expand assignment scope. Only assigned generated trips with released planning provenance and complete/approved loading are exposed. READY_FOR_DISPATCH trips can start; IN_TRANSIT trips can record their current stop; completed trips retain their delivery history. Draft, unreleased, loading-blocked and foreign trips are excluded.
+## AI assistance disclosure
 
-| Method | Endpoint | Behavior |
-| --- | --- | --- |
-| GET | `/api/driver/routes?date=` | Assigned ready/in-transit/completed generated routes for the selected day |
-| GET | `/api/driver/trips/:id` | Actual sequence, loaded quantities, timing, proof and permitted actions |
-| POST | `/api/driver/trips/:id/start` | Versioned READY_FOR_DISPATCH → IN_TRANSIT with actual departure |
-| POST | `/api/driver/stops/:id/arrival` | Versioned current-stop arrival without GPS verification |
-| POST | `/api/driver/stops/:id/complete` | Transactional delivery/outcome/proof, order lifecycle and audit |
-| POST | `/api/driver/trips/:id/finish` | All terminal stops → trip COMPLETED; actualReturn remains null |
-| POST | `/api/driver/sync` | Sequential UUID operations with idempotent results and retained conflicts |
-| GET | `/api/dispatcher/drivers` | Active Driver choices for scoped Dispatcher assignment |
-| POST | `/api/dispatcher/trips/:id/driver` | Versioned assignment to a released generated trip before departure |
+AI assistance is documented in:
 
-DELIVERED records the actual loaded amount; PARTIALLY_DELIVERED requires a lower positive quantity and reason; FAILED requires zero delivered and a reason. No delivery may exceed the load or alter ordered/loaded quantities. Successful/partial proof requires recipient name and role. OTHER, damaged-in-transit and quantity-rejected reasons require a useful note. Full delivery reaches AWAITING_RECEIPT; partial/failed outcomes retain their own state and create operational exceptions. Store reads the same DeliveryRecord and still records its receipt separately.
+[`docs/AI_DISCLOSURE.md`](docs/AI_DISCLOSURE.md)
 
-The UI saves each arrival/delivery action durably in IndexedDB before sending it. Operations carry UUID, entity/action/payload, created/client-event timestamps and expected versions. The queue displays PENDING, SYNCING, SYNCED, FAILED and CONFLICT separately; unsynced local projections are visibly labelled. Reconnect attempts ordered synchronization, with manual **Sync now** as fallback. Replays with the same UUID and payload return the saved result without duplicate delivery/audit; changed UUID payloads or stale versions conflict. Failed/conflicted work is retained and is never silently overwritten or deleted.
+AI tools assisted with areas including:
 
-Production builds precache only the application shell and essential static assets in the service worker. Authenticated API responses are not service-worker cached. Assigned route data and the device queue use per-user IndexedDB; a sanitized Driver identity permits cached-route access on network failure, never after a server 401. Passwords/session tokens/raw datasets are not stored there. Sign-out is blocked while offline or unsynced work exists. Session-generation checks prevent late requests from restoring cleared identity/routes after logout. Device storage remains essential: clearing browser data, private browsing expiry or losing the device can lose unsynchronized work.
+- development planning
+- scaffolding
+- implementation support
+- refactoring
+- testing
+- debugging/review
+- documentation
 
-The Web build wrapper explicitly sets Vite's NODE_ENV to production even when local `.env` selects development, ensuring the built preview contains the service-worker registration. Direct development mode does not provide offline reload acceptance. Fresh connected queued actions use server event time; offline/delayed actions retain client time with seven-day age, five-minute clock skew and departure/arrival ordering checks. A conflict retains the original proof for review and blocks dependent writes; no automatic conflict-resolution workflow is provided.
+The original team product concept and submitted Designathon remain the project specification and team work.
 
-## Delivery photos, signatures and maps
+No AI service is required by the running Waypoint Pulse application. The planning engine itself is deterministic and does not call an LLM.
 
-Driver Proof supports Take photo, JPEG/PNG upload, preview/removal and an optional recipient signature drawn with a finger, pen or mouse. Choose Use signature or Clear signature before completing the delivery. Each delivery accepts up to three photos of 1 MiB each and one signature of 256 KiB. The browser resizes images; the API validates and re-encodes them before storing immutable attachment bytes in PostgreSQL in the same transaction as the delivery. The shared Driver, Store and Dispatcher proof views show only authorized attachments. This action never confirms the Store receipt.
+---
 
-Complete Delivery first saves the bounded media payload and UUID operation in that Driver's IndexedDB queue. Offline reload can show the locally saved pending attachments; successful synchronization makes them shared server evidence. Retry keeps the same operation and attachment bytes. A storage failure does not claim that a new action was saved, and the form stays available for correction. Browser storage can be cleared or exhausted: keep the device/session available until synchronization succeeds. Authenticated server images are fetched with `no-store` and are not offline map or service-worker assets.
+## Engineering documentation
 
-Dispatcher can record a scoped outlet's latitude/longitude with an explanation and expected location version. The application neither derives coordinates from district names nor seeds invented outlet locations. Driver and Dispatcher maps show their permitted trip stops; Store tracking shows only its own stop. Optional Driver Share location requires an in-transit assigned trip, browser permission and HTTPS or localhost. Updates run while the app is visible and connected, at most once per ten seconds; reloading requires a new opt-in. A position older than two minutes, an offline view or a completed trip is labelled historical. The latest position is retained, without a route-history tracking log.
+- [Architecture](docs/architecture.md)
+- [Data model](docs/data-model.md)
+- [AI disclosure](docs/AI_DISCLOSURE.md)
+- [Design / implementation plan](docs/design-and-implementation-plan.md)
+- [Allocation Engine report](docs/milestone-5-allocation.md)
+- [Loader report](docs/milestone-6-loader.md)
+- [Driver / Offline report](docs/milestone-7-8-driver-offline.md)
+- [Railway deployment](docs/deployment-railway.md)
+- [Final Hackathon verification — historical release](docs/final-hackathon-verification.md)
+- [Photo/signature/maps verification — current update](docs/media-maps-verification.md)
+- [Demo script](docs/demo-script.md)
 
-Show route map loads Leaflet and third-party [OpenStreetMap tiles](https://operations.osmfoundation.org/policies/tiles/) on demand with visible attribution. Map tiles need a connection and their availability is outside the application; no bulk download or offline tile prefetch is provided. The tile service receives ordinary browser requests for the viewed area. Lines join recorded stops in sequence and do not calculate driving directions or a GPS-derived ETA. Delivery and proof recording remain available without tiles or location permission. See [the update report](docs/media-maps-verification.md) for current verification and remaining acceptance checks.
+---
 
-## Final judge walkthrough
+## Team
 
-For the authorized photo/signature/maps follow-up, use a separate synthetic review database and the [media/maps acceptance checklist](docs/media-maps-verification.md). The previous production journey below has already been completed; repeat startup preserves it. Do not reset the live database to obtain an unfinished demo stop.
+**Code Crunchers**\
+**Tech-Triathlon 2026 — Hackathon**
 
-The live SYNTHETIC judge is mutable, and the verified main journey is already completed. Sign in to inspect `SYN-LOADER-DRIVER-ORDER-192` on **2040-03-05**: Store and Dispatcher show **192 ordered / 188 loaded / 188 delivered / 188 received**; the generated main trip is completed with four stops and 263 delivered units. [The final report](docs/final-hackathon-verification.md#four-role-smoke-test) provides exact record IDs and screenshots. To repeat every mutation, prepare a fresh separate judge database using the local commands below, or a fresh standalone OFFICIAL-free installation with `PUBLIC_JUDGE_DEMO=true` following [Railway deployment](docs/deployment-railway.md). Repeated preparation preserves history; do not reset the live database.
+---
 
-Keep `npm run dev:db` running and stop other localhost previews, then:
+## Competition data and repository use
 
-```sh
-npm run demo:driver-judge
-npm run build
-npm run preview:driver-judge
-```
+This repository was created for the Tech-Triathlon 2026 competition.
 
-Open **http://localhost:5178** (API 3005). The independent `/waypoint_driver_judge` scenario prepares SYNTHETIC demand/references and role mappings for **2040-03-05**, with a 192-unit order. It creates no precomputed trip, plan or delivery; repeated preparation retains actual workflow history and leaves `.env`, main and earlier judge databases intact. `dev:driver-judge` is available for development, but its Vite development server does not establish production service-worker offline acceptance.
-
-Use one active application tab/origin and explicitly sign out between roles. Cookies are shared across localhost ports. Keep the actual generated plan/trip and `SYN-LOADER-DRIVER-ORDER-192` selected throughout. Generated IDs are created by the product; do not replace them with hardcoded records. On a fresh judge database the reference vehicle is **SYN-PLAN-DRIVER-AMBIENT · Trip 1**. Repeat preparation preserves prior progress; a completed/released journey is retained for inspection rather than reset.
-
-1. **Dispatcher** — sign in as `dispatcher@waypoint.local`.
-2. Open **Planning Studio** and select **2040-03-05** and the assigned SYNTHETIC depot.
-3. Click **Generate Plan**; inspect the actual served decisions and retained deferrals.
-4. Open **Explain My Plan** for a served or deferred order and inspect its stored constraints/reasons.
-5. Run **Validate** and confirm the independent validation result.
-6. Click **Release**, confirm the versioned release dialog, and note the actual trip containing `SYN-LOADER-DRIVER-ORDER-192`.
-7. Sign out and sign in as **Loader**, `loader@waypoint.local`.
-8. Select the same day in **Today's Loads** and open that released ambient trip.
-9. Use **Mark Loaded** for its normal stops, keeping their actual expected quantities.
-10. On the 192-unit order choose **Report Shortfall**, enter **188** actual loaded units and choose **Stock unavailable** (`STOCK_UNAVAILABLE`). Add a useful SYNTHETIC shortage note and submit **Report Shortfall**.
-11. Confirm the trip says **Awaiting Dispatcher approval**; original ordered quantity remains 192. Sign out.
-12. **Dispatcher** — sign in, open **Exception Centre** for the same day, and select the same loading-shortfall record.
-13. Inspect **192 expected / 188 loaded**, its reason and the actual generated trip link; approve the revised manifest.
-14. Sign out and return as **Loader**. Open the same checklist and confirm **Dispatcher approved this revision**.
-15. Complete any remaining normal loads and click **Mark Ready for Dispatch**. Confirm persisted readiness, then sign out.
-16. **Dispatcher** — sign in and open the same trip in **Routes / Trips**.
-17. Choose `driver@waypoint.local` under **Assign Driver before departure** and click **Assign Driver**. Assignment after readiness is supported; it must precede departure. Sign out.
-18. **Driver** — sign in as `driver@waypoint.local`, select the same day and assigned trip, and open **Today** / **Route**.
-19. While online, confirm **Route cached on this device** and **Offline reload ready**. The route includes the approved actual 188-unit load.
-20. Click **Start Trip** online; confirm IN_TRANSIT and the current first stop.
-21. Switch the browser's network control to **Offline**. This must interrupt real requests; the application's indicator alone is not an offline test.
-22. In **Route**, record arrival at the current 192-unit order's stop.
-23. Open **Proof**; choose **Delivered**, enter **188** delivered units, a SYNTHETIC recipient name, receiving role and a useful note. Save the delivery.
-24. Confirm **Saved locally / Pending sync** and two pending arrival/completion operations in **Offline / Sync**.
-25. Reload while the browser is still offline. The assigned route, arrival, recipient, note and pending proof must remain.
-26. Restore network. Wait for ordered automatic sync or use **Sync now**; confirm those operations are **SYNCED** and the pending count is zero.
-27. Reload online and confirm the same recipient/188-unit proof is a synced server record, then advance through remaining stops in sequence.
-28. Record each remaining arrival and terminal outcome with actual quantities; a partial delivery requires a lower positive quantity and reason, and a failed delivery requires zero and a reason. Use useful notes for quantity rejection/damage/Other. Successful/partial deliveries require recipient name and role.
-29. When all active stops are terminal, click **Finish Trip**; confirm COMPLETED and the persisted stop count. Trip completion records completedAt and leaves actualReturn unrecorded.
-30. Confirm no unsynced work remains, then sign out. Driver sign-out is blocked while offline or while pending/failed/conflicted work remains; do not clear browser storage to bypass it.
-31. **Store Manager** — sign in as `store@waypoint.local`, open **Track Delivery** and select `SYN-LOADER-DRIVER-ORDER-192`.
-32. Verify **192 ordered / 188 loaded / 188 delivered / Store received: Not recorded**, AWAITING_RECEIPT and the same actual recipient/note. No Driver action created a receipt.
-33. Open **Confirm Receipt**, enter **188** as **Quantity actually received**, select **Received in good condition**, optionally add a receiving note, and click **Confirm Receipt**.
-34. Confirm **Receipt confirmed**, 188 received and RECEIPT_CONFIRMED. Reload to verify persistence; ordered/load/delivery facts remain 192/188/188. Sign out.
-35. **Dispatcher** — sign in, reopen the same day/order/trip and verify **192 / 188 / 188 / 188**, RECEIPT_CONFIRMED, completed trip progress and the retained loading-review history. Any partial/failed delivery issues on other stops remain actionable in Exception Centre; a Store receipt does not resolve them.
-
-The previously verified release passed **308/308** in 12 files (258.25 seconds): all 299 accepted baseline cases plus nine production configuration/public-judge regressions. The 299-case milestone baseline already included real offline reload/reconnect and retained stale-version conflict checks. Frozen application source `fb83ddd` also passed the nine-migration Docker run and deployed 41-request authentication/health/resource smoke. The production browser completed Generate → Validate → Release, 192 → 188 loading approval, Driver assignment/start, real offline arrival/delivery, offline reload retaining two queued operations, ordered reconnect with zero pending, all four deliveries and Finish Trip. Store then explicitly received 188 in good condition; Dispatcher showed the same **192 / 188 / 188 / 188** facts and completed trip. Independent read-only API reconciliation confirmed the same delivery and receipt IDs. See [final Hackathon verification](docs/final-hackathon-verification.md). The authoritative future official competition calendar is unavailable; this deterministic judge uses independently authored SYNTHETIC data. A physical mobile onscreen keyboard has not been tested. The demo video is not recorded yet; final publication/index checks are separate from these completed product gates.
-
-## Team and competition use
-
-**Code Crunchers · Tech-Triathlon 2026 — Hackathon.** The submitted Designathon experience and project brief remain the product specification; final team review and competition submission decisions belong to Code Crunchers. AI assistance is documented in [the disclosure](docs/AI_DISCLOSURE.md), and no AI service is required by the running application.
-
-This repository was created for the Tech-Triathlon 2026 competition. Competition datasets remain subject to the competition's confidentiality and usage rules and are intentionally not distributed through this repository.
-
+Organizer-provided competition datasets remain subject to the competition's confidentiality and usage rules and are intentionally not redistributed through this public repository.
